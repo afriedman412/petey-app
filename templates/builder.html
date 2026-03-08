@@ -445,13 +445,18 @@ async function extractFile(file, spec, instr) {
   form.append('schema_spec', JSON.stringify(spec));
   if (instr) form.append('instructions', instr);
   const resp = await authFetch('/extract', { method: 'POST', body: form });
-  const data = await resp.json();
   if (!resp.ok) {
-    const msg = data.error || 'Extraction failed';
-    if (resp.status === 400 && msg.includes('API key')) throw new ApiKeyError(msg);
+    let msg = 'Extraction failed (status ' + resp.status + ')';
+    try {
+      const errData = await resp.json();
+      msg = errData.error || errData.detail || msg;
+    } catch (_) {
+      msg = await resp.text() || msg;
+    }
+    if (msg.includes('API key') || msg.includes('api key')) throw new ApiKeyError(msg);
     throw new Error(msg);
   }
-  return data;
+  return await resp.json();
 }
 
 extractBtn.addEventListener('click', async () => {

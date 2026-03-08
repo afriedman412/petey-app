@@ -195,23 +195,33 @@ document.getElementById('toggleAnthropic').addEventListener('click', function() 
 });
 
 async function loadSettings() {
-  const resp = await authFetch('/settings');
-  const data = await resp.json();
+  try {
+    const resp = await authFetch('/settings');
+    if (!resp.ok) {
+      statusEl.textContent = 'Failed to load settings (status ' + resp.status + ')';
+      statusEl.className = 'status err';
+      return;
+    }
+    const data = await resp.json();
 
-  modelSelect.innerHTML = '';
-  for (const m of data.models) {
-    const opt = document.createElement('option');
-    opt.value = m.id;
-    opt.textContent = m.name + ' (' + m.provider + ')';
-    modelSelect.appendChild(opt);
+    modelSelect.innerHTML = '';
+    for (const m of (data.models || [])) {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = m.name + ' (' + m.provider + ')';
+      modelSelect.appendChild(opt);
+    }
+    modelSelect.value = data.model;
+
+    openaiInput.value = data.openai_api_key || '';
+    openaiInput.placeholder = data.openai_api_key ? data.openai_api_key : 'sk-...';
+
+    anthropicInput.value = data.anthropic_api_key || '';
+    anthropicInput.placeholder = data.anthropic_api_key ? data.anthropic_api_key : 'sk-ant-...';
+  } catch (e) {
+    statusEl.textContent = 'Error loading settings: ' + e.message;
+    statusEl.className = 'status err';
   }
-  modelSelect.value = data.model;
-
-  openaiInput.value = data.openai_api_key || '';
-  openaiInput.placeholder = data.openai_api_key ? data.openai_api_key : 'sk-...';
-
-  anthropicInput.value = data.anthropic_api_key || '';
-  anthropicInput.placeholder = data.anthropic_api_key ? data.anthropic_api_key : 'sk-ant-...';
 }
 
 document.getElementById('saveBtn').addEventListener('click', async () => {
