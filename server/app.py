@@ -17,7 +17,7 @@ from server.extract import (
     extract_text, check_text_length,
 )
 from server.settings import (
-    get_settings, update_settings, mask_key, MODELS,
+    get_settings, update_settings, mask_key, get_provider, MODELS,
 )
 from server.validate_keys import (
     validate_openai_key, validate_anthropic_key,
@@ -93,6 +93,20 @@ async def extract_endpoint(
     instructions: str = Form(""),
     uid: str = Depends(get_uid),
 ):
+    # Check that the user has the required API key before processing
+    settings = get_settings(uid)
+    provider = get_provider(settings["model"])
+    if provider == "anthropic" and not settings.get("anthropic_api_key"):
+        return JSONResponse(
+            {"error": "No Anthropic API key configured. Add one in Settings before extracting."},
+            status_code=400,
+        )
+    if provider == "openai" and not settings.get("openai_api_key"):
+        return JSONResponse(
+            {"error": "No OpenAI API key configured. Add one in Settings before extracting."},
+            status_code=400,
+        )
+
     if schema_spec:
         spec = json.loads(schema_spec)
         response_model = _build_model(spec)

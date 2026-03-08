@@ -435,13 +435,23 @@ function buildSpec() {
 // Extract
 const CONCURRENCY = 5;
 
+class ApiKeyError extends Error {
+  constructor(msg) { super(msg); this.name = 'ApiKeyError'; }
+}
+
 async function extractFile(file, spec, instr) {
   const form = new FormData();
   form.append('file', file);
   form.append('schema_spec', JSON.stringify(spec));
   if (instr) form.append('instructions', instr);
   const resp = await authFetch('/extract', { method: 'POST', body: form });
-  return await resp.json();
+  const data = await resp.json();
+  if (!resp.ok) {
+    const msg = data.error || 'Extraction failed';
+    if (resp.status === 400 && msg.includes('API key')) throw new ApiKeyError(msg);
+    throw new Error(msg);
+  }
+  return data;
 }
 
 extractBtn.addEventListener('click', async () => {
@@ -469,7 +479,8 @@ extractBtn.addEventListener('click', async () => {
   }
 
   // Process in batches of CONCURRENCY
-  for (let i = 0; i < total; i += CONCURRENCY) {
+  let apiKeyError = null;
+  for (let i = 0; i < total && !apiKeyError; i += CONCURRENCY) {
     const batch = [];
     for (let j = i; j < Math.min(i + CONCURRENCY, total); j++) {
       batch.push(selectedFiles[j]);
@@ -477,6 +488,7 @@ extractBtn.addEventListener('click', async () => {
     st.textContent = 'Processing files ' + (i + 1) + '–' + Math.min(i + CONCURRENCY, total) + ' of ' + total + '...';
 
     const promises = batch.map(async file => {
+      if (apiKeyError) return;
       try {
         const data = await extractFile(file, spec, instr);
         if (data._warning) warnings.push(file.name + ': ' + data._warning);
@@ -503,13 +515,26 @@ extractBtn.addEventListener('click', async () => {
           allResults.push(data);
         }
       } catch(e) {
+        if (e instanceof ApiKeyError) {
+          apiKeyError = e.message;
+          return;
+        }
         warnings.push(file.name + ': ' + e.message);
       }
       completed++;
     });
 
     await Promise.all(promises);
+    if (apiKeyError) break;
     st.textContent = completed + ' / ' + total + ' files done...';
+  }
+
+  if (apiKeyError) {
+    st.innerHTML = '<span style="color:#dc2626; font-weight:600;">' + apiKeyError + '</span>' +
+      '<br><a href="/settings/page" style="color:#2563eb;">Go to Settings</a>';
+    extractBtn.disabled = false;
+    updateExtractBtn();
+    return;
   }
 
   let statusText = 'Done — ' + total + ' file' + (total > 1 ? 's' : '') + ' processed.';

@@ -44,8 +44,18 @@ async def async_extract(
     provider = get_provider(model_id)
     if provider == "anthropic":
         api_key = settings.get("anthropic_api_key") or None
+        if not api_key:
+            raise ValueError(
+                "No Anthropic API key configured. "
+                "Add one in Settings before extracting."
+            )
     else:
         api_key = settings.get("openai_api_key") or None
+        if not api_key:
+            raise ValueError(
+                "No OpenAI API key configured. "
+                "Add one in Settings before extracting."
+            )
 
     return await _extract_async(
         pdf_path, response_model,
