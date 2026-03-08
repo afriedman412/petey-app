@@ -9,7 +9,7 @@ Set FIREBASE_AUTH_DISABLED=1 to skip verification (local dev only).
 import os
 
 import firebase_admin
-from firebase_admin import auth as firebase_auth, credentials
+from firebase_admin import auth as firebase_auth
 from fastapi import Request, HTTPException
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -20,11 +20,10 @@ PUBLIC_PATHS = {
 }
 
 # Initialize Firebase Admin SDK once.
-# On GCP (Cloud Run), this auto-detects the project via ADC.
-# Locally, set GOOGLE_APPLICATION_CREDENTIALS to a service account key.
+# On Cloud Run, calling initialize_app() with no args uses the
+# default service account automatically (ADC).
 if not firebase_admin._apps:
-    cred = credentials.ApplicationDefault()
-    firebase_admin.initialize_app(cred)
+    firebase_admin.initialize_app()
 
 
 def _is_public(path: str) -> bool:
