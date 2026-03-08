@@ -2,13 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>PDF Extractor</title>
+<title>Petey</title>
 <style>
   * { box-sizing: border-box; }
   body { font-family: system-ui, sans-serif; max-width: 900px;
          margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; }
   h1 { margin-bottom: 0.25rem; }
-  .subtitle { color: #666; margin-bottom: 1.5rem; }
+  .subtitle { color: #666; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+  .subtitle a { color: #2563eb; text-decoration: none; font-size: 14px; }
+  .subtitle a:hover { text-decoration: underline; }
 
   .dropzone {
     border: 2px dashed #adb5bd; border-radius: 8px; padding: 2.5rem;
@@ -96,12 +98,19 @@
 </style>
 </head>
 <body>
-<h1>PDF Extractor</h1>
-<p class="subtitle">Define your fields, drop a PDF, get structured data.</p>
+<h1>Petey</h1>
+<p class="subtitle">
+  <span>The Easy PDF Extractor</span>
+  <a href="/settings/page">Settings</a>
+</p>
 
 <div class="dropzone" id="dropzone">
-  <p id="dropLabel">Drop a PDF here, or click to select</p>
-  <input type="file" id="fileInput" accept=".pdf">
+  <p id="dropLabel">Drop PDF(s) here, or click to select</p>
+  <input type="file" id="fileInput" accept=".pdf" multiple>
+</div>
+<div style="margin-top:-1rem; margin-bottom:1.5rem; font-size:0.85rem;">
+  <button id="folderBtn" style="background:none; border:none; color:#228be6; cursor:pointer; padding:0; font-size:0.85rem;">Select folder</button>
+  <input type="file" id="folderInput" accept=".pdf" webkitdirectory style="display:none;">
 </div>
 
 <div class="controls">
@@ -147,12 +156,13 @@
 <div id="results"></div>
 
 <script>
-let selectedFile = null;
+let selectedFiles = [];
 let recordType = 'single';
 let fields = [];
 
 const dz = document.getElementById('dropzone');
 const fi = document.getElementById('fileInput');
+const folderInput = document.getElementById('folderInput');
 const dropLabel = document.getElementById('dropLabel');
 const st = document.getElementById('status');
 const results = document.getElementById('results');
@@ -204,20 +214,28 @@ dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('ove
 dz.addEventListener('dragleave', () => dz.classList.remove('over'));
 dz.addEventListener('drop', e => {
   e.preventDefault(); dz.classList.remove('over');
-  const f = [...e.dataTransfer.files].find(f => f.name.toLowerCase().endsWith('.pdf'));
-  if (f) setFile(f);
+  const pdfs = [...e.dataTransfer.files].filter(f => f.name.toLowerCase().endsWith('.pdf'));
+  if (pdfs.length) setFiles(pdfs);
 });
-fi.addEventListener('change', e => { if (e.target.files[0]) setFile(e.target.files[0]); });
+fi.addEventListener('change', e => {
+  const pdfs = [...e.target.files].filter(f => f.name.toLowerCase().endsWith('.pdf'));
+  if (pdfs.length) setFiles(pdfs);
+});
+document.getElementById('folderBtn').addEventListener('click', () => folderInput.click());
+folderInput.addEventListener('change', e => {
+  const pdfs = [...e.target.files].filter(f => f.name.toLowerCase().endsWith('.pdf'));
+  if (pdfs.length) setFiles(pdfs);
+});
 
-function setFile(f) {
-  selectedFile = f;
-  dropLabel.textContent = f.name;
+function setFiles(files) {
+  selectedFiles = files;
+  dropLabel.textContent = files.length === 1 ? files[0].name : files.length + ' PDFs selected';
   dz.classList.add('has-file');
   updateExtractBtn();
 }
 
 function updateExtractBtn() {
-  extractBtn.disabled = !(selectedFile && fields.some(f => f.name.trim() && f.enabled));
+  extractBtn.disabled = !(selectedFiles.length && fields.some(f => f.name.trim() && f.enabled));
 }
 
 // Field builder
@@ -335,60 +353,155 @@ function buildSpec() {
 }
 
 // Extract
+const CONCURRENCY = 5;
+
+async function extractFile(file, spec, instr) {
+  const form = new FormData();
+  form.append('file', file);
+  form.append('schema_spec', JSON.stringify(spec));
+  if (instr) form.append('instructions', instr);
+  const resp = await fetch('/extract', { method: 'POST', body: form });
+  return await resp.json();
+}
+
 extractBtn.addEventListener('click', async () => {
-  if (!selectedFile) return;
+  if (!selectedFiles.length) return;
   const spec = buildSpec();
   if (!Object.keys(spec.fields).length) return;
 
-  st.textContent = 'Processing ' + selectedFile.name + '...';
   results.innerHTML = '';
   extractBtn.disabled = true;
-
-  const form = new FormData();
-  form.append('file', selectedFile);
-  form.append('schema_spec', JSON.stringify(spec));
+  const warnings = [];
+  const allRecords = [];
+  const allResults = [];
+  const total = selectedFiles.length;
   const instr = document.getElementById('instructions').value.trim();
-  if (instr) form.append('instructions', instr);
+  let completed = 0;
 
+  // Init server-side results file
+  let resultsFile = null;
   try {
-    const resp = await fetch('/extract', { method: 'POST', body: form });
-    const data = await resp.json();
+    const initResp = await fetch('/results/init', { method: 'POST' });
+    const initData = await initResp.json();
+    resultsFile = initData.file;
+  } catch(e) {
+    warnings.push('Could not init results file: ' + e.message);
+  }
 
-    if (data._error) {
-      st.textContent = 'Error: ' + data._error;
-      return;
+  // Process in batches of CONCURRENCY
+  for (let i = 0; i < total; i += CONCURRENCY) {
+    const batch = [];
+    for (let j = i; j < Math.min(i + CONCURRENCY, total); j++) {
+      batch.push(selectedFiles[j]);
     }
-    st.textContent = 'Done.';
+    st.textContent = 'Processing files ' + (i + 1) + '–' + Math.min(i + CONCURRENCY, total) + ' of ' + total + '...';
 
-    if (data.records && Array.isArray(data.records)) {
-      renderTable(data.records);
+    const promises = batch.map(async file => {
+      try {
+        const data = await extractFile(file, spec, instr);
+        if (data._warning) warnings.push(file.name + ': ' + data._warning);
+
+        // Append to server-side file immediately
+        if (resultsFile && !data._error) {
+          fetch('/results/append', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ file: resultsFile, data }),
+          }).catch(() => {});
+        }
+
+        if (data._error) {
+          warnings.push(file.name + ': ' + data._error);
+          return;
+        }
+        if (data.records && Array.isArray(data.records)) {
+          for (const rec of data.records) {
+            rec._source_file = file.name;
+            allRecords.push(rec);
+          }
+        } else {
+          allResults.push(data);
+        }
+      } catch(e) {
+        warnings.push(file.name + ': ' + e.message);
+      }
+      completed++;
+    });
+
+    await Promise.all(promises);
+    st.textContent = completed + ' / ' + total + ' files done...';
+  }
+
+  let statusText = 'Done — ' + total + ' file' + (total > 1 ? 's' : '') + ' processed.';
+  if (resultsFile) {
+    statusText += '\nResults saved to output/' + resultsFile;
+  }
+  if (warnings.length) {
+    statusText += '\nWarnings:\n' + warnings.join('\n');
+  }
+  st.textContent = statusText;
+  st.style.whiteSpace = 'pre-line';
+
+  const AUTO_FILE_THRESHOLD = 200;
+
+  if (allRecords.length) {
+    if (allRecords.length > AUTO_FILE_THRESHOLD) {
+      autoDownloadCsv(allRecords);
+      results.innerHTML = '<p>Large result set (' + allRecords.length + ' records) — downloaded as CSV.</p>';
+    } else {
+      renderTable(allRecords);
+    }
+  } else if (allResults.length) {
+    if (allResults.length > AUTO_FILE_THRESHOLD) {
+      autoDownloadJson(allResults);
+      results.innerHTML = '<p>Large result set (' + allResults.length + ' results) — downloaded as JSON.</p>';
     } else {
       const pre = document.createElement('pre');
-      pre.textContent = JSON.stringify(data, null, 2);
+      pre.textContent = JSON.stringify(allResults.length === 1 ? allResults[0] : allResults, null, 2);
       results.appendChild(pre);
     }
-  } catch(e) {
-    st.textContent = 'Error: ' + e.message;
-  } finally {
-    extractBtn.disabled = false;
-    updateExtractBtn();
   }
+
+  extractBtn.disabled = false;
+  updateExtractBtn();
 });
 
-function renderTable(records) {
-  if (!records.length) { results.textContent = 'No records found.'; return; }
+function triggerDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
+function autoDownloadCsv(records) {
+  const { flatRecords, allKeys } = flattenRecords(records);
+  const csvRows = [allKeys.join(',')];
+  for (const row of flatRecords) {
+    csvRows.push(allKeys.map(k => {
+      const s = row[k] != null ? String(row[k]) : '';
+      return s.includes(',') || s.includes('"') || s.includes('\n')
+        ? '"' + s.replace(/"/g, '""') + '"' : s;
+    }).join(','));
+  }
+  triggerDownload(new Blob([csvRows.join('\n')], { type: 'text/csv' }), 'extracted.csv');
+}
+
+function autoDownloadJson(data) {
+  const json = JSON.stringify(data, null, 2);
+  triggerDownload(new Blob([json], { type: 'application/json' }), 'extracted.json');
+}
+
+function flattenRecords(records) {
   const flatRecords = [];
   const allKeys = [];
   const keySet = new Set();
-
   for (const rec of records) {
     const flat = {};
-    let nestedKey = null;
     let nestedItems = null;
-
     for (const [k, v] of Object.entries(rec)) {
-      if (Array.isArray(v)) { nestedKey = k; nestedItems = v; }
+      if (Array.isArray(v)) { nestedItems = v; }
       else { flat[k] = v; if (!keySet.has(k)) { keySet.add(k); allKeys.push(k); } }
     }
     if (nestedItems && nestedItems.length) {
@@ -404,6 +517,13 @@ function renderTable(records) {
       flatRecords.push(flat);
     }
   }
+  return { flatRecords, allKeys };
+}
+
+function renderTable(records) {
+  if (!records.length) { results.textContent = 'No records found.'; return; }
+
+  const { flatRecords, allKeys } = flattenRecords(records);
 
   let html = '<div class="table-wrap"><table class="results"><thead><tr>';
   for (const k of allKeys) html += '<th>' + k + '</th>';
@@ -418,7 +538,6 @@ function renderTable(records) {
   }
   html += '</tbody></table></div>';
 
-  // CSV
   const csvRows = [allKeys.join(',')];
   for (const row of flatRecords) {
     csvRows.push(allKeys.map(k => {

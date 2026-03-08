@@ -1,5 +1,6 @@
 PyMuPDF
 openai
+anthropic
 python-dotenv
 fastapi
 uvicorn

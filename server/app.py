@@ -1,9 +1,9 @@
 """
 Web interface for PDF field extraction.
-Two pages: builder (/) and simple mode (/simple).
 """
 import json
 import tempfile
+from datetime import datetime
 from pathlib import Path
 
 import yaml
@@ -13,10 +13,15 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from server.extract import (
     async_extract, load_schema,
     list_schemas, SCHEMAS_DIR, _build_model,
+    extract_text, check_text_length,
+)
+from server.settings import (
+    get_settings, update_settings, mask_key, MODELS,
 )
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 TEMPLATES_DIR = BASE_DIR / "templates"
+OUTPUT_DIR = BASE_DIR / "output"
 
 app = FastAPI()
 
@@ -86,6 +91,8 @@ async def extract_endpoint(
         tmp.write(await file.read())
         tmp_path = tmp.name
     try:
+        text = extract_text(tmp_path)
+        warning = check_text_length(text)
         result = await async_extract(
             tmp_path, response_model, instructions=instructions,
         )
@@ -97,6 +104,8 @@ async def extract_endpoint(
             }
         else:
             data["_source_file"] = file.filename
+        if warning:
+            data["_warning"] = warning
     except Exception as e:
         data = {"_source_file": file.filename, "_error": str(e)}
     finally:
@@ -104,10 +113,61 @@ async def extract_endpoint(
     return data
 
 
+@app.post("/results/init")
+async def results_init():
+    OUTPUT_DIR.mkdir(exist_ok=True)
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"results_{ts}.jsonl"
+    path = OUTPUT_DIR / filename
+    path.touch()
+    return {"file": filename, "path": str(path)}
+
+
+@app.post("/results/append")
+async def results_append(request: Request):
+    body = await request.json()
+    filename = body["file"]
+    path = OUTPUT_DIR / filename
+    if not path.exists():
+        return JSONResponse({"error": "results file not found"}, 404)
+    with open(path, "a") as f:
+        f.write(json.dumps(body["data"]) + "\n")
+    return {"ok": True}
+
+
 @app.post("/parse-yaml")
 async def parse_yaml(request: Request):
     body = await request.json()
     return yaml.safe_load(body["yaml"])
+
+
+@app.get("/settings", response_class=JSONResponse)
+async def get_settings_endpoint():
+    settings = get_settings()
+    return {
+        "model": settings["model"],
+        "openai_api_key": mask_key(settings.get("openai_api_key", "")),
+        "anthropic_api_key": mask_key(settings.get("anthropic_api_key", "")),
+        "models": MODELS,
+    }
+
+
+@app.post("/settings")
+async def save_settings(request: Request):
+    body = await request.json()
+    updates = {}
+    if "model" in body:
+        updates["model"] = body["model"]
+    if "openai_api_key" in body and "..." not in body["openai_api_key"]:
+        updates["openai_api_key"] = body["openai_api_key"]
+    if "anthropic_api_key" in body and "..." not in body["anthropic_api_key"]:
+        updates["anthropic_api_key"] = body["anthropic_api_key"]
+    settings = update_settings(updates)
+    return {
+        "model": settings["model"],
+        "openai_api_key": mask_key(settings.get("openai_api_key", "")),
+        "anthropic_api_key": mask_key(settings.get("anthropic_api_key", "")),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -117,3 +177,8 @@ async def parse_yaml(request: Request):
 @app.get("/", response_class=HTMLResponse)
 async def builder_page():
     return _load_template("builder.html")
+
+
+@app.get("/settings/page", response_class=HTMLResponse)
+async def settings_page():
+    return _load_template("settings.html")

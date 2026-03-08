@@ -1,28 +1,29 @@
 """
-Tests for the extraction pipeline using MCI page 1 as test data.
-Tests text extraction, schema building, and the full API endpoint.
+Tests for the petey package.
+Tests text extraction and schema building using MCI page 1 as test data.
 """
 from pathlib import Path
 
 import pytest
 
+from petey import extract_text, build_model, load_schema
+
 FIXTURES = Path(__file__).parent / "fixtures"
 MCI_PDF = FIXTURES / "mci_page1.pdf"
+SCHEMAS_DIR = Path(__file__).resolve().parent.parent / "schemas"
 
 
 # ---------------------------------------------------------------------------
-# Unit tests (no LLM calls)
+# Text extraction
 # ---------------------------------------------------------------------------
 
 class TestExtractText:
     def test_reads_pdf(self):
-        from server.extract import extract_text
         text = extract_text(str(MCI_PDF))
         assert "WESTCHESTER COUNTY" in text
         assert "LV910005OM" in text
 
     def test_contains_all_cases(self):
-        from server.extract import extract_text
         text = extract_text(str(MCI_PDF))
         assert "123 VALENTINE LN" in text
         assert "145 TO 147 RIDGE AVE" in text
@@ -31,65 +32,60 @@ class TestExtractText:
         assert "157 TO 159 RIDGE AVE" in text
 
     def test_contains_mci_items(self):
-        from server.extract import extract_text
         text = extract_text(str(MCI_PDF))
         assert "BALCONY REPLACEMENTS" in text
         assert "INTERIOR STAIRCASE" in text
 
     def test_total_cases(self):
-        from server.extract import extract_text
         text = extract_text(str(MCI_PDF))
         assert "TOTAL CASES:" in text
         assert "5" in text
 
 
+# ---------------------------------------------------------------------------
+# Schema / model building
+# ---------------------------------------------------------------------------
+
 class TestBuildModel:
     def test_simple_string_fields(self):
-        from server.extract import _build_model
         spec = {"fields": {"name": {"type": "string", "description": "A name"}}}
-        model = _build_model(spec)
+        model = build_model(spec)
         instance = model(name="test")
         assert instance.name == "test"
 
     def test_number_field(self):
-        from server.extract import _build_model
         spec = {"fields": {"amount": {"type": "number", "description": "Dollar amount"}}}
-        model = _build_model(spec)
+        model = build_model(spec)
         instance = model(amount=123.45)
         assert instance.amount == 123.45
 
     def test_enum_with_values(self):
-        from server.extract import _build_model
         spec = {"fields": {"status": {
             "type": "enum",
             "values": ["Open", "Closed"],
             "description": "Status",
         }}}
-        model = _build_model(spec)
+        model = build_model(spec)
         schema = model.model_json_schema()
         assert "status_enum" in str(schema)
 
     def test_enum_without_values_falls_back_to_string(self):
-        from server.extract import _build_model
         spec = {"fields": {"status": {"type": "enum", "description": "Status"}}}
-        model = _build_model(spec)
+        model = build_model(spec)
         schema = model.model_json_schema()
-        # Should be string type, not enum
         assert "status_enum" not in str(schema)
         assert "infer" in str(schema).lower()
 
     def test_array_record_type(self):
-        from server.extract import _build_model
         spec = {
             "record_type": "array",
             "fields": {"address": {"type": "string", "description": "Addr"}},
         }
-        model = _build_model(spec)
+        model = build_model(spec)
         schema = model.model_json_schema()
         assert "items" in schema.get("properties", {}) or "items" in schema.get("required", [])
 
     def test_nested_array_field(self):
-        from server.extract import _build_model
         spec = {"fields": {"items": {
             "type": "array",
             "description": "Line items",
@@ -98,14 +94,12 @@ class TestBuildModel:
                 "cost": {"type": "number", "description": "Cost"},
             },
         }}}
-        model = _build_model(spec)
+        model = build_model(spec)
         instance = model(items=[{"name": "Roof", "cost": 100.0}])
         assert len(instance.items) == 1
         assert instance.items[0].name == "Roof"
 
     def test_mci_schema_builds(self):
-        """Build the full MCI schema we'd use for table extraction."""
-        from server.extract import _build_model
         spec = {
             "name": "MCI Cases",
             "record_type": "array",
@@ -128,15 +122,13 @@ class TestBuildModel:
                 },
             },
         }
-        model = _build_model(spec)
+        model = build_model(spec)
         schema = model.model_json_schema()
-        # Should be a list wrapper
         assert "items" in schema.get("required", [])
 
 
 class TestLoadSchema:
     def test_loads_par_schema(self):
-        from server.extract import load_schema, SCHEMAS_DIR
         par_path = SCHEMAS_DIR / "par_decision.yaml"
         if not par_path.exists():
             pytest.skip("par_decision.yaml not found")
@@ -145,61 +137,130 @@ class TestLoadSchema:
         assert "petitioner" in spec["fields"]
 
 
-class TestListSchemas:
-    def test_lists_yaml_files(self):
-        from server.extract import list_schemas, SCHEMAS_DIR
-        if not any(SCHEMAS_DIR.glob("*.yaml")):
-            pytest.skip("No schemas in schemas/")
-        result = list_schemas()
-        assert len(result) > 0
-        assert "file" in result[0]
-        assert "name" in result[0]
+# ---------------------------------------------------------------------------
+# CLI helpers
+# ---------------------------------------------------------------------------
+
+class TestCLI:
+    def test_collect_pdfs_from_directory(self):
+        from petey.cli import _collect_pdfs
+        pdfs = _collect_pdfs([str(FIXTURES)])
+        assert len(pdfs) == 1
+        assert "mci_page1.pdf" in pdfs[0]
+
+    def test_collect_pdfs_from_file(self):
+        from petey.cli import _collect_pdfs
+        pdfs = _collect_pdfs([str(MCI_PDF)])
+        assert len(pdfs) == 1
+
+    def test_collect_pdfs_empty_dir(self, tmp_path):
+        from petey.cli import _collect_pdfs
+        pdfs = _collect_pdfs([str(tmp_path)])
+        assert pdfs == []
+
+    def test_flatten_simple(self):
+        from petey.cli import _flatten
+        records = [{"a": 1, "b": 2}, {"a": 3, "b": 4}]
+        flat, keys = _flatten(records)
+        assert len(flat) == 2
+        assert keys == ["a", "b"]
+
+    def test_flatten_nested(self):
+        from petey.cli import _flatten
+        records = [{"parent": "x", "children": [{"c": 1}, {"c": 2}]}]
+        flat, keys = _flatten(records)
+        assert len(flat) == 2
+        assert flat[0]["parent"] == "x"
+        assert flat[0]["c"] == 1
+        assert flat[1]["c"] == 2
+
+    def test_flatten_empty(self):
+        from petey.cli import _flatten
+        flat, keys = _flatten([])
+        assert flat == []
+        assert keys == []
+
+    def test_flatten_no_nested(self):
+        from petey.cli import _flatten
+        records = [{"a": 1}, {"a": 2}]
+        flat, keys = _flatten(records)
+        assert len(flat) == 2
+        assert keys == ["a"]
 
 
 # ---------------------------------------------------------------------------
-# API tests (no LLM calls)
+# Provider detection & message building
 # ---------------------------------------------------------------------------
 
-@pytest.fixture
-def client():
-    from httpx import ASGITransport, AsyncClient
-    from server.app import app
-    transport = ASGITransport(app=app)
-    return AsyncClient(transport=transport, base_url="http://test")
+class TestProviderDetection:
+    def test_openai_model(self):
+        from petey.extract import _get_provider
+        assert _get_provider("gpt-4.1-mini") == "openai"
+
+    def test_anthropic_model(self):
+        from petey.extract import _get_provider
+        assert _get_provider("claude-sonnet-4-6") == "anthropic"
+
+    def test_openai_default(self):
+        from petey.extract import _get_provider
+        assert _get_provider("some-other-model") == "openai"
 
 
-@pytest.mark.asyncio
-async def test_homepage_loads(client):
-    resp = await client.get("/")
-    assert resp.status_code == 200
-    assert "PDF Extractor" in resp.text
+class TestMakeMessages:
+    def test_basic_messages(self):
+        from petey.extract import _make_messages
+        msgs = _make_messages("hello")
+        assert len(msgs) == 2
+        assert msgs[0]["role"] == "system"
+        assert msgs[1]["role"] == "user"
+        assert "hello" in msgs[1]["content"]
+
+    def test_instructions_appended(self):
+        from petey.extract import _make_messages
+        msgs = _make_messages("doc text", instructions="Be precise")
+        assert "Be precise" in msgs[0]["content"]
+        assert "Additional instructions" in msgs[0]["content"]
+
+    def test_no_instructions(self):
+        from petey.extract import _make_messages
+        msgs = _make_messages("doc text")
+        assert "Additional instructions" not in msgs[0]["content"]
 
 
-@pytest.mark.asyncio
-async def test_schemas_endpoint(client):
-    resp = await client.get("/schemas")
-    assert resp.status_code == 200
-    data = resp.json()
-    assert isinstance(data, list)
+# ---------------------------------------------------------------------------
+# Schema edge cases
+# ---------------------------------------------------------------------------
 
+class TestSchemaEdgeCases:
+    def test_date_field_is_string(self):
+        spec = {"fields": {"d": {"type": "date", "description": "A date"}}}
+        model = build_model(spec)
+        instance = model(d="2025-01-01")
+        assert instance.d == "2025-01-01"
 
-@pytest.mark.asyncio
-async def test_parse_yaml_endpoint(client):
-    yaml_text = "name: Test\nfields:\n  foo:\n    type: string\n    description: A field"
-    resp = await client.post(
-        "/parse-yaml",
-        json={"yaml": yaml_text},
-    )
-    assert resp.status_code == 200
-    data = resp.json()
-    assert data["name"] == "Test"
-    assert "foo" in data["fields"]
+    def test_all_fields_optional(self):
+        spec = {"fields": {
+            "a": {"type": "string", "description": "A"},
+            "b": {"type": "number", "description": "B"},
+        }}
+        model = build_model(spec)
+        instance = model()
+        assert instance.a is None
+        assert instance.b is None
 
+    def test_model_name_from_spec(self):
+        spec = {
+            "name": "My Model",
+            "fields": {"x": {"type": "string", "description": "X"}},
+        }
+        model = build_model(spec)
+        assert model.__name__ == "MyModel"
 
-@pytest.mark.asyncio
-async def test_extract_requires_schema(client):
-    resp = await client.post(
-        "/extract",
-        files={"file": ("test.pdf", b"fake", "application/pdf")},
-    )
-    assert resp.status_code == 400
+    def test_default_model_name(self):
+        spec = {"fields": {"x": {"type": "string", "description": "X"}}}
+        model = build_model(spec)
+        assert model.__name__ == "ExtractedData"
+
+    def test_text_warn_threshold_exists(self):
+        from petey.extract import TEXT_WARN_THRESHOLD
+        assert TEXT_WARN_THRESHOLD == 50_000

@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "petey"
+version = "0.1.0"
+description = "Petey — The Easy PDF Extractor"
+requires-python = ">=3.11"
+dependencies = [
+    "PyMuPDF",
+    "openai",
+    "anthropic",
+    "instructor",
+    "pydantic",
+    "pyyaml",
+    "python-dotenv",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+]
+
+[tool.setuptools.packages.find]
+include = ["petey*"]
+
+[project.scripts]
+petey = "petey.cli:main"
