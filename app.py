@@ -1,23 +1,114 @@
 """
-Web interface for PAR decision extraction.
-Drop a PDF, get structured JSON back.
+Web interface for PDF field extraction.
+Two pages: builder (/) and simple mode (/simple).
 """
 import json
 import tempfile
 from pathlib import Path
 
-from fastapi import FastAPI, UploadFile
-from fastapi.responses import HTMLResponse
+import yaml
+from fastapi import FastAPI, UploadFile, Form, Request
+from fastapi.responses import HTMLResponse, JSONResponse
 
-from par_rag_extract import async_process_file
+from extract import (
+    async_extract, load_schema,
+    list_schemas, SCHEMAS_DIR, _build_model,
+)
 
 app = FastAPI()
 
-HTML_PAGE = """<!DOCTYPE html>
+# Cache loaded schemas
+_schema_cache: dict[str, type] = {}
+
+
+def get_model(schema_file: str):
+    if schema_file not in _schema_cache:
+        model, _ = load_schema(SCHEMAS_DIR / schema_file)
+        _schema_cache[schema_file] = model
+    return _schema_cache[schema_file]
+
+
+# ---------------------------------------------------------------------------
+# API endpoints
+# ---------------------------------------------------------------------------
+
+@app.get("/schemas")
+async def schemas():
+    return list_schemas()
+
+
+@app.get("/schemas/{schema_file}")
+async def get_schema(schema_file: str):
+    path = SCHEMAS_DIR / schema_file
+    if not path.exists():
+        return JSONResponse({"error": "not found"}, 404)
+    with open(path) as f:
+        return yaml.safe_load(f)
+
+
+@app.post("/schemas")
+async def save_schema(request: Request):
+    spec = await request.json()
+    filename = spec.get("name", "schema").lower().replace(" ", "_") + ".yaml"
+    path = SCHEMAS_DIR / filename
+    with open(path, "w") as f:
+        yaml.dump(spec, f, default_flow_style=False, sort_keys=False)
+    _schema_cache.pop(filename, None)
+    return {"file": filename, "name": spec.get("name")}
+
+
+@app.post("/extract")
+async def extract_endpoint(
+    file: UploadFile,
+    schema_file: str = Form(None),
+    schema_spec: str = Form(None),
+    instructions: str = Form(""),
+):
+    if schema_spec:
+        spec = json.loads(schema_spec)
+        response_model = _build_model(spec)
+    elif schema_file:
+        response_model = get_model(schema_file)
+        with open(SCHEMAS_DIR / schema_file) as f:
+            spec = yaml.safe_load(f)
+    else:
+        return JSONResponse({"error": "No schema provided"}, 400)
+
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+        tmp.write(await file.read())
+        tmp_path = tmp.name
+    try:
+        result = await async_extract(
+            tmp_path, response_model, instructions=instructions,
+        )
+        data = result.model_dump()
+        if spec.get("record_type") == "array" and "items" in data:
+            data = {"_source_file": file.filename, "records": data["items"]}
+        else:
+            data["_source_file"] = file.filename
+    except Exception as e:
+        data = {"_source_file": file.filename, "_error": str(e)}
+    finally:
+        Path(tmp_path).unlink(missing_ok=True)
+    return data
+
+
+@app.post("/parse-yaml")
+async def parse_yaml(request: Request):
+    body = await request.json()
+    return yaml.safe_load(body["yaml"])
+
+
+# ---------------------------------------------------------------------------
+# Simple page (original UI)
+# ---------------------------------------------------------------------------
+
+SIMPLE_PAGE = """\
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>PAR Extractor</title>
+<title>PDF Extractor - Simple</title>
 <style>
   body { font-family: system-ui, sans-serif; max-width: 700px;
          margin: 2rem auto; padding: 0 1rem; }
@@ -28,13 +119,20 @@ HTML_PAGE = """<!DOCTYPE html>
   }
   .dropzone.over { border-color: #228be6; background: #e7f5ff; }
   .dropzone input { display: none; }
+  select { padding: 0.4rem; font-size: 1rem; margin-bottom: 1rem; }
   #status { margin: 1rem 0; }
   pre { background: #f1f3f5; padding: 1rem; border-radius: 6px;
         overflow-x: auto; font-size: 0.85rem; }
+  .nav { margin-bottom: 1.5rem; }
+  .nav a { color: #228be6; text-decoration: none; }
 </style>
 </head>
 <body>
-<h1>PAR Decision Extractor</h1>
+<div class="nav"><a href="/">&larr; Builder</a></div>
+<h1>PDF Field Extractor</h1>
+
+<label for="schema">Schema: </label>
+<select id="schema"></select>
 
 <div class="dropzone" id="dropzone">
   <p>Drop a PDF here, or click to select</p>
@@ -48,6 +146,16 @@ const dz = document.getElementById('dropzone');
 const fi = document.getElementById('fileInput');
 const st = document.getElementById('status');
 const out = document.getElementById('output');
+const sel = document.getElementById('schema');
+
+fetch('/schemas').then(r => r.json()).then(schemas => {
+  schemas.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.file;
+    opt.textContent = s.name;
+    sel.appendChild(opt);
+  });
+});
 
 dz.addEventListener('click', () => fi.click());
 dz.addEventListener('dragover', e => {
@@ -67,6 +175,7 @@ async function upload(file) {
   out.style.display = 'none';
   const form = new FormData();
   form.append('file', file);
+  form.append('schema_file', sel.value);
   const resp = await fetch('/extract', { method: 'POST', body: form });
   const data = await resp.json();
   out.textContent = JSON.stringify(data, null, 2);
@@ -78,21 +187,493 @@ async function upload(file) {
 </html>"""
 
 
+@app.get("/simple", response_class=HTMLResponse)
+async def simple_page():
+    return SIMPLE_PAGE
+
+
+# ---------------------------------------------------------------------------
+# Builder page (new main UI)
+# ---------------------------------------------------------------------------
+
+BUILDER_PAGE = """\
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PDF Extractor</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, sans-serif; max-width: 900px;
+         margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; }
+  h1 { margin-bottom: 0.25rem; }
+  .subtitle { color: #666; margin-bottom: 1.5rem; }
+
+  .dropzone {
+    border: 2px dashed #adb5bd; border-radius: 8px; padding: 2.5rem;
+    text-align: center; color: #666; cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    margin-bottom: 1.5rem;
+  }
+  .dropzone.over { border-color: #228be6; background: #e7f5ff; }
+  .dropzone.has-file { border-color: #51cf66; background: #ebfbee; color: #2b8a3e; }
+  .dropzone input { display: none; }
+
+  .controls { display: flex; gap: 1rem; align-items: center;
+              margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .controls label { font-weight: 600; }
+  .controls select, .controls input[type=text] {
+    padding: 0.4rem 0.6rem; font-size: 0.95rem; border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  .toggle-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
+  .toggle-group button {
+    padding: 0.4rem 1rem; border: none; background: #fff; cursor: pointer;
+    font-size: 0.9rem; transition: background 0.15s;
+  }
+  .toggle-group button.active { background: #228be6; color: #fff; }
+
+  .schema-section { margin-bottom: 1.5rem; }
+  .schema-section h2 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+  .field-row {
+    display: grid; grid-template-columns: 24px 1fr 120px 2fr 30px;
+    gap: 0.5rem; align-items: center; margin-bottom: 0.4rem;
+  }
+  .field-row input[type=text], .field-row select {
+    padding: 0.35rem 0.5rem; font-size: 0.9rem; border: 1px solid #ccc;
+    border-radius: 4px; width: 100%;
+  }
+  .field-row input[type=checkbox] { width: 16px; height: 16px; margin: 0; cursor: pointer; }
+  .field-row .remove-btn {
+    background: none; border: none; color: #e03131; cursor: pointer;
+    font-size: 1.2rem; padding: 0;
+  }
+  .field-row.disabled input[type=text], .field-row.disabled select {
+    opacity: 0.4; pointer-events: none;
+  }
+  .enum-values {
+    grid-column: 1 / -1; margin-left: 0.5rem; margin-bottom: 0.5rem;
+  }
+  .enum-values input {
+    padding: 0.3rem 0.5rem; font-size: 0.85rem; border: 1px solid #ddd;
+    border-radius: 4px; width: 100%;
+  }
+  .enum-values label { font-size: 0.8rem; color: #666; }
+
+  .add-btn, .extract-btn, .save-btn {
+    padding: 0.5rem 1.2rem; border: none; border-radius: 4px;
+    cursor: pointer; font-size: 0.95rem;
+  }
+  .add-btn { background: #e7f5ff; color: #228be6; }
+  .extract-btn { background: #228be6; color: #fff; font-weight: 600; }
+  .extract-btn:disabled { background: #adb5bd; cursor: not-allowed; }
+  .save-btn { background: #ebfbee; color: #2b8a3e; }
+  .btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+  #status { margin: 1rem 0; font-weight: 500; }
+  pre { background: #f1f3f5; padding: 1rem; border-radius: 6px;
+        overflow-x: auto; font-size: 0.85rem; }
+  table.results { width: 100%; border-collapse: collapse; font-size: 0.85rem;
+                  margin-top: 0.5rem; }
+  table.results th, table.results td {
+    border: 1px solid #dee2e6; padding: 0.4rem 0.6rem; text-align: left;
+  }
+  table.results th { background: #f1f3f5; position: sticky; top: 0; }
+  .table-wrap { max-height: 500px; overflow: auto; border-radius: 6px;
+                border: 1px solid #dee2e6; }
+  .download-btn { display: inline-block; margin-top: 0.5rem; padding: 0.3rem 0.8rem;
+                  background: #f1f3f5; border: 1px solid #ccc; border-radius: 4px;
+                  cursor: pointer; font-size: 0.85rem; text-decoration: none; color: #1a1a1a; }
+
+  .nav { margin-bottom: 1.5rem; }
+  .nav a { color: #228be6; text-decoration: none; margin-right: 1rem; }
+  .yaml-toggle { font-size: 0.85rem; color: #228be6; cursor: pointer;
+                 background: none; border: none; padding: 0; margin-bottom: 0.5rem; }
+  .yaml-area { width: 100%; min-height: 150px; font-family: monospace;
+               font-size: 0.85rem; padding: 0.5rem; border: 1px solid #ccc;
+               border-radius: 4px; margin-bottom: 0.5rem; }
+  .instructions-area { width: 100%; min-height: 60px; font-size: 0.9rem;
+               padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;
+               font-family: system-ui, sans-serif; resize: vertical; }
+  .instructions-section { margin-bottom: 1.5rem; }
+  .instructions-section label { font-size: 0.9rem; color: #666; display: block; margin-bottom: 0.3rem; }
+</style>
+</head>
+<body>
+<div class="nav"><a href="/simple">Simple mode &rarr;</a></div>
+<h1>PDF Extractor</h1>
+<p class="subtitle">Define your fields, drop a PDF, get structured data.</p>
+
+<div class="dropzone" id="dropzone">
+  <p id="dropLabel">Drop a PDF here, or click to select</p>
+  <input type="file" id="fileInput" accept=".pdf">
+</div>
+
+<div class="controls">
+  <label>Mode:</label>
+  <div class="toggle-group" id="modeToggle">
+    <button class="active" data-mode="single">Discrete queries</button>
+    <button data-mode="table">Table</button>
+  </div>
+  <label style="margin-left:1rem;">Load:</label>
+  <select id="loadSchema">
+    <option value="">New schema</option>
+  </select>
+</div>
+
+<div class="schema-section">
+  <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.75rem;">
+    <h2 style="margin:0;">Fields</h2>
+    <input type="text" id="schemaName" placeholder="Schema name (optional)"
+           style="padding:0.3rem 0.5rem; font-size:0.9rem; border:1px solid #ccc; border-radius:4px;">
+  </div>
+  <div id="fieldRows"></div>
+  <div class="btn-row" style="margin-top:0.5rem;">
+    <button class="add-btn" id="addField">+ Add field</button>
+    <button class="yaml-toggle" id="yamlToggle">Import YAML</button>
+  </div>
+  <div id="yamlSection" style="display:none; margin-top:0.75rem;">
+    <input type="file" id="yamlFile" accept=".yaml,.yml" style="margin-bottom:0.5rem; font-size:0.9rem;">
+  </div>
+</div>
+
+<div class="instructions-section">
+  <label for="instructions">Additional instructions (optional)</label>
+  <textarea class="instructions-area" id="instructions"
+    placeholder="e.g. MCI item rows appear indented below each case. Dates are in MM/DD/YYYY format."></textarea>
+</div>
+
+<div class="btn-row">
+  <button class="extract-btn" id="extractBtn" disabled>Extract</button>
+  <button class="save-btn" id="saveBtn">Save schema</button>
+</div>
+
+<div id="status"></div>
+<div id="results"></div>
+
+<script>
+let selectedFile = null;
+let recordType = 'single';
+let fields = [];
+
+const dz = document.getElementById('dropzone');
+const fi = document.getElementById('fileInput');
+const dropLabel = document.getElementById('dropLabel');
+const st = document.getElementById('status');
+const results = document.getElementById('results');
+const fieldRows = document.getElementById('fieldRows');
+const extractBtn = document.getElementById('extractBtn');
+const loadSel = document.getElementById('loadSchema');
+
+// Load saved schemas
+fetch('/schemas').then(r => r.json()).then(schemas => {
+  schemas.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s.file;
+    opt.textContent = s.name;
+    loadSel.appendChild(opt);
+  });
+});
+
+loadSel.addEventListener('change', async () => {
+  if (!loadSel.value) { fields = []; renderFields(); return; }
+  const resp = await fetch('/schemas/' + loadSel.value);
+  const spec = await resp.json();
+  document.getElementById('schemaName').value = spec.name || '';
+  document.getElementById('instructions').value = spec.instructions || '';
+  recordType = spec.record_type === 'array' ? 'table' : 'single';
+  updateModeToggle();
+  fields = Object.entries(spec.fields || {}).map(([name, cfg]) => ({
+    name, type: cfg.type, description: cfg.description || '',
+    values: (cfg.values || []).join(', '), enabled: true,
+  }));
+  renderFields();
+});
+
+// Mode toggle
+document.getElementById('modeToggle').addEventListener('click', e => {
+  if (e.target.tagName !== 'BUTTON') return;
+  recordType = e.target.dataset.mode;
+  updateModeToggle();
+});
+
+function updateModeToggle() {
+  document.querySelectorAll('#modeToggle button').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === recordType);
+  });
+}
+
+// File drop
+dz.addEventListener('click', () => fi.click());
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('over');
+  const f = [...e.dataTransfer.files].find(f => f.name.toLowerCase().endsWith('.pdf'));
+  if (f) setFile(f);
+});
+fi.addEventListener('change', e => { if (e.target.files[0]) setFile(e.target.files[0]); });
+
+function setFile(f) {
+  selectedFile = f;
+  dropLabel.textContent = f.name;
+  dz.classList.add('has-file');
+  updateExtractBtn();
+}
+
+function updateExtractBtn() {
+  extractBtn.disabled = !(selectedFile && fields.some(f => f.name.trim() && f.enabled));
+}
+
+// Field builder
+document.getElementById('addField').addEventListener('click', () => {
+  fields.push({ name: '', type: 'string', description: '', values: '', enabled: true });
+  renderFields();
+  const inputs = fieldRows.querySelectorAll('input[data-key="name"]');
+  if (inputs.length) inputs[inputs.length - 1].focus();
+});
+
+function renderFields() {
+  fieldRows.innerHTML = '';
+  fields.forEach((f, i) => {
+    if (f.enabled === undefined) f.enabled = true;
+    const row = document.createElement('div');
+    row.className = 'field-row' + (f.enabled ? '' : ' disabled');
+    row.innerHTML =
+      '<input type="checkbox"' + (f.enabled ? ' checked' : '') + ' data-i="' + i + '" data-key="enabled" title="Include this field">' +
+      '<input type="text" placeholder="Field name" value="' + esc(f.name) + '" data-i="' + i + '" data-key="name">' +
+      '<select data-i="' + i + '" data-key="type">' +
+        '<option value="string"' + (f.type==='string'?' selected':'') + '>Text</option>' +
+        '<option value="number"' + (f.type==='number'?' selected':'') + '>Number</option>' +
+        '<option value="date"' + (f.type==='date'?' selected':'') + '>Date</option>' +
+        '<option value="enum"' + (f.type==='enum'?' selected':'') + '>Enum</option>' +
+      '</select>' +
+      '<input type="text" placeholder="Description" value="' + esc(f.description) + '" data-i="' + i + '" data-key="description">' +
+      '<button class="remove-btn" data-i="' + i + '">&times;</button>';
+    fieldRows.appendChild(row);
+
+    if (f.type === 'enum') {
+      const ev = document.createElement('div');
+      ev.className = 'enum-values';
+      ev.innerHTML = '<label>Values (comma-separated, leave blank to infer):</label>' +
+        '<input type="text" placeholder="Option A, Option B, ... (or leave blank)" value="' + esc(f.values) + '" data-i="' + i + '" data-key="values">';
+      fieldRows.appendChild(ev);
+    }
+  });
+
+  fieldRows.querySelectorAll('input, select').forEach(el => {
+    const handler = e => {
+      const idx = parseInt(e.target.dataset.i);
+      if (e.target.dataset.key === 'enabled') {
+        fields[idx].enabled = e.target.checked;
+        renderFields();
+      } else {
+        fields[idx][e.target.dataset.key] = e.target.value;
+        if (e.target.dataset.key === 'type') renderFields();
+      }
+      updateExtractBtn();
+    };
+    el.addEventListener('input', handler);
+    el.addEventListener('change', handler);
+  });
+  fieldRows.querySelectorAll('.remove-btn').forEach(el => {
+    el.addEventListener('click', e => {
+      fields.splice(parseInt(e.currentTarget.dataset.i), 1);
+      renderFields();
+      updateExtractBtn();
+    });
+  });
+  updateExtractBtn();
+}
+
+function esc(s) { return (s||'').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+
+// YAML import
+document.getElementById('yamlToggle').addEventListener('click', () => {
+  const sec = document.getElementById('yamlSection');
+  sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
+});
+
+document.getElementById('yamlFile').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    fetch('/parse-yaml', { method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({yaml: reader.result})
+    }).then(r => r.json()).then(spec => {
+      document.getElementById('schemaName').value = spec.name || '';
+      document.getElementById('instructions').value = spec.instructions || '';
+      recordType = spec.record_type === 'array' ? 'table' : 'single';
+      updateModeToggle();
+      fields = Object.entries(spec.fields || {}).map(([name, cfg]) => ({
+        name, type: cfg.type, description: cfg.description || '',
+        values: (cfg.values || []).join(', '), enabled: true,
+      }));
+      renderFields();
+      document.getElementById('yamlSection').style.display = 'none';
+    }).catch(() => alert('Invalid YAML file'));
+  };
+  reader.readAsText(file);
+});
+
+// Build schema spec from fields (only enabled ones)
+function buildSpec() {
+  const spec = {};
+  const name = document.getElementById('schemaName').value.trim();
+  if (name) spec.name = name;
+  if (recordType === 'table') spec.record_type = 'array';
+  const instr = document.getElementById('instructions').value.trim();
+  if (instr) spec.instructions = instr;
+  spec.fields = {};
+  for (const f of fields) {
+    if (!f.name.trim() || !f.enabled) continue;
+    const cfg = { type: f.type, description: f.description };
+    if (f.type === 'enum') {
+      const vals = f.values.split(',').map(v => v.trim()).filter(Boolean);
+      if (vals.length) cfg.values = vals;
+    }
+    spec.fields[f.name.trim()] = cfg;
+  }
+  return spec;
+}
+
+// Extract
+extractBtn.addEventListener('click', async () => {
+  if (!selectedFile) return;
+  const spec = buildSpec();
+  if (!Object.keys(spec.fields).length) return;
+
+  st.textContent = 'Processing ' + selectedFile.name + '...';
+  results.innerHTML = '';
+  extractBtn.disabled = true;
+
+  const form = new FormData();
+  form.append('file', selectedFile);
+  form.append('schema_spec', JSON.stringify(spec));
+  const instr = document.getElementById('instructions').value.trim();
+  if (instr) form.append('instructions', instr);
+
+  try {
+    const resp = await fetch('/extract', { method: 'POST', body: form });
+    const data = await resp.json();
+
+    if (data._error) {
+      st.textContent = 'Error: ' + data._error;
+      return;
+    }
+    st.textContent = 'Done.';
+
+    if (data.records && Array.isArray(data.records)) {
+      renderTable(data.records);
+    } else {
+      const pre = document.createElement('pre');
+      pre.textContent = JSON.stringify(data, null, 2);
+      results.appendChild(pre);
+    }
+  } catch(e) {
+    st.textContent = 'Error: ' + e.message;
+  } finally {
+    extractBtn.disabled = false;
+    updateExtractBtn();
+  }
+});
+
+function renderTable(records) {
+  if (!records.length) { results.textContent = 'No records found.'; return; }
+
+  const flatRecords = [];
+  const allKeys = [];
+  const keySet = new Set();
+
+  for (const rec of records) {
+    const flat = {};
+    let nestedKey = null;
+    let nestedItems = null;
+
+    for (const [k, v] of Object.entries(rec)) {
+      if (Array.isArray(v)) { nestedKey = k; nestedItems = v; }
+      else { flat[k] = v; if (!keySet.has(k)) { keySet.add(k); allKeys.push(k); } }
+    }
+    if (nestedItems && nestedItems.length) {
+      for (const item of nestedItems) {
+        const row = { ...flat };
+        for (const [k, v] of Object.entries(item)) {
+          row[k] = v;
+          if (!keySet.has(k)) { keySet.add(k); allKeys.push(k); }
+        }
+        flatRecords.push(row);
+      }
+    } else {
+      flatRecords.push(flat);
+    }
+  }
+
+  let html = '<div class="table-wrap"><table class="results"><thead><tr>';
+  for (const k of allKeys) html += '<th>' + k + '</th>';
+  html += '</tr></thead><tbody>';
+  for (const row of flatRecords) {
+    html += '<tr>';
+    for (const k of allKeys) {
+      const v = row[k];
+      html += '<td>' + (v != null ? String(v).replace(/</g,'&lt;') : '') + '</td>';
+    }
+    html += '</tr>';
+  }
+  html += '</tbody></table></div>';
+
+  // CSV
+  const csvRows = [allKeys.join(',')];
+  for (const row of flatRecords) {
+    csvRows.push(allKeys.map(k => {
+      const s = row[k] != null ? String(row[k]) : '';
+      return s.includes(',') || s.includes('"') || s.includes('\\n')
+        ? '"' + s.replace(/"/g, '""') + '"' : s;
+    }).join(','));
+  }
+  const blob = new Blob([csvRows.join('\\n')], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  html += '<a class="download-btn" href="' + url + '" download="extracted.csv">Download CSV</a>';
+
+  results.innerHTML = html;
+}
+
+// Save schema
+document.getElementById('saveBtn').addEventListener('click', async () => {
+  const spec = buildSpec();
+  if (!Object.keys(spec.fields).length) { alert('Add at least one field.'); return; }
+  if (!spec.name) {
+    const name = prompt('Schema name:');
+    if (!name) return;
+    spec.name = name;
+    document.getElementById('schemaName').value = name;
+  }
+  const resp = await fetch('/schemas', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(spec),
+  });
+  const result = await resp.json();
+  st.textContent = 'Saved as ' + result.file;
+  // Add to dropdown if not already there
+  if (![...loadSel.options].some(o => o.value === result.file)) {
+    const opt = document.createElement('option');
+    opt.value = result.file;
+    opt.textContent = spec.name;
+    loadSel.appendChild(opt);
+  }
+  loadSel.value = result.file;
+});
+
+// Start with one empty field
+fields.push({ name: '', type: 'string', description: '', values: '', enabled: true });
+renderFields();
+</script>
+</body>
+</html>"""
+
+
 @app.get("/", response_class=HTMLResponse)
-async def index():
-    return HTML_PAGE
-
-
-@app.post("/extract")
-async def extract(file: UploadFile):
-    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-        tmp.write(await file.read())
-        tmp_path = tmp.name
-    try:
-        result = await async_process_file(tmp_path)
-        result["_source_file"] = file.filename
-    except Exception as e:
-        result = {"_source_file": file.filename, "_error": str(e)}
-    finally:
-        Path(tmp_path).unlink(missing_ok=True)
-    return result
+async def builder_page():
+    return BUILDER_PAGE
