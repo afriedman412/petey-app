@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Web interface for Petey PDF Extractor"
 requires-python = ">=3.11"
 dependencies = [
-    "petey @ file:///Users/user/Documents/code/petey",
+    "petey @ git+https://github.com/afriedman412/petey.git",
     "fastapi",
     "uvicorn",
     "python-multipart",
