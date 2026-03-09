@@ -184,7 +184,7 @@
 
 <div class="btn-row">
   <button class="extract-btn" id="extractBtn" disabled>Extract</button>
-  <button class="save-btn" id="saveBtn">Save schema</button>
+  <button class="save-btn" id="saveBtn">Download YAML</button>
 </div>
 
 <div id="status"></div>
@@ -663,8 +663,29 @@ function renderTable(records) {
   results.innerHTML = html;
 }
 
-// Save schema
-document.getElementById('saveBtn').addEventListener('click', async () => {
+// Download schema as YAML
+function specToYaml(spec) {
+  function yamlStr(s) {
+    if (s.includes('\n') || s.includes(':') || s.includes('#') || s.includes("'"))
+      return '"' + s.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+    return s;
+  }
+  let y = '';
+  if (spec.name) y += 'name: ' + yamlStr(spec.name) + '\n';
+  if (spec.record_type) y += 'record_type: ' + spec.record_type + '\n';
+  if (spec.instructions) y += 'instructions: ' + yamlStr(spec.instructions) + '\n';
+  y += '\nfields:\n';
+  for (const [name, cfg] of Object.entries(spec.fields)) {
+    y += '  ' + name + ':\n';
+    y += '    type: ' + cfg.type + '\n';
+    if (cfg.description) y += '    description: ' + yamlStr(cfg.description) + '\n';
+    if (cfg.values && cfg.values.length) y += '    values: [' + cfg.values.join(', ') + ']\n';
+    y += '\n';
+  }
+  return y.trimEnd() + '\n';
+}
+
+document.getElementById('saveBtn').addEventListener('click', () => {
   const spec = buildSpec();
   if (!Object.keys(spec.fields).length) { alert('Add at least one field.'); return; }
   if (!spec.name) {
@@ -673,21 +694,16 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     spec.name = name;
     document.getElementById('schemaName').value = name;
   }
-  const resp = await authFetch('/schemas', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(spec),
-  });
-  const result = await resp.json();
-  st.textContent = 'Saved as ' + result.file;
-  // Add to dropdown if not already there
-  if (![...loadSel.options].some(o => o.value === result.file)) {
-    const opt = document.createElement('option');
-    opt.value = result.file;
-    opt.textContent = spec.name;
-    loadSel.appendChild(opt);
-  }
-  loadSel.value = result.file;
+  const yaml = specToYaml(spec);
+  const filename = spec.name.toLowerCase().replace(/\s+/g, '_') + '.yaml';
+  const blob = new Blob([yaml], { type: 'text/yaml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  st.textContent = 'Downloaded ' + filename;
 });
 
 // Start with one empty field
