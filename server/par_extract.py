@@ -9,57 +9,143 @@ Adapted from petey/par_rag_extract.py for the web app.
 import re
 import json
 import asyncio
+import tempfile
 from datetime import datetime
 from pathlib import Path
 
-from openai import AsyncOpenAI
-from petey.extract import extract_text
+import fitz
 
-SYSTEM_PROMPT = """You extract structured data from DHCR PAR (Petition for Administrative Review) decisions. Return ONLY a JSON object with the keys described below.
 
-These documents follow a standard structure:
+def extract_text(pdf_path: str) -> tuple[str, bool]:
+    """Extract text from PDF, with OCR fallback for scanned pages.
 
-HEADER (top of first page):
-- Caption box with petitioner name (or anonymous placeholder like "PETITIONER X")
-- "ADMINISTRATIVE REVIEW DOCKET NO." — this is the PAR docket (adm_review_docket)
-- "RENT ADMINISTRATOR'S DOCKET NO." — this is the RA docket (ra_docket), a DIFFERENT number
-- Owner/Tenant labels with party names
+    Returns (cleaned_text, used_ocr).
+    """
+    doc = fitz.open(pdf_path)
+    pages = [page.get_text("text") for page in doc]
+    raw = "\n\n".join(pages)
 
-FIRST PARAGRAPH (after the title):
-- PAR filing date ("On [DATE], the petitioner filed...")
-- RA order date ("against an order issued on [DATE]")
-- Address and apartment
-- Description of what the RA decided (ra_determination)
-- Sometimes the RA complaint filing date ("This proceeding was commenced on [DATE]")
+    # Check if extraction actually got the document content.
+    # PyMuPDF sometimes extracts scattered fragments from scanned PDFs
+    # that pass a simple length check but miss all the real content.
+    needs_ocr = (
+        len(raw.strip()) < 200
+        or not any(marker in raw.upper() for marker in [
+            "ADMINISTRATIVE REVIEW",
+            "RENT ADMINISTRATOR",
+            "PETITION",
+        ])
+    )
 
-FINAL SECTION:
-- "THEREFORE... ORDERED, that this petition be... [denied/granted/etc.]" — the PAR determination
-- "ISSUED:" stamp with the decision date (may appear on any page, often OCR-garbled)
+    if needs_ocr:
+        raw = _ocr_pdf(pdf_path, force=True)
 
-Extract these fields:
+    return _clean_text(raw), needs_ocr
 
+
+def _clean_text(text: str) -> str:
+    """Remove NYSCEF filing headers and other noise that confuses the LLM."""
+    lines = text.split('\n')
+    cleaned = []
+    skip_nyscef = False
+    for line in lines:
+        stripped = line.strip()
+        # Skip NYSCEF electronic filing headers
+        if 'NYSCEF' in stripped or 'FILED:' in stripped and 'NYSCEF' in stripped:
+            skip_nyscef = True
+            continue
+        if skip_nyscef:
+            # Skip blank lines immediately after NYSCEF header
+            if not stripped:
+                continue
+            skip_nyscef = False
+        # Skip page numbers and form footers
+        if re.match(r'^-?\s*\d+\s*-?$', stripped):
+            continue
+        if stripped.startswith('INDEX NO.') or stripped.startswith('RECEIVED NYSCEF'):
+            continue
+        cleaned.append(line)
+
+    # Collapse excessive blank lines
+    result = re.sub(r'\n{4,}', '\n\n\n', '\n'.join(cleaned))
+    return result.strip()
+
+
+def _ocr_pdf(pdf_path: str, force: bool = False) -> str:
+    """Run ocrmypdf to add text layer, then extract.
+
+    force=True discards any existing text layer and re-OCRs
+    (needed when the existing layer is garbage fragments).
+    """
+    import logging
+    import ocrmypdf
+
+    # Suppress noisy ocrmypdf warnings (file size, diacritics)
+    logging.getLogger("ocrmypdf").setLevel(logging.ERROR)
+
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+        out_path = tmp.name
+    try:
+        ocrmypdf.ocr(
+            pdf_path, out_path,
+            force_ocr=force,
+            skip_text=not force,
+            deskew=True,
+            optimize=0,
+            progress_bar=False,
+            tesseract_timeout=120,
+        )
+        doc = fitz.open(out_path)
+        return "\n\n".join(page.get_text("text") for page in doc)
+    finally:
+        Path(out_path).unlink(missing_ok=True)
+
+SYSTEM_PROMPT = """You extract structured data from DHCR PAR (Petition for Administrative Review) decisions. Return ONLY a JSON object.
+
+CRITICAL: Read the ENTIRE document carefully before extracting. Every field has a specific location in the document — do not leave fields null unless the information is truly absent.
+
+DOCUMENT STRUCTURE:
+
+1. HEADER (top of first page — look for these labels):
+   - "IN THE MATTER OF THE ADMINISTRATIVE APPEAL OF" → petitioner name follows
+   - "ADMINISTRATIVE REVIEW DOCKET NO." → adm_review_docket (this is the PAR docket)
+   - "RENT ADMINISTRATOR'S DOCKET NO." → ra_docket (DIFFERENT number from PAR docket!)
+   - "OWNER:" and/or "TENANT:" labels → identify petitioner_type and other_party
+
+2. FIRST PARAGRAPH (right after the title like "ORDER AND OPINION..."):
+   - "On [DATE], the above-named petitioner... filed a Petition" → par_filed_date
+   - "an order issued on [DATE]" or "order... issued on [DATE]" → ra_order_issued
+   - Address and apartment appear here (e.g., "housing accommodations known as [ADDRESS]")
+   - What the RA decided appears here → ra_determination
+   - Sometimes: "This proceeding was commenced on [DATE]" → ra_case_filed
+
+3. FINAL SECTION:
+   - "THEREFORE... ORDERED, that this petition be... [denied/granted/etc.]" → determination
+   - "ISSUED:" stamp with date → issue_date
+
+FIELDS TO EXTRACT:
 {
-  "petitioner": "Person or company name from the caption. Use null if only a generic label like 'PETITIONER X' appears.",
-  "petitioner_type": "Owner or Tenant",
-  "other_party": "The opposing party's actual name from the caption, or null if none given. Labels like 'Owner:' or 'Tenant:' without a name = null.",
-  "adm_review_docket": "The PAR docket number from the header",
-  "ra_docket": "The RA docket number(s) from the header — NOT the PAR docket. If multiple dockets appear (in parentheses, with 'RECONSID.', 'incorporating', etc.), include ALL as comma-separated. If a sequential range is given (e.g., 'YE410147S through YE410150S'), expand to all numbers in the range.",
-  "address": "Full street address including number, street name, and borough/city",
-  "apartment": "Apartment number, or 'Various' for building-wide cases, or null",
-  "determination": "PAR outcome: Denied, Granted, Granted in Part, Dismissed, Revoked, Modified, Rescinded, Remanded, or Terminated",
-  "ra_determination": "What the RA originally decided: Granted, Denied, Granted in Part, Terminated, or null",
-  "par_filed_date": "YYYY-MM-DD or null",
-  "ra_order_issued": "YYYY-MM-DD or null",
-  "ra_case_filed": "YYYY-MM-DD or null",
-  "issue_date": "From the 'ISSUED:' stamp, YYYY-MM-DD or null. If the stamp is garbled or the year looks implausible, return null. Cross-check against other dates in the document."
+  "petitioner": "Person or company name from caption. null only if a generic label like 'PETITIONER X'.",
+  "petitioner_type": "Owner or Tenant — based on the caption labels",
+  "other_party": "The opposing party's name, or null if not named",
+  "adm_review_docket": "PAR docket from header (labeled 'ADMINISTRATIVE REVIEW DOCKET NO.')",
+  "ra_docket": "RA docket from header (labeled 'RENT ADMINISTRATOR'S DOCKET NO.') — this is a DIFFERENT number. If multiple, comma-separated.",
+  "address": "Full street address with borough/city from the first paragraph",
+  "apartment": "Apartment number from first paragraph, 'Various' for building-wide, or null",
+  "determination": "PAR outcome from THEREFORE clause: Denied, Granted, Granted in Part, Dismissed, Revoked, Modified, Rescinded, Remanded, or Terminated",
+  "ra_determination": "What the RA originally decided (from first paragraph): Granted, Denied, Granted in Part, Terminated, or null",
+  "par_filed_date": "YYYY-MM-DD when PAR was filed (from first paragraph)",
+  "ra_order_issued": "YYYY-MM-DD when RA order was issued (from first paragraph)",
+  "ra_case_filed": "YYYY-MM-DD when original complaint was filed, or null",
+  "issue_date": "YYYY-MM-DD from 'ISSUED:' stamp. OCR may split digits: 'NOV 1 2 2013' = Nov 12. null if unreadable."
 }
 
-Important notes:
-- These are OCR'd documents. Docket numbers should be copied exactly as printed — do not correct or modify them.
-- OCR often separates digits in ISSUED stamps: "NOV 1 2 2013" = November 12, "APR 3 0 2014" = April 30.
-- Use null when information is absent or unreadable — never use "Unknown", "N/A", or empty string.
-- For ra_determination: "denied the complaint" / "no overcharge found" = Denied. "granted a rent reduction" = Granted.
-- Return ONLY the JSON object, no explanation."""
+RULES:
+- The ra_docket and adm_review_docket are ALWAYS different numbers. If you find only one docket, look harder.
+- Use null only when information is truly absent — never "Unknown", "N/A", or empty string.
+- Dates in the text may appear as "June 21, 2013" or "Jun 21 2013" — always convert to YYYY-MM-DD.
+- ra_determination: "denied the complaint" / "no overcharge" = Denied. "granted a rent reduction" / "directed restoration of services" = Granted.
+- Return ONLY the JSON object."""
 
 FEW_SHOT_EXAMPLES = [
     {
@@ -193,7 +279,89 @@ ISSUED: JAN 0 5 2011"""
     }
 ]
 
-LLM_PARAMS = dict(temperature=0, response_format={"type": "json_object"})
+ANTHROPIC_MODELS = {
+    "claude-haiku-4-5-20251001",
+    "claude-sonnet-4-20250514",
+}
+
+
+def _is_anthropic(model: str) -> bool:
+    return model.startswith("claude-") or model in ANTHROPIC_MODELS
+
+
+def _make_client(model: str, api_key: str):
+    """Create a reusable API client for the given provider."""
+    if _is_anthropic(model):
+        from anthropic import AsyncAnthropic
+        return AsyncAnthropic(api_key=api_key)
+    else:
+        from openai import AsyncOpenAI
+        return AsyncOpenAI(api_key=api_key)
+
+
+async def _llm_call(
+    messages: list[dict],
+    *,
+    model: str,
+    api_key: str,
+    client=None,
+) -> str:
+    """Call OpenAI or Anthropic, return response text.
+
+    Pass a pre-built client to reuse connections across calls.
+    Anthropic calls use prompt caching on the system prompt
+    and few-shot examples (cache_control on last few-shot msg).
+    """
+    if client is None:
+        client = _make_client(model, api_key)
+
+    if _is_anthropic(model):
+        # Separate system from conversation and add cache
+        system = []
+        conv = []
+        for m in messages:
+            if m["role"] == "system":
+                system.append({
+                    "type": "text",
+                    "text": m["content"],
+                    "cache_control": {"type": "ephemeral"},
+                })
+            else:
+                conv.append(m)
+        # Mark last few-shot message for caching (the
+        # boundary between static examples and new input)
+        for i in range(len(conv) - 2, -1, -1):
+            if conv[i]["role"] == "assistant":
+                conv[i] = {
+                    "role": "assistant",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": conv[i]["content"],
+                            "cache_control": {
+                                "type": "ephemeral",
+                            },
+                        }
+                    ],
+                }
+                break
+        resp = await client.messages.create(
+            model=model,
+            max_tokens=2048,
+            temperature=0,
+            system=system,
+            messages=conv,
+        )
+        return resp.content[0].text
+    else:
+        # OpenAI: automatic prompt caching for gpt-4.1
+        resp = await client.chat.completions.create(
+            model=model,
+            messages=messages,
+            temperature=0,
+            response_format={"type": "json_object"},
+        )
+        return resp.choices[0].message.content
 
 # ---------------------------------------------------------------------------
 # Validation
@@ -376,39 +544,76 @@ Re-read the document and return corrected values as JSON (only the fields that n
 async def async_process_file(
     pdf_path: str,
     *,
-    model: str = "gpt-4.1-mini",
+    model: str = "gpt-4.1",
     api_key: str | None = None,
+    on_progress=None,
 ) -> dict:
-    """Extract structured PAR data with validation and re-query."""
-    client = AsyncOpenAI(api_key=api_key)
-    text = extract_text(pdf_path)
+    """Extract structured PAR data with OCR, validation, and re-query.
 
-    # Initial extraction
-    response = await client.chat.completions.create(
-        model=model, messages=_build_extract_messages(text), **LLM_PARAMS,
+    on_progress: optional async callable(step: str) called at each stage.
+    """
+    async def _emit(step: str):
+        if on_progress:
+            await on_progress(step)
+
+    # Step 1: text extraction (with smart OCR fallback)
+    await _emit("OCR")
+    text, used_ocr = await asyncio.to_thread(extract_text, pdf_path)
+
+    # Reuse one client for all LLM calls (connection pooling
+    # + enables Anthropic prompt caching across calls)
+    client = _make_client(model, api_key)
+    llm_kw = dict(model=model, api_key=api_key, client=client)
+
+    async def _extract(txt: str) -> dict:
+        raw = await _llm_call(
+            _build_extract_messages(txt), **llm_kw,
+        )
+        res = json.loads(raw)
+        for k in list(res.keys()):
+            if isinstance(res[k], list):
+                res[k] = ", ".join(str(v) for v in res[k])
+        return res
+
+    # Step 2: LLM extraction
+    await _emit("Extracting")
+    result = await _extract(text)
+
+    # Step 2b: If most key fields are null, text was probably bad.
+    # Force OCR and retry.
+    key_fields = [
+        'petitioner', 'adm_review_docket',
+        'ra_docket', 'address', 'determination',
+    ]
+    null_count = sum(
+        1 for f in key_fields if not result.get(f)
     )
-    result = json.loads(response.choices[0].message.content)
+    if null_count >= 3 and not used_ocr:
+        await _emit("OCR (retry)")
+        ocr_text = await asyncio.to_thread(
+            _ocr_pdf, pdf_path, force=True,
+        )
+        ocr_text = _clean_text(ocr_text)
+        if len(ocr_text) > len(text):
+            text = ocr_text
+            await _emit("Re-extracting")
+            result = await _extract(text)
 
-    # Coerce any list values to comma-separated strings
-    for key in list(result.keys()):
-        if isinstance(result[key], list):
-            result[key] = ", ".join(str(v) for v in result[key])
-
-    # Validate and re-query if needed
+    # Step 3: Validate and re-query if needed
     errors = validate_result(result)
     if errors:
+        await _emit("Validating")
         error_fields = [e['field'] for e in errors]
-        requery_resp = await client.chat.completions.create(
-            model=model, messages=_build_requery_messages(text, errors), **LLM_PARAMS,
+        raw = await _llm_call(
+            _build_requery_messages(text, errors), **llm_kw,
         )
-        corrections = json.loads(requery_resp.choices[0].message.content)
+        corrections = json.loads(raw)
         for field, value in corrections.items():
             if isinstance(value, list):
                 value = ", ".join(str(v) for v in value)
             if field in error_fields:
                 result[field] = value
 
-        # Check for remaining issues
         remaining = validate_result(result)
         if remaining:
             result['_validation_warnings'] = [
@@ -420,4 +625,5 @@ async def async_process_file(
     result['_source_file'] = Path(pdf_path).name
     result['_text_length'] = len(text)
 
+    await _emit("Done")
     return result

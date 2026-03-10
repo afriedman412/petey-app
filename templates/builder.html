@@ -187,6 +187,15 @@
   <button class="save-btn" id="saveBtn">Download YAML</button>
 </div>
 
+<div id="progressArea" style="display:none; margin-top:16px;">
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+    <div style="flex:1; background:#e5e7eb; border-radius:6px; height:8px; overflow:hidden;">
+      <div id="progressBar" style="height:100%; background:#228be6; border-radius:6px; width:0%; transition:width 0.3s;"></div>
+    </div>
+    <span id="progressPct" style="font-size:13px; color:#555; min-width:40px;">0%</span>
+  </div>
+  <div id="progressLog" style="font-size:12px; color:#555; max-height:120px; overflow-y:auto;"></div>
+</div>
 <div id="status"></div>
 <div id="results"></div>
 
@@ -481,6 +490,15 @@ extractBtn.addEventListener('click', async () => {
   const instr = document.getElementById('instructions').value.trim();
   let completed = 0;
 
+  const progressArea = document.getElementById('progressArea');
+  const progressBar = document.getElementById('progressBar');
+  const progressPct = document.getElementById('progressPct');
+  const progressLog = document.getElementById('progressLog');
+  progressArea.style.display = total > 1 ? 'block' : 'none';
+  progressBar.style.width = '0%';
+  progressPct.textContent = '0%';
+  progressLog.innerHTML = '';
+
   // Init server-side results file
   let resultsFile = null;
   try {
@@ -498,12 +516,26 @@ extractBtn.addEventListener('click', async () => {
     for (let j = i; j < Math.min(i + CONCURRENCY, total); j++) {
       batch.push(selectedFiles[j]);
     }
-    st.textContent = 'Processing files ' + (i + 1) + '–' + Math.min(i + CONCURRENCY, total) + ' of ' + total + '...';
+    st.textContent = 'Processing ' + completed + ' / ' + total + '...';
 
     const promises = batch.map(async file => {
       if (apiKeyError) return;
+      const logEntry = document.createElement('div');
+      logEntry.textContent = file.name + ' — extracting...';
+      progressLog.appendChild(logEntry);
+      progressLog.scrollTop = progressLog.scrollHeight;
       try {
         const data = await extractFile(file, spec, instr);
+        logEntry.textContent = file.name + (data._error ? ' — error' : ' — done');
+        if (data._info && data._info.length) {
+          for (const msg of data._info) {
+            const infoEl = document.createElement('div');
+            infoEl.style.cssText = 'color:#dc2626; font-style:italic;';
+            infoEl.textContent = file.name + ': ' + msg;
+            progressLog.appendChild(infoEl);
+            progressLog.scrollTop = progressLog.scrollHeight;
+          }
+        }
         if (data._warning) warnings.push(file.name + ': ' + data._warning);
 
         // Append to server-side file immediately
@@ -535,11 +567,13 @@ extractBtn.addEventListener('click', async () => {
         warnings.push(file.name + ': ' + e.message);
       }
       completed++;
+      const pct = Math.round((completed / total) * 100);
+      progressBar.style.width = pct + '%';
+      progressPct.textContent = pct + '%';
     });
 
     await Promise.all(promises);
     if (apiKeyError) break;
-    st.textContent = completed + ' / ' + total + ' files done...';
   }
 
   if (apiKeyError) {
@@ -550,6 +584,8 @@ extractBtn.addEventListener('click', async () => {
     return;
   }
 
+  progressBar.style.width = '100%';
+  progressPct.textContent = '100%';
   let statusText = 'Done — ' + total + ' file' + (total > 1 ? 's' : '') + ' processed.';
   if (warnings.length) {
     statusText += '\nWarnings:\n' + warnings.join('\n');

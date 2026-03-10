@@ -68,7 +68,16 @@
 <div class="file-list" id="fileList"></div>
 
 <button class="extract" id="extractBtn" disabled>Extract</button>
-<div id="status"></div>
+<div id="progressArea" style="display:none; margin-top:16px;">
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+    <div style="flex:1; background:#e5e7eb; border-radius:6px; height:8px; overflow:hidden;">
+      <div id="progressBar" style="height:100%; background:#2563eb; border-radius:6px; width:0%; transition:width 0.3s;"></div>
+    </div>
+    <span id="progressPct" style="font-size:13px; color:#555; min-width:40px;">0%</span>
+  </div>
+  <div id="progressLog" style="font-size:12px; color:#555; max-height:150px; overflow-y:auto;"></div>
+</div>
+<div id="status" style="margin-top:16px;"></div>
 <div class="results-area" id="results"></div>
 
 <script type="module">
@@ -159,28 +168,90 @@ dz.addEventListener('drop', (e) => {
 fi.addEventListener('change', () => { selectedFiles = [...fi.files]; updateFileList(); });
 folderInput.addEventListener('change', () => { selectedFiles = [...folderInput.files]; updateFileList(); });
 
-// --- Extraction ---
+// --- Extraction (streaming) ---
+const progressArea = document.getElementById('progressArea');
+const progressBar = document.getElementById('progressBar');
+const progressPct = document.getElementById('progressPct');
+const progressLog = document.getElementById('progressLog');
+
 extractBtn.addEventListener('click', async () => {
   extractBtn.disabled = true;
-  status.textContent = 'Extracting ' + selectedFiles.length + ' file' + (selectedFiles.length > 1 ? 's' : '') + '...';
+  status.textContent = '';
   results.innerHTML = '';
+  progressLog.innerHTML = '';
+  progressBar.style.width = '0%';
+  progressPct.textContent = '0%';
+  progressArea.style.display = 'block';
 
   const form = new FormData();
   for (const f of selectedFiles) {
     form.append('files', f);
   }
 
+  const allResults = [];
+  const fileSteps = {};  // track per-file progress
+
   try {
     const resp = await authFetch('/par/extract', { method: 'POST', body: form });
-    const data = await resp.json();
 
-    if (data.error) {
-      status.innerHTML = '<span style="color:#dc2626;">' + data.error + '</span>';
+    if (resp.headers.get('content-type')?.includes('application/json')) {
+      // Non-streaming error response
+      const data = await resp.json();
+      status.innerHTML = '<span style="color:#dc2626;">' + (data.error || 'Unknown error') + '</span>';
+      progressArea.style.display = 'none';
       extractBtn.disabled = false;
       return;
     }
 
-    const allResults = Array.isArray(data) ? data : [data];
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let doneCount = 0;
+    let totalFiles = selectedFiles.length;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      const lines = buffer.split('\n');
+      buffer = lines.pop();  // keep incomplete line
+
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        const msg = JSON.parse(line);
+
+        if (msg.type === 'progress') {
+          totalFiles = msg.totalFiles;
+          const fname = msg.file.split('/').pop();  // strip folder path
+          fileSteps[fname] = msg.step;
+
+          // Update log
+          const entry = document.createElement('div');
+          entry.textContent = fname + ' — ' + msg.step;
+          if (msg.step.startsWith('OCR')) {
+            entry.style.cssText = 'color:#dc2626; font-style:italic;';
+          }
+          progressLog.appendChild(entry);
+          progressLog.scrollTop = progressLog.scrollHeight;
+
+          // Estimate progress: each file has ~3 steps (OCR, Extracting, Validating/Done)
+          // Use "Done" events for the bar
+          if (msg.step === 'Done') {
+            doneCount++;
+            const pct = Math.round((doneCount / totalFiles) * 100);
+            progressBar.style.width = pct + '%';
+            progressPct.textContent = pct + '%';
+          }
+        } else if (msg.type === 'result') {
+          allResults.push(msg.data);
+        } else if (msg.type === 'done') {
+          progressBar.style.width = '100%';
+          progressPct.textContent = '100%';
+        }
+      }
+    }
+
     const errors = allResults.filter(r => r._error);
     const ok = allResults.filter(r => !r._error);
 
@@ -189,9 +260,7 @@ extractBtn.addEventListener('click', async () => {
     statusText += '.';
     status.textContent = statusText;
 
-    if (ok.length) {
-      renderTable(ok);
-    }
+    if (ok.length) renderTable(ok);
     if (errors.length) {
       const errDiv = document.createElement('div');
       errDiv.style.marginTop = '12px';

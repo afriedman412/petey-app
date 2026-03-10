@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Web interface for Petey PDF Extractor"
 requires-python = ">=3.11"
 dependencies = [
-    "petey",
+    "petey @ git+https://github.com/afriedman412/petey.git",
     "fastapi",
     "uvicorn",
     "python-multipart",
@@ -16,6 +16,8 @@ dependencies = [
     "firebase-admin",
     "google-cloud-firestore",
     "httpx",
+    "ocrmypdf",
+    "anthropic",
 ]
 
 [project.optional-dependencies]

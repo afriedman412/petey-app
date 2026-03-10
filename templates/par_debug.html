@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PAR Debug — Extracted Text</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f8f9fa; color: #333; padding: 32px; max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 20px; margin-bottom: 16px; }
+  .dropzone {
+    border: 2px dashed #ccc; border-radius: 12px; padding: 40px; text-align: center;
+    cursor: pointer; transition: border-color 0.2s, background 0.2s; margin-bottom: 16px;
+  }
+  .dropzone:hover, .dropzone.drag-over { border-color: #2563eb; background: #eff6ff; }
+  .meta { font-size: 13px; color: #666; margin-bottom: 8px; }
+  pre {
+    background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 16px;
+    font-size: 12px; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word;
+    max-height: 80vh; overflow: auto;
+  }
+</style>
+</head>
+<body>
+<h1>PAR Debug: Extracted Text</h1>
+<p style="color:#666; font-size:13px; margin-bottom:16px;">Drop a PDF to see the cleaned text that gets sent to the LLM.</p>
+
+<div class="dropzone" id="dropzone">
+  <p>Drop PDF here, or click to select</p>
+  <input type="file" id="fileInput" accept=".pdf" hidden>
+</div>
+<div id="meta" class="meta"></div>
+<pre id="output" style="display:none;"></pre>
+
+<script>
+const dz = document.getElementById('dropzone');
+const fi = document.getElementById('fileInput');
+const meta = document.getElementById('meta');
+const output = document.getElementById('output');
+
+dz.addEventListener('click', () => fi.click());
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f && f.name.toLowerCase().endsWith('.pdf')) upload(f);
+});
+fi.addEventListener('change', () => { if (fi.files[0]) upload(fi.files[0]); });
+
+async function upload(file) {
+  meta.textContent = 'Extracting text from ' + file.name + '...';
+  output.style.display = 'none';
+  const form = new FormData();
+  form.append('file', file);
+  const resp = await fetch('/par/debug-text', { method: 'POST', body: form });
+  const data = await resp.json();
+  meta.textContent = data.filename + ' — ' + data.text_length + ' chars' + (data.used_ocr ? ' (OCR)' : ' (native text)');
+  output.textContent = data.text;
+  output.style.display = 'block';
+}
+</script>
+</body>
+</html>

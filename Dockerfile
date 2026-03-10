@@ -2,14 +2,14 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y git tesseract-ocr && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
+COPY pyproject.toml .
 COPY server/ server/
 COPY templates/ templates/
 COPY schemas/ schemas/
+
+RUN pip install --no-cache-dir .
 
 # Firebase config is passed via env vars at deploy time:
 #   FIREBASE_API_KEY, FIREBASE_AUTH_DOMAIN, FIREBASE_PROJECT_ID

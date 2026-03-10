@@ -14,11 +14,9 @@ from fastapi import Request, HTTPException
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
-# Paths that don't require authentication
-PUBLIC_PATHS = {
-    "/", "/settings/page", "/health", "/firebase-config",
-    "/template-builder", "/parse-yaml", "/par",
-}
+# Paths that don't require authentication (POST endpoints
+# that are safe without auth, e.g. debug tools)
+PUBLIC_POST_PATHS = {"/parse-yaml", "/par/debug-text"}
 
 # Initialize Firebase Admin SDK once (skip when auth is disabled for local dev).
 # On Cloud Run, calling initialize_app() with no args uses the
@@ -27,9 +25,15 @@ if not firebase_admin._apps and os.getenv("FIREBASE_AUTH_DISABLED", "").strip() 
     firebase_admin.initialize_app()
 
 
-def _is_public(path: str) -> bool:
-    """Check if a path is public (no auth required)."""
-    return path in PUBLIC_PATHS
+def _is_public(request: Request) -> bool:
+    """Check if a request is public (no auth required).
+
+    All GET requests are public (they serve pages or config).
+    POST endpoints require auth unless explicitly exempted.
+    """
+    if request.method == "GET":
+        return True
+    return request.url.path in PUBLIC_POST_PATHS
 
 
 def _auth_disabled() -> bool:
@@ -46,7 +50,7 @@ class FirebaseAuthMiddleware(BaseHTTPMiddleware):
     """
 
     async def dispatch(self, request: Request, call_next):
-        if _is_public(request.url.path):
+        if _is_public(request):
             return await call_next(request)
 
         if _auth_disabled():

@@ -1,6 +1,7 @@
 """
 Web interface for PDF field extraction.
 """
+import asyncio
 import json
 import tempfile
 from datetime import datetime
@@ -8,7 +9,7 @@ from pathlib import Path
 
 import yaml
 from fastapi import FastAPI, UploadFile, Form, Request, Depends
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 
 from server.auth import FirebaseAuthMiddleware, get_uid
 from server.extract import (
@@ -16,7 +17,7 @@ from server.extract import (
     list_schemas, SCHEMAS_DIR, _build_model,
     extract_text, check_text_length,
 )
-from server.par_extract import async_process_file as par_process_file
+from server.par_extract import async_process_file as par_process_file, extract_text as par_extract_text
 from server.settings import (
     get_settings, update_settings, mask_key, get_provider, MODELS,
 )
@@ -124,7 +125,7 @@ async def extract_endpoint(
         tmp.write(await file.read())
         tmp_path = tmp.name
     try:
-        text = extract_text(tmp_path)
+        text, info = extract_text(tmp_path)
         warning = check_text_length(text)
         result = await async_extract(
             tmp_path, response_model,
@@ -140,6 +141,8 @@ async def extract_endpoint(
             data["_source_file"] = file.filename
         if warning:
             data["_warning"] = warning
+        if info:
+            data["_info"] = info
     except Exception as e:
         data = {
             "_source_file": file.filename,
@@ -156,50 +159,118 @@ async def par_extract_endpoint(
     files: list[UploadFile],
     uid: str = Depends(get_uid),
 ):
-    """Bespoke PAR decision extractor with few-shot + validation + re-query.
-    Accepts one or more PDF files (supports folder upload from the UI)."""
+    """Bespoke PAR decision extractor with streaming progress.
+    Streams newline-delimited JSON: progress events then results."""
     settings = get_settings(uid)
-    model_id = settings["model"]
-    provider = get_provider(model_id)
+    provider = get_provider(settings["model"])
     if provider == "anthropic":
-        return JSONResponse(
-            {"error": "PAR extractor currently requires an OpenAI model."},
-            status_code=400,
-        )
-    api_key = settings.get("openai_api_key")
+        api_key = settings.get("anthropic_api_key")
+        model_id = settings["model"]
+    else:
+        api_key = settings.get("openai_api_key")
+        # PAR extractor needs gpt-4.1 (mini is too weak)
+        model_id = "gpt-4.1"
     if not api_key:
         return JSONResponse(
-            {"error": "No OpenAI API key configured. Add one in Settings."},
+            {"error": "No API key configured. Add one in Settings."},
             status_code=400,
         )
 
-    # Filter to PDFs only
-    pdf_files = [f for f in files if f.filename and f.filename.lower().endswith(".pdf")]
+    pdf_files = [
+        f for f in files
+        if f.filename and f.filename.lower().endswith(".pdf")
+    ]
     if not pdf_files:
         return JSONResponse({"error": "No PDF files found."}, 400)
 
-    import asyncio
+    # Save all uploads to temp files upfront (can't read UploadFile
+    # inside the streaming generator after the request body is consumed)
+    temp_paths = []
+    for f in pdf_files:
+        tmp = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
+        tmp.write(await f.read())
+        tmp.close()
+        temp_paths.append((f.filename, tmp.name))
 
-    async def _process_one(file: UploadFile) -> dict:
-        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-            tmp.write(await file.read())
-            tmp_path = tmp.name
-        try:
-            data = await par_process_file(
-                tmp_path, model=model_id, api_key=api_key,
-            )
-            data["_source_file"] = file.filename
-        except Exception as e:
-            data = {"_source_file": file.filename, "_error": str(e)}
-        finally:
-            Path(tmp_path).unlink(missing_ok=True)
-        return data
+    total = len(temp_paths)
 
-    results = await asyncio.gather(*[_process_one(f) for f in pdf_files])
+    async def _stream():
+        queue = asyncio.Queue()
+        sem = asyncio.Semaphore(5)
 
-    if len(results) == 1:
-        return results[0]
-    return results
+        async def _process(idx, filename, tmp_path):
+            async def on_progress(step):
+                await queue.put(json.dumps({
+                    "type": "progress",
+                    "file": filename,
+                    "fileIndex": idx,
+                    "totalFiles": total,
+                    "step": step,
+                }) + "\n")
+
+            async with sem:
+                try:
+                    data = await par_process_file(
+                        tmp_path, model=model_id,
+                        api_key=api_key, on_progress=on_progress,
+                    )
+                    data["_source_file"] = filename
+                except Exception as e:
+                    data = {
+                        "_source_file": filename, "_error": str(e),
+                    }
+                finally:
+                    Path(tmp_path).unlink(missing_ok=True)
+
+                await queue.put(json.dumps({
+                    "type": "result", "data": data,
+                }) + "\n")
+
+        tasks = [
+            asyncio.create_task(_process(i, fn, tp))
+            for i, (fn, tp) in enumerate(temp_paths)
+        ]
+
+        done_count = 0
+        while done_count < total:
+            msg = await queue.get()
+            yield msg
+            parsed = json.loads(msg)
+            if parsed["type"] == "result":
+                done_count += 1
+
+        await asyncio.gather(*tasks)
+
+        yield json.dumps({
+            "type": "done", "totalFiles": total,
+        }) + "\n"
+
+    return StreamingResponse(
+        _stream(), media_type="application/x-ndjson",
+    )
+
+
+@app.get("/par/debug", response_class=HTMLResponse)
+async def par_debug_page():
+    return _load_template("par_debug.html")
+
+
+@app.post("/par/debug-text")
+async def par_debug_text(file: UploadFile):
+    """Return extracted + cleaned text that would be sent to the LLM."""
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+        tmp.write(await file.read())
+        tmp_path = tmp.name
+    try:
+        text, used_ocr = par_extract_text(tmp_path)
+        return {
+            "filename": file.filename,
+            "text_length": len(text),
+            "used_ocr": used_ocr,
+            "text": text,
+        }
+    finally:
+        Path(tmp_path).unlink(missing_ok=True)
 
 
 @app.post("/results/init")

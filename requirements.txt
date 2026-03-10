@@ -1,9 +1,0 @@
-petey @ git+https://github.com/afriedman412/petey.git
-fastapi
-uvicorn
-python-multipart
-pyyaml
-firebase-admin
-google-cloud-firestore
-httpx
-pytest

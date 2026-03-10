@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 from petey.schema import build_model, load_schema  # noqa: F401
 from petey.extract import (
-    extract_text,  # noqa: F401
+    extract_text as _raw_extract_text,
     extract_async as _extract_async,
     TEXT_WARN_THRESHOLD,
 )
@@ -19,6 +19,28 @@ SCHEMAS_DIR = BASE_DIR / "schemas"
 
 # Re-export for backwards compatibility
 _build_model = build_model
+
+
+def extract_text(
+    pdf_path: str,
+    *,
+    ocr_fallback: bool = True,
+) -> tuple[str, list[str]]:
+    """Extract text from PDF with optional OCR fallback.
+
+    Returns (text, info_messages).
+    info_messages contains human-readable status like
+    "No usable text layer, using OCR".
+    """
+    info = []
+    text = _raw_extract_text(pdf_path)
+
+    if ocr_fallback and len(text.strip()) < 200:
+        info.append("No usable text layer detected, using OCR")
+        from server.par_extract import _ocr_pdf
+        text = _ocr_pdf(pdf_path, force=True)
+
+    return text, info
 
 
 def check_text_length(text: str) -> str | None:
