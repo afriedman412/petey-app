@@ -59,6 +59,8 @@ async def async_extract(
     response_model: type[BaseModel],
     uid: str,
     instructions: str = "",
+    parser: str = "pymupdf",
+    ocr_fallback: bool = False,
 ) -> BaseModel:
     """Extract using the model/key from the user's settings."""
     settings = get_settings(uid)
@@ -79,10 +81,15 @@ async def async_extract(
                 "Add one in Settings before extracting."
             )
 
+    aryn_api_key = settings.get("aryn_api_key") or None
+
     return await _extract_async(
         pdf_path, response_model,
         model=model_id, api_key=api_key,
         instructions=instructions,
+        parser=parser,
+        aryn_api_key=aryn_api_key,
+        ocr_fallback=ocr_fallback,
     )
 
 

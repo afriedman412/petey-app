@@ -127,6 +127,15 @@
       <div class="hint">Required for Claude models</div>
       <div class="key-status" id="anthropicKeyStatus"></div>
     </div>
+
+    <div class="field">
+      <label for="aryn_key">Aryn API Key</label>
+      <div class="key-row">
+        <input type="password" id="aryn_key" placeholder="aryn_..." autocomplete="off">
+        <button type="button" id="toggleAryn">Show</button>
+      </div>
+      <div class="hint">Required for the Aryn parser</div>
+    </div>
   </div>
 
   <button class="save-btn" id="saveBtn">Save settings</button>
@@ -187,6 +196,7 @@ async function authFetch(url, opts = {}) {
 const modelSelect = document.getElementById('model');
 const openaiInput = document.getElementById('openai_key');
 const anthropicInput = document.getElementById('anthropic_key');
+const arynInput = document.getElementById('aryn_key');
 const statusEl = document.getElementById('status');
 
 function toggleVis(id, btn) {
@@ -200,6 +210,9 @@ document.getElementById('toggleOpenai').addEventListener('click', function() {
 });
 document.getElementById('toggleAnthropic').addEventListener('click', function() {
   toggleVis('anthropic_key', this);
+});
+document.getElementById('toggleAryn').addEventListener('click', function() {
+  toggleVis('aryn_key', this);
 });
 
 async function loadSettings() {
@@ -226,6 +239,9 @@ async function loadSettings() {
 
     anthropicInput.value = data.anthropic_api_key || '';
     anthropicInput.placeholder = data.anthropic_api_key ? data.anthropic_api_key : 'sk-ant-...';
+
+    arynInput.value = data.aryn_api_key || '';
+    arynInput.placeholder = data.aryn_api_key ? data.aryn_api_key : 'aryn_...';
   } catch (e) {
     statusEl.textContent = 'Error loading settings: ' + e.message;
     statusEl.className = 'status err';
@@ -244,6 +260,9 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
   if (anthropicInput.value && !anthropicInput.value.includes('...')) {
     body.anthropic_api_key = anthropicInput.value;
   }
+  if (arynInput.value && !arynInput.value.includes('...')) {
+    body.aryn_api_key = arynInput.value;
+  }
 
   try {
     const resp = await authFetch('/settings', {
@@ -255,6 +274,7 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     const data = await resp.json();
     openaiInput.value = data.openai_api_key || '';
     anthropicInput.value = data.anthropic_api_key || '';
+    arynInput.value = data.aryn_api_key || '';
     statusEl.className = 'status ok';
     statusEl.textContent = 'Settings saved.';
   } catch (e) {

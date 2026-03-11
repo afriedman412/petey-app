@@ -23,6 +23,7 @@ DEFAULTS = {
     "model": "gpt-4.1-mini",
     "openai_api_key": "",
     "anthropic_api_key": "",
+    "aryn_api_key": "",
 }
 
 MODELS = [

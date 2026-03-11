@@ -154,6 +154,12 @@
     <button class="active" data-mode="single">Discrete queries</button>
     <button data-mode="table">Table</button>
   </div>
+  <label style="margin-left:1rem;">Parser:</label>
+  <select id="parserSelect">
+    <option value="pymupdf">PyMuPDF (default)</option>
+    <option value="marker">Marker (better layout)</option>
+    <option value="aryn">Aryn (tables, parallel)</option>
+  </select>
   <label style="margin-left:1rem;">Load:</label>
   <select id="loadSchema">
     <option value="">New schema</option>
@@ -461,6 +467,7 @@ async function extractFile(file, spec, instr) {
   form.append('file', file);
   form.append('schema_spec', JSON.stringify(spec));
   if (instr) form.append('instructions', instr);
+  form.append('parser', document.getElementById('parserSelect').value);
   const resp = await authFetch('/extract', { method: 'POST', body: form });
   if (!resp.ok) {
     let msg = 'Extraction failed (status ' + resp.status + ')';

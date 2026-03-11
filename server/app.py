@@ -93,6 +93,8 @@ async def extract_endpoint(
     schema_file: str = Form(None),
     schema_spec: str = Form(None),
     instructions: str = Form(""),
+    parser: str = Form("pymupdf"),
+    ocr_fallback: bool = Form(False),
     uid: str = Depends(get_uid),
 ):
     # Check that the user has the required API key before processing
@@ -130,6 +132,7 @@ async def extract_endpoint(
         result = await async_extract(
             tmp_path, response_model,
             uid=uid, instructions=instructions,
+            parser=parser, ocr_fallback=ocr_fallback,
         )
         data = result.model_dump()
         if spec.get("record_type") == "array" and "items" in data:
