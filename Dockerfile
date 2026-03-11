@@ -1,15 +1,12 @@
-FROM python:3.12-slim
+FROM us-east1-docker.pkg.dev/petey-dev/petey/base:latest
 
 WORKDIR /app
-
-RUN apt-get update && apt-get install -y git tesseract-ocr && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml .
 COPY server/ server/
 COPY templates/ templates/
 COPY schemas/ schemas/
 
-RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir .
 
 # Firebase config is passed via env vars at deploy time:
