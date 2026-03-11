@@ -2,7 +2,9 @@ VENV = venv
 PYTHON = $(VENV)/bin/python
 PIP = $(VENV)/bin/pip
 
-.PHONY: venv install run deploy clean
+BASE_IMAGE = us-east1-docker.pkg.dev/petey-dev/petey/base:latest
+
+.PHONY: venv install run deploy build-base clean
 
 venv:
 	python3 -m venv $(VENV)
@@ -13,7 +15,23 @@ install: venv
 run: venv
 	export FIREBASE_AUTH_DISABLED=1 && $(VENV)/bin/uvicorn server.app:app --reload
 
+build-base:
+	gcloud config set project petey-dev
+	gcloud artifacts repositories create petey --repository-format=docker --location=us-east1 || true
+	docker build -f Dockerfile.base -t $(BASE_IMAGE) .
+	docker push $(BASE_IMAGE)
+
+docker-build:
+	docker build -f Dockerfile.base -t $(BASE_IMAGE) .
+	docker build -t petey-web .
+
+docker-run:
+	docker run --rm -p 8080:8080 \
+		-e FIREBASE_AUTH_DISABLED=1 \
+		petey-web
+
 deploy:
+	gcloud config set project petey-dev
 	gcloud run deploy petey --source . --region=us-east1 --allow-unauthenticated
 
 clean:

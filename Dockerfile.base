@@ -1,0 +1,27 @@
+FROM python:3.12-slim
+
+RUN apt-get update && apt-get install -y git tesseract-ocr && rm -rf /var/lib/apt/lists/*
+
+# CPU-only torch first so marker-pdf doesn't pull CUDA wheels
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+
+# All heavy deps that rarely change
+RUN pip install --no-cache-dir \
+    PyMuPDF \
+    openai \
+    anthropic \
+    instructor \
+    pydantic \
+    pyyaml \
+    python-dotenv \
+    marker-pdf \
+    aryn-sdk \
+    pytesseract \
+    Pillow \
+    fastapi \
+    uvicorn \
+    python-multipart \
+    firebase-admin \
+    google-cloud-firestore \
+    httpx \
+    ocrmypdf

@@ -50,27 +50,24 @@ class FirebaseAuthMiddleware(BaseHTTPMiddleware):
     """
 
     async def dispatch(self, request: Request, call_next):
-        if _is_public(request):
-            return await call_next(request)
-
         if _auth_disabled():
             request.state.uid = "local-dev"
             return await call_next(request)
 
         auth_header = request.headers.get("Authorization", "")
-        if not auth_header.startswith("Bearer "):
+        if auth_header.startswith("Bearer "):
+            token = auth_header.removeprefix("Bearer ").strip()
+            try:
+                decoded = firebase_auth.verify_id_token(token)
+                request.state.uid = decoded["uid"]
+            except Exception:
+                return JSONResponse(
+                    {"error": "Invalid or expired token"},
+                    status_code=401,
+                )
+        elif not _is_public(request):
             return JSONResponse(
                 {"error": "Missing or invalid Authorization header"},
-                status_code=401,
-            )
-
-        token = auth_header.removeprefix("Bearer ").strip()
-        try:
-            decoded = firebase_auth.verify_id_token(token)
-            request.state.uid = decoded["uid"]
-        except Exception:
-            return JSONResponse(
-                {"error": "Invalid or expired token"},
                 status_code=401,
             )
 
