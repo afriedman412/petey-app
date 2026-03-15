@@ -74,6 +74,9 @@ def _local_get() -> dict:
     if SETTINGS_PATH.exists():
         with open(SETTINGS_PATH) as f:
             stored = json.load(f)
+        # Migrate old field name
+        if "aryn_api_key" in stored and not stored.get("docparse_api_key"):
+            stored["docparse_api_key"] = stored.pop("aryn_api_key")
         return {**DEFAULTS, **stored}
     return dict(DEFAULTS)
 

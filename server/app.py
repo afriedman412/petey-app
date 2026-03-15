@@ -327,6 +327,9 @@ async def get_settings_endpoint(
         "anthropic_api_key": mask_key(
             settings.get("anthropic_api_key", "")
         ),
+        "docparse_api_key": mask_key(
+            settings.get("docparse_api_key", "")
+        ),
         "models": MODELS,
     }
 
@@ -350,6 +353,11 @@ async def save_settings(
         and "..." not in body["anthropic_api_key"]
     ):
         updates["anthropic_api_key"] = body["anthropic_api_key"]
+    if (
+        "docparse_api_key" in body
+        and "..." not in body["docparse_api_key"]
+    ):
+        updates["docparse_api_key"] = body["docparse_api_key"]
     settings = update_settings(uid, updates)
     return {
         "model": settings["model"],
@@ -358,6 +366,9 @@ async def save_settings(
         ),
         "anthropic_api_key": mask_key(
             settings.get("anthropic_api_key", "")
+        ),
+        "docparse_api_key": mask_key(
+            settings.get("docparse_api_key", "")
         ),
     }
 
