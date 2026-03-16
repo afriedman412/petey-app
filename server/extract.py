@@ -11,6 +11,7 @@ from petey.extract import (
     extract_text as _raw_extract_text,
     extract_async as _extract_async,
     extract_pages_async as _extract_pages_async,
+    infer_schema_async as _infer_schema_async,
     TEXT_WARN_THRESHOLD,
 )
 from server.settings import get_settings, get_provider
@@ -137,6 +138,23 @@ async def async_extract_pages(
         header_pages=header_pages,
         page_range=page_range,
         on_result=on_result,
+    )
+
+
+async def async_infer_schema(
+    pdf_path: str,
+    uid: str,
+    ocr_fallback: bool = False,
+    max_pages: int = 2,
+) -> dict:
+    """Infer a schema from a sample PDF using the user's settings."""
+    model_id, api_key = _get_api_key(uid)
+    return await _infer_schema_async(
+        pdf_path,
+        model=model_id,
+        api_key=api_key,
+        ocr_fallback=ocr_fallback,
+        max_pages=max_pages,
     )
 
 

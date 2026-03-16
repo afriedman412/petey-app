@@ -298,6 +298,22 @@ table.results tr:hover td { background: var(--surface-2); }
   color: var(--text-muted); font-family: inherit; transition: all 0.15s;
 }
 .download-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* TOOLTIPS */
+[data-tip] {
+  position: relative;
+}
+[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute; bottom: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%); white-space: nowrap;
+  background: var(--surface-2); color: var(--text);
+  font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 4px;
+  border: 1px solid var(--border); pointer-events: none;
+  opacity: 0; transition: opacity 0.15s;
+  z-index: 10;
+}
+[data-tip]:hover::after { opacity: 1; }
 </style>
 </head>
 <body>
@@ -313,11 +329,10 @@ table.results tr:hover td { background: var(--surface-2); }
 
   <div class="hero">
     <div class="hero-top">
-      <h1>Petey<span class="dot">.</span></h1>
+      <h1><a href="#" id="logoReset" style="color:inherit; text-decoration:none;">Petey<span class="dot">.</span></a></h1>
       <div style="display:flex; gap:1.25rem; align-items:flex-end; padding-bottom:0.2rem;">
         <a href="/about" class="page-top-link">About</a>
-        <a href="/template-builder" class="page-top-link">Schema Designer</a>
-        <a href="/settings/page" class="page-top-link">Settings</a>
+        <a href="/settings/page" class="page-top-link" data-spice-min="medium">Settings</a>
         <a href="https://github.com/afriedman412/petey" target="_blank" rel="noopener" class="page-top-link" title="GitHub" style="padding-bottom:0;"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
         <a href="#" class="page-top-link" id="signOutLink" style="display:none;">Sign out</a>
       </div>
@@ -325,16 +340,27 @@ table.results tr:hover td { background: var(--surface-2); }
     <p class="hero-sub">Easy PDF Extraction</p>
   </div>
 
+  <!-- Spice mode selector -->
+  <div class="controls-row" style="margin-bottom:1.5rem;">
+    <span class="controls-label">Spice level</span>
+    <div class="toggle-group" id="spiceToggle">
+      <button data-spice="mild" class="active" data-tip="Drop a PDF, get results">Mild</button>
+      <button data-spice="medium" data-tip="Describe what you want or let us infer it">Medium</button>
+      <button data-spice="spicy" data-tip="Full schema builder, parser, OCR options">Spicy</button>
+    </div>
+  </div>
+
   <div class="dropzone" id="dropzone">
     <p id="dropLabel">Drop PDFs here, or click to select</p>
     <input type="file" id="fileInput" accept=".pdf" multiple>
   </div>
 
-  <div class="controls-row">
+  <!-- Mode toggle: medium + spicy -->
+  <div class="controls-row" data-spice-min="medium">
     <span class="controls-label">Mode</span>
     <div class="toggle-group" id="modeToggle">
-      <button class="active" data-mode="single">Query</button>
-      <button data-mode="table">Table</button>
+      <button class="active" data-mode="single" data-tip="Extract one record per document">Query</button>
+      <button data-mode="table" data-tip="Extract rows from tables across pages">Table</button>
     </div>
     <span id="headerPagesControl" style="display:none; align-items:center; gap:0.6rem;">
       <label style="margin:0;">Header pages</label>
@@ -344,7 +370,24 @@ table.results tr:hover td { background: var(--surface-2); }
     </span>
   </div>
 
-  <div class="card">
+  <!-- Options: spicy only -->
+  <div class="controls-row" data-spice-min="spicy">
+    <span class="controls-label">Options</span>
+    <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.8rem; color:var(--text-muted); cursor:pointer;">
+      Parser
+      <select id="parserSelect" style="background:var(--surface-2); border:1px solid var(--border); border-radius:4px; color:var(--text); padding:0.2rem 0.4rem; font-size:0.78rem; font-family:inherit;">
+        <option value="pymupdf">PyMuPDF</option>
+        <option value="pdfplumber">pdfplumber</option>
+        <option value="tables">Tables</option>
+      </select>
+    </label>
+    <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.8rem; color:var(--text-muted); cursor:pointer; margin-left:0.5rem;">
+      <input type="checkbox" id="ocrFallback" style="accent-color:var(--accent); cursor:pointer;"> Mistral OCR (set API key in Settings)
+    </label>
+  </div>
+
+  <!-- Schema card: spicy only -->
+  <div class="card" data-spice-min="spicy">
     <div class="card-header">
       <span class="card-label">Schema</span>
       <input type="text" class="schema-name-input" id="schemaName" placeholder="Untitled schema">
@@ -352,23 +395,25 @@ table.results tr:hover td { background: var(--surface-2); }
     <div id="fieldRows"></div>
     <div class="btn-row">
       <button class="btn-add" id="addField">+ Add field</button>
-      <button class="btn-ghost" id="yamlToggle">Import Schema</button>
+      <button class="btn-ghost" id="yamlToggle">Import existing</button>
       <input type="file" id="yamlFile" accept=".yaml,.yml" style="display:none;">
+      <button class="btn-ghost" id="previewSchema" style="margin-left:auto;">Preview schema</button>
     </div>
   </div>
 
-  <div class="card">
+  <!-- Instructions: medium + spicy -->
+  <div class="card" data-spice-min="medium">
     <div class="card-header">
-      <span class="card-label">Instructions</span>
-      <span style="font-size:0.7rem; color:var(--text-dim);">optional</span>
+      <span class="card-label" id="instructionsLabel">What data do you want?</span>
+      <span style="font-size:0.7rem; color:var(--text-dim);" id="instructionsHint">Leave blank to infer from the document</span>
     </div>
     <textarea class="instructions-area" id="instructions"
-      placeholder="e.g. MCI item rows appear indented below each case. Dates are in MM/DD/YYYY format."></textarea>
+      placeholder="e.g. Extract all line items with date, description, and amount"></textarea>
   </div>
 
   <div class="action-row">
     <button class="extract-btn" id="extractBtn" disabled>Extract</button>
-    <button class="save-btn" id="saveBtn">Download Schema</button>
+    <button class="save-btn" id="saveBtn" data-spice-min="medium">Download Schema</button>
   </div>
 
   <div id="progressArea" style="display:none; margin-top:1.25rem;">
@@ -424,6 +469,9 @@ async function authFetch(url, opts = {}) {
 let selectedFiles = [];
 let recordType = 'single';
 let fields = [];
+let spiceMode = localStorage.getItem('petey_spice') || 'mild';
+
+const SPICE_LEVELS = ['mild', 'medium', 'spicy'];
 
 const dz = document.getElementById('dropzone');
 const fi = document.getElementById('fileInput');
@@ -432,6 +480,36 @@ const st = document.getElementById('status');
 const results = document.getElementById('results');
 const fieldRows = document.getElementById('fieldRows');
 const extractBtn = document.getElementById('extractBtn');
+
+// Spice mode toggle
+document.getElementById('spiceToggle').addEventListener('click', e => {
+  if (e.target.tagName !== 'BUTTON') return;
+  spiceMode = e.target.dataset.spice;
+  localStorage.setItem('petey_spice', spiceMode);
+  updateSpiceMode();
+});
+
+function updateSpiceMode() {
+  const level = SPICE_LEVELS.indexOf(spiceMode);
+  document.querySelectorAll('#spiceToggle button').forEach(b => {
+    b.classList.toggle('active', b.dataset.spice === spiceMode);
+  });
+  document.querySelectorAll('[data-spice-min]').forEach(el => {
+    const min = SPICE_LEVELS.indexOf(el.dataset.spiceMin);
+    el.style.display = level >= min ? '' : 'none';
+  });
+  // Update instructions label based on mode
+  const instrLabel = document.getElementById('instructionsLabel');
+  const instrHint = document.getElementById('instructionsHint');
+  if (spiceMode === 'spicy') {
+    instrLabel.textContent = 'Additional Instructions';
+    instrHint.textContent = 'optional';
+  } else {
+    instrLabel.textContent = 'What data do you want?';
+    instrHint.textContent = 'Leave blank to infer from the document';
+  }
+  updateExtractBtn();
+}
 
 // Mode toggle
 document.getElementById('modeToggle').addEventListener('click', e => {
@@ -447,6 +525,29 @@ function updateModeToggle() {
   document.getElementById('headerPagesControl').style.display =
     recordType === 'table' ? 'inline-flex' : 'none';
 }
+
+// Logo reset
+document.getElementById('logoReset').addEventListener('click', e => {
+  e.preventDefault();
+  selectedFiles = [];
+  fields = [{ name: '', type: 'string', description: '', values: '', enabled: true }];
+  recordType = 'single';
+  dropLabel.textContent = 'Drop PDFs here, or click to select';
+  dz.classList.remove('has-file');
+  fi.value = '';
+  document.getElementById('schemaName').value = '';
+  document.getElementById('instructions').value = '';
+  document.getElementById('headerPages').value = '0';
+  document.getElementById('pageRange').value = '';
+  document.getElementById('ocrFallback').checked = false;
+  document.getElementById('parserSelect').value = 'pymupdf';
+  updateModeToggle();
+  renderFields();
+  st.textContent = '';
+  results.innerHTML = '';
+  document.getElementById('progressArea').style.display = 'none';
+  updateExtractBtn();
+});
 
 // File drop
 dz.addEventListener('click', () => fi.click());
@@ -470,7 +571,12 @@ function setFiles(files) {
 }
 
 function updateExtractBtn() {
-  extractBtn.disabled = !(selectedFiles.length && fields.some(f => f.name.trim() && f.enabled));
+  if (spiceMode === 'mild' || spiceMode === 'medium') {
+    // mild/medium: just need a file (schema will be inferred if not provided)
+    extractBtn.disabled = !selectedFiles.length;
+  } else {
+    extractBtn.disabled = !(selectedFiles.length && fields.some(f => f.name.trim() && f.enabled));
+  }
 }
 
 // Field builder
@@ -605,6 +711,8 @@ async function extractFile(file, spec, instr) {
   form.append('file', file);
   form.append('schema_spec', JSON.stringify(spec));
   if (instr) form.append('instructions', instr);
+  form.append('parser', document.getElementById('parserSelect').value);
+  if (document.getElementById('ocrFallback').checked) form.append('ocr_fallback', 'true');
   const resp = await authFetch('/extract', { method: 'POST', body: form });
   if (!resp.ok) {
     let msg = 'Extraction failed (status ' + resp.status + ')';
@@ -654,8 +762,103 @@ async function extractFileStream(file, spec, instr, onPage) {
   throw new Error('Stream ended without result');
 }
 
+async function mildExtract() {
+  results.innerHTML = '';
+  extractBtn.disabled = true;
+  const instr = document.getElementById('instructions').value.trim();
+
+  // Step 1: Infer schema
+  st.textContent = 'Analyzing document...';
+  let spec;
+  try {
+    const form = new FormData();
+    form.append('file', selectedFiles[0]);
+    const resp = await authFetch('/infer-schema', { method: 'POST', body: form });
+    if (!resp.ok) throw new Error((await resp.json()).error || 'Schema inference failed');
+    spec = await resp.json();
+  } catch(e) {
+    st.innerHTML = '<span style="color:#f87171;">' + e.message + '</span>';
+    extractBtn.disabled = false;
+    updateExtractBtn();
+    return;
+  }
+
+  if (instr) spec.instructions = instr;
+
+  // Populate the schema card (hidden in mild mode, but available if user switches)
+  document.getElementById('schemaName').value = spec.name || '';
+  if (spec.record_type === 'array') { recordType = 'table'; updateModeToggle(); }
+  fields = Object.entries(spec.fields || {}).map(([name, cfg]) => ({
+    name, type: cfg.type || 'string', description: cfg.description || '',
+    values: (cfg.values || []).join(', '), enabled: true,
+  }));
+  renderFields();
+
+  // Step 2: Extract with inferred schema
+  st.textContent = 'Extracting data...';
+  try {
+    const form = new FormData();
+    form.append('file', selectedFiles[0]);
+    form.append('schema_spec', JSON.stringify(spec));
+    if (instr) form.append('instructions', instr);
+    const resp = await authFetch('/extract', { method: 'POST', body: form });
+    if (!resp.ok) {
+      let msg = 'Extraction failed';
+      try { const b = await resp.json(); msg = b.error || b.detail || msg; } catch(_) {}
+      throw new Error(msg);
+    }
+    const data = await resp.json();
+
+    if (data._error) {
+      st.innerHTML = '<span style="color:#f87171;">' + data._error + '</span>';
+    } else {
+      st.textContent = 'Done!';
+      // Show results
+      if (data.records && Array.isArray(data.records)) {
+        renderTable(data.records);
+      } else {
+        const pre = document.createElement('pre');
+        pre.textContent = JSON.stringify(data, null, 2);
+        results.appendChild(pre);
+        const jsonBlob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const jsonUrl = URL.createObjectURL(jsonBlob);
+        results.insertAdjacentHTML('beforeend',
+          '<a class="download-btn" href="' + jsonUrl + '" download="extracted.json">Download JSON</a>');
+      }
+      // Show inferred schema so user can save/reuse
+      const schemaYaml = specToYaml(spec);
+      results.insertAdjacentHTML('beforeend',
+        '<details style="margin-top:1rem;">' +
+        '<summary style="cursor:pointer; font-size:0.8rem; color:var(--text-muted);">Inferred schema (switch to Medium to edit)</summary>' +
+        '<pre style="margin-top:0.5rem; font-size:0.74rem;">' + schemaYaml.replace(/</g, '&lt;') + '</pre>' +
+        '</details>');
+      const schemaBlob = new Blob([schemaYaml], { type: 'text/yaml' });
+      const schemaUrl = URL.createObjectURL(schemaBlob);
+      const fname = (spec.name || 'schema').toLowerCase().replace(/\s+/g, '_') + '.yaml';
+      results.insertAdjacentHTML('beforeend',
+        '<a class="download-btn" href="' + schemaUrl + '" download="' + fname + '">Download Schema</a>');
+    }
+  } catch(e) {
+    if (e.message.includes('API key') || e.message.includes('api key')) {
+      st.innerHTML = '<span style="color:#f87171; font-weight:600;">' + e.message + '</span>' +
+        '<br><a href="/settings/page" style="color:var(--accent);">Go to Settings</a>';
+    } else {
+      st.innerHTML = '<span style="color:#f87171;">' + e.message + '</span>';
+    }
+  }
+  extractBtn.disabled = false;
+  updateExtractBtn();
+}
+
 extractBtn.addEventListener('click', async () => {
   if (!selectedFiles.length) return;
+
+  // Mild mode: always auto-infer. Medium: auto-infer if no schema fields defined.
+  const hasFields = fields.some(f => f.name.trim() && f.enabled);
+  if (spiceMode === 'mild' || (spiceMode === 'medium' && !hasFields)) {
+    return mildExtract();
+  }
+
   const spec = buildSpec();
   if (!Object.keys(spec.fields).length) return;
 
@@ -941,9 +1144,29 @@ document.getElementById('saveBtn').addEventListener('click', () => {
   st.textContent = 'Downloaded ' + filename;
 });
 
+// Preview Schema — show YAML of current schema in a modal-like area
+document.getElementById('previewSchema').addEventListener('click', () => {
+  const spec = buildSpec();
+  if (!Object.keys(spec.fields || {}).length) {
+    alert('Add at least one field first.');
+    return;
+  }
+  const yaml = specToYaml(spec);
+  const existing = document.getElementById('schemaPreview');
+  if (existing) { existing.remove(); return; } // toggle off
+  const div = document.createElement('div');
+  div.id = 'schemaPreview';
+  div.style.cssText = 'margin-top:0.5rem;';
+  div.innerHTML = '<pre style="font-size:0.74rem; margin:0;">' + yaml.replace(/</g, '&lt;') + '</pre>';
+  document.getElementById('previewSchema').closest('.card').appendChild(div);
+});
+
 // Start with one empty field
 fields.push({ name: '', type: 'string', description: '', values: '', enabled: true });
 renderFields();
+
+// Initialize spice mode from localStorage
+updateSpiceMode();
 </script>
 </body>
 </html>

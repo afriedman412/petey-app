@@ -15,7 +15,7 @@ from server.auth import FirebaseAuthMiddleware, get_uid
 from server.extract import (
     async_extract, async_extract_pages, load_schema,
     list_schemas, SCHEMAS_DIR, _build_model,
-    extract_text, check_text_length,
+    extract_text, check_text_length, async_infer_schema,
 )
 from server.par_extract import async_process_file as par_process_file, extract_text as par_extract_text
 from server.settings import (
@@ -374,6 +374,32 @@ async def results_append(request: Request):
     with open(path, "a") as f:
         f.write(json.dumps(body["data"]) + "\n")
     return {"ok": True}
+
+
+@app.post("/infer-schema")
+async def infer_schema_endpoint(
+    file: UploadFile,
+    ocr_fallback: bool = Form(False),
+    uid: str = Depends(get_uid),
+):
+    """Analyze a PDF and suggest an extraction schema."""
+    with tempfile.NamedTemporaryFile(
+        suffix=".pdf", delete=False
+    ) as tmp:
+        tmp.write(await file.read())
+        tmp_path = tmp.name
+    try:
+        spec = await async_infer_schema(
+            tmp_path, uid=uid,
+            ocr_fallback=ocr_fallback,
+        )
+        return spec
+    except Exception as e:
+        return JSONResponse(
+            {"error": str(e)}, status_code=500,
+        )
+    finally:
+        Path(tmp_path).unlink(missing_ok=True)
 
 
 @app.post("/parse-yaml")

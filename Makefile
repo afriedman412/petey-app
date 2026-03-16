@@ -13,6 +13,16 @@ venv:
 install: venv
 
 run: venv
+ifdef LOCAL
+ifeq ($(LOCAL),1)
+	$(PIP) install -e ../petey
+else
+	$(PIP) install -e $(LOCAL)
+endif
+endif
+ifdef GIT
+	$(PIP) install git+https://github.com/afriedman412/petey.git
+endif
 	export FIREBASE_AUTH_DISABLED=1 && $(VENV)/bin/uvicorn server.app:app --reload
 
 build-base:
