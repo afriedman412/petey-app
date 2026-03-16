@@ -134,6 +134,7 @@ async def extract_endpoint(
                 uid=uid, instructions=instructions,
                 parser=parser,
                 header_pages=spec.get("header_pages", 0),
+                page_range=spec.get("pages") or None,
             )
             rows = []
             for chunk in records:
@@ -163,6 +164,73 @@ async def extract_endpoint(
     finally:
         Path(tmp_path).unlink(missing_ok=True)
     return data
+
+
+@app.post("/extract/stream")
+async def extract_stream_endpoint(
+    request: Request,
+    file: UploadFile,
+    schema_spec: str = Form(None),
+    instructions: str = Form(""),
+    parser: str = Form("pymupdf"),
+    uid: str = Depends(get_uid),
+):
+    """Streaming array extraction — emits NDJSON page progress then result."""
+    settings = get_settings(uid)
+    provider = get_provider(settings["model"])
+    if provider == "anthropic" and not settings.get("anthropic_api_key"):
+        return JSONResponse({"error": "No Anthropic API key configured."}, 400)
+    if provider == "openai" and not settings.get("openai_api_key"):
+        return JSONResponse({"error": "No OpenAI API key configured."}, 400)
+
+    if not schema_spec:
+        return JSONResponse({"error": "No schema provided"}, 400)
+    spec = json.loads(schema_spec)
+    response_model = _build_model(spec)
+
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+        tmp.write(await file.read())
+        tmp_path = tmp.name
+
+    filename = file.filename
+
+    async def _stream():
+        queue = asyncio.Queue()
+
+        def on_result(label, data):
+            queue.put_nowait(json.dumps({"type": "progress", "page": label}) + "\n")
+
+        async def run():
+            try:
+                records = await async_extract_pages(
+                    tmp_path, response_model,
+                    uid=uid, instructions=instructions,
+                    parser=parser,
+                    header_pages=spec.get("header_pages", 0),
+                    page_range=spec.get("pages") or None,
+                    on_result=on_result,
+                )
+                rows = []
+                for chunk in records:
+                    if not chunk.get("_error") and "items" in chunk:
+                        rows.extend(chunk["items"])
+                result = {"_source_file": filename, "records": rows}
+            except Exception as e:
+                result = {"_source_file": filename, "_error": str(e)}
+            finally:
+                Path(tmp_path).unlink(missing_ok=True)
+            queue.put_nowait(json.dumps({"type": "result", "data": result}) + "\n")
+
+        task = asyncio.create_task(run())
+        done = False
+        while not done:
+            msg = await queue.get()
+            yield msg
+            if json.loads(msg)["type"] == "result":
+                done = True
+        await task
+
+    return StreamingResponse(_stream(), media_type="application/x-ndjson")
 
 
 @app.post("/par/extract")

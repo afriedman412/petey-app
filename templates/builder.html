@@ -154,10 +154,14 @@
     <button class="active" data-mode="single">Discrete queries</button>
     <button data-mode="table">Table</button>
   </div>
-  <label style="margin-left:1rem;">Load:</label>
-  <select id="loadSchema">
-    <option value="">New schema</option>
-  </select>
+  <span id="headerPagesControl" style="display:none; margin-left:1rem; align-items:center; gap:0.4rem;">
+    <label style="margin:0;">Header pages:</label>
+    <input type="number" id="headerPages" value="0" min="0" max="10"
+           style="width:4rem; padding:0.2rem 0.4rem; font-size:0.9rem; border:1px solid #ccc; border-radius:4px;">
+    <label style="margin:0 0 0 0.75rem;">Page range:</label>
+    <input type="text" id="pageRange" placeholder="e.g. 2-5 or 1,3,5-7"
+           style="width:10rem; padding:0.2rem 0.4rem; font-size:0.9rem; border:1px solid #ccc; border-radius:4px;">
+  </span>
 </div>
 
 <div class="schema-section">
@@ -169,10 +173,8 @@
   <div id="fieldRows"></div>
   <div class="btn-row" style="margin-top:0.5rem;">
     <button class="add-btn" id="addField">+ Add field</button>
-    <button class="yaml-toggle" id="yamlToggle">Import YAML</button>
-  </div>
-  <div id="yamlSection" style="display:none; margin-top:0.75rem;">
-    <input type="file" id="yamlFile" accept=".yaml,.yml" style="margin-bottom:0.5rem; font-size:0.9rem;">
+    <button class="yaml-toggle" id="yamlToggle">Import Schema</button>
+    <input type="file" id="yamlFile" accept=".yaml,.yml" style="display:none;">
   </div>
 </div>
 
@@ -184,7 +186,7 @@
 
 <div class="btn-row">
   <button class="extract-btn" id="extractBtn" disabled>Extract</button>
-  <button class="save-btn" id="saveBtn">Download YAML</button>
+  <button class="save-btn" id="saveBtn">Download Schema</button>
 </div>
 
 <div id="progressArea" style="display:none; margin-top:16px;">
@@ -265,32 +267,6 @@ const st = document.getElementById('status');
 const results = document.getElementById('results');
 const fieldRows = document.getElementById('fieldRows');
 const extractBtn = document.getElementById('extractBtn');
-const loadSel = document.getElementById('loadSchema');
-
-// Load saved schemas
-authFetch('/schemas').then(r => r.json()).then(schemas => {
-  schemas.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s.file;
-    opt.textContent = s.name;
-    loadSel.appendChild(opt);
-  });
-});
-
-loadSel.addEventListener('change', async () => {
-  if (!loadSel.value) { fields = []; renderFields(); return; }
-  const resp = await authFetch('/schemas/' + loadSel.value);
-  const spec = await resp.json();
-  document.getElementById('schemaName').value = spec.name || '';
-  document.getElementById('instructions').value = spec.instructions || '';
-  recordType = spec.record_type === 'array' ? 'table' : 'single';
-  updateModeToggle();
-  fields = Object.entries(spec.fields || {}).map(([name, cfg]) => ({
-    name, type: cfg.type, description: cfg.description || '',
-    values: (cfg.values || []).join(', '), enabled: true,
-  }));
-  renderFields();
-});
 
 // Mode toggle
 document.getElementById('modeToggle').addEventListener('click', e => {
@@ -303,6 +279,8 @@ function updateModeToggle() {
   document.querySelectorAll('#modeToggle button').forEach(b => {
     b.classList.toggle('active', b.dataset.mode === recordType);
   });
+  document.getElementById('headerPagesControl').style.display =
+    recordType === 'table' ? 'inline-flex' : 'none';
 }
 
 // File drop
@@ -400,8 +378,7 @@ function esc(s) { return (s||'').replace(/"/g, '&quot;').replace(/</g, '&lt;'); 
 
 // YAML import
 document.getElementById('yamlToggle').addEventListener('click', () => {
-  const sec = document.getElementById('yamlSection');
-  sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
+  document.getElementById('yamlFile').click();
 });
 
 document.getElementById('yamlFile').addEventListener('change', e => {
@@ -416,13 +393,14 @@ document.getElementById('yamlFile').addEventListener('change', e => {
       document.getElementById('schemaName').value = spec.name || '';
       document.getElementById('instructions').value = spec.instructions || '';
       recordType = spec.record_type === 'array' ? 'table' : 'single';
+      document.getElementById('headerPages').value = spec.header_pages || 0;
+  document.getElementById('pageRange').value = spec.pages || '';
       updateModeToggle();
       fields = Object.entries(spec.fields || {}).map(([name, cfg]) => ({
         name, type: cfg.type, description: cfg.description || '',
         values: (cfg.values || []).join(', '), enabled: true,
       }));
       renderFields();
-      document.getElementById('yamlSection').style.display = 'none';
     }).catch(() => alert('Invalid YAML file'));
   };
   reader.readAsText(file);
@@ -433,7 +411,13 @@ function buildSpec() {
   const spec = {};
   const name = document.getElementById('schemaName').value.trim();
   if (name) spec.name = name;
-  if (recordType === 'table') spec.record_type = 'array';
+  if (recordType === 'table') {
+    spec.record_type = 'array';
+    const hp = parseInt(document.getElementById('headerPages').value) || 0;
+    if (hp > 0) spec.header_pages = hp;
+    const pr = document.getElementById('pageRange').value.trim();
+    if (pr) spec.pages = pr;
+  }
   const instr = document.getElementById('instructions').value.trim();
   if (instr) spec.instructions = instr;
   spec.fields = {};
@@ -473,6 +457,41 @@ async function extractFile(file, spec, instr) {
     throw new Error(msg);
   }
   return await resp.json();
+}
+
+async function extractFileStream(file, spec, instr, onPage) {
+  const form = new FormData();
+  form.append('file', file);
+  form.append('schema_spec', JSON.stringify(spec));
+  if (instr) form.append('instructions', instr);
+  const resp = await authFetch('/extract/stream', { method: 'POST', body: form });
+  if (!resp.ok) {
+    let msg = 'Extraction failed (status ' + resp.status + ')';
+    try {
+      const body = await resp.text();
+      const errData = JSON.parse(body);
+      msg = errData.error || errData.detail || msg;
+    } catch (_) {}
+    if (msg.includes('API key') || msg.includes('api key')) throw new ApiKeyError(msg);
+    throw new Error(msg);
+  }
+  const reader = resp.body.getReader();
+  const decoder = new TextDecoder();
+  let buf = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    const lines = buf.split('\n');
+    buf = lines.pop();
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      const msg = JSON.parse(line);
+      if (msg.type === 'progress' && onPage) onPage(msg.page);
+      if (msg.type === 'result') return msg.data;
+    }
+  }
+  throw new Error('Stream ended without result');
 }
 
 extractBtn.addEventListener('click', async () => {
@@ -524,7 +543,12 @@ extractBtn.addEventListener('click', async () => {
       progressLog.appendChild(logEntry);
       progressLog.scrollTop = progressLog.scrollHeight;
       try {
-        const data = await extractFile(file, spec, instr);
+        const useStream = recordType === 'table' && total === 1;
+        const data = useStream
+          ? await extractFileStream(file, spec, instr, page => {
+              st.textContent = file.name + ' — page ' + page + '...';
+            })
+          : await extractFile(file, spec, instr);
         logEntry.textContent = file.name + (data._error ? ' — error' : ' — done');
         if (data._info && data._info.length) {
           for (const msg of data._info) {

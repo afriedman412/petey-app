@@ -123,6 +123,8 @@ async def async_extract_pages(
     parser: str = "pymupdf",
     pages_per_chunk: int = 1,
     header_pages: int = 0,
+    page_range: str | None = None,
+    on_result=None,
 ) -> list[dict]:
     """Page-chunked extraction using the user's settings."""
     model_id, api_key = _get_api_key(uid)
@@ -133,6 +135,8 @@ async def async_extract_pages(
         parser=parser,
         pages_per_chunk=pages_per_chunk,
         header_pages=header_pages,
+        page_range=page_range,
+        on_result=on_result,
     )
 
 
