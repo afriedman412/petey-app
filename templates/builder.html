@@ -2,208 +2,385 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Petey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; }
-  body { font-family: system-ui, sans-serif; max-width: 900px;
-         margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; }
-  h1 { margin-bottom: 0.25rem; }
-  .subtitle { color: #666; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-  .subtitle a { color: #2563eb; text-decoration: none; font-size: 14px; }
-  .subtitle a:hover { text-decoration: underline; }
+:root {
+  --bg:          #111111;
+  --surface:     #1c1c1c;
+  --surface-2:   #262626;
+  --border:      #333333;
+  --accent:      #d8572a;
+  --accent-h:    #e06b3e;
+  --accent-dim:  rgba(216,87,42,0.12);
+  --amber:       #f7b538;
+  --amber-dim:   rgba(247,181,56,0.12);
+  --green:       #86efac;
+  --danger:      #c32f27;
+  --text:        #f2ece4;
+  --text-muted:  #db7c26;
+  --text-dim:    #999999;
+  --r:           8px;
+  --r-lg:        12px;
+}
 
-  .dropzone {
-    border: 2px dashed #adb5bd; border-radius: 8px; padding: 2.5rem;
-    text-align: center; color: #666; cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
-    margin-bottom: 1.5rem;
-  }
-  .dropzone.over { border-color: #228be6; background: #e7f5ff; }
-  .dropzone.has-file { border-color: #51cf66; background: #ebfbee; color: #2b8a3e; }
-  .dropzone input { display: none; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--bg); }
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
 
-  .controls { display: flex; gap: 1rem; align-items: center;
-              margin-bottom: 1.5rem; flex-wrap: wrap; }
-  .controls label { font-weight: 600; }
-  .controls select, .controls input[type=text] {
-    padding: 0.4rem 0.6rem; font-size: 0.95rem; border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  .toggle-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
-  .toggle-group button {
-    padding: 0.4rem 1rem; border: none; background: #fff; cursor: pointer;
-    font-size: 0.9rem; transition: background 0.15s;
-  }
-  .toggle-group button.active { background: #228be6; color: #fff; }
+/* PAGE TOP LINK */
+.page-top-link {
+  font-size: 0.78rem; color: var(--text-muted); text-decoration: none;
+  letter-spacing: 0.03em; transition: color 0.15s; align-self: flex-end;
+  padding-bottom: 0.2rem;
+}
+.page-top-link:hover { color: var(--text); }
 
-  .schema-section { margin-bottom: 1.5rem; }
-  .schema-section h2 { font-size: 1.1rem; margin-bottom: 0.5rem; }
-  .field-row {
-    display: grid; grid-template-columns: 24px 1fr 120px 2fr 30px;
-    gap: 0.5rem; align-items: center; margin-bottom: 0.4rem;
-  }
-  .field-row input[type=text], .field-row select {
-    padding: 0.35rem 0.5rem; font-size: 0.9rem; border: 1px solid #ccc;
-    border-radius: 4px; width: 100%;
-  }
-  .field-row input[type=checkbox] { width: 16px; height: 16px; margin: 0; cursor: pointer; }
-  .field-row .remove-btn {
-    background: none; border: none; color: #e03131; cursor: pointer;
-    font-size: 1.2rem; padding: 0;
-  }
-  .field-row.disabled input[type=text], .field-row.disabled select {
-    opacity: 0.4; pointer-events: none;
-  }
-  .enum-values {
-    grid-column: 1 / -1; margin-left: 0.5rem; margin-bottom: 0.5rem;
-  }
-  .enum-values input {
-    padding: 0.3rem 0.5rem; font-size: 0.85rem; border: 1px solid #ddd;
-    border-radius: 4px; width: 100%;
-  }
-  .enum-values label { font-size: 0.8rem; color: #666; }
+/* AUTH OVERLAY */
+.auth-overlay {
+  position: fixed; inset: 0; background: rgba(11,15,26,0.97);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100; flex-direction: column; gap: 1.25rem;
+}
+.auth-overlay h2 {
+  font-size: 2.8rem; font-weight: 800; letter-spacing: -0.05em; line-height: 1;
+}
+.auth-overlay p { color: var(--text-muted); font-size: 0.88rem; }
+.auth-overlay .overlay-btn {
+  padding: 11px 28px; font-size: 0.9rem; font-weight: 700; border-radius: 8px;
+  border: none; background: var(--accent); color: #000; cursor: pointer;
+  font-family: inherit; transition: background 0.15s;
+}
+.auth-overlay .overlay-btn:hover { background: var(--accent-h); }
 
-  .add-btn, .extract-btn, .save-btn {
-    padding: 0.5rem 1.2rem; border: none; border-radius: 4px;
-    cursor: pointer; font-size: 0.95rem;
-  }
-  .add-btn { background: #e7f5ff; color: #228be6; }
-  .extract-btn { background: #228be6; color: #fff; font-weight: 600; }
-  .extract-btn:disabled { background: #adb5bd; cursor: not-allowed; }
-  .save-btn { background: #ebfbee; color: #2b8a3e; }
-  .btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+/* MAIN */
+.main { max-width: 940px; margin: 0 auto; padding: 2.75rem 2rem 5rem; }
 
-  #status { margin: 1rem 0; font-weight: 500; }
-  pre { background: #f1f3f5; padding: 1rem; border-radius: 6px;
-        overflow-x: auto; font-size: 0.85rem; }
-  table.results { width: 100%; border-collapse: collapse; font-size: 0.85rem;
-                  margin-top: 0.5rem; }
-  table.results th, table.results td {
-    border: 1px solid #dee2e6; padding: 0.4rem 0.6rem; text-align: left;
-  }
-  table.results th { background: #f1f3f5; position: sticky; top: 0; }
-  .table-wrap { max-height: 500px; overflow: auto; border-radius: 6px;
-                border: 1px solid #dee2e6; }
-  .download-btn { display: inline-block; margin-top: 0.5rem; padding: 0.3rem 0.8rem;
-                  background: #f1f3f5; border: 1px solid #ccc; border-radius: 4px;
-                  cursor: pointer; font-size: 0.85rem; text-decoration: none; color: #1a1a1a; }
+/* HERO */
+.hero { margin-bottom: 2.5rem; }
+.hero-top {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-bottom: 0.45rem;
+}
+.hero h1 {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 3.2rem; font-weight: 400; letter-spacing: -0.01em; line-height: 0.95;
+}
+.hero h1 .dot { color: var(--accent); }
+.hero-sub { font-size: 0.82rem; color: var(--text-muted); letter-spacing: 0.04em; }
 
-  .yaml-toggle { font-size: 0.85rem; color: #228be6; cursor: pointer;
-                 background: none; border: none; padding: 0; margin-bottom: 0.5rem; }
-  .instructions-area { width: 100%; min-height: 60px; font-size: 0.9rem;
-               padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;
-               font-family: system-ui, sans-serif; resize: vertical; }
-  .instructions-section { margin-bottom: 1.5rem; }
-  .instructions-section label { font-size: 0.9rem; color: #666; display: block; margin-bottom: 0.3rem; }
+/* DROPZONE */
+.dropzone {
+  border: 1.5px dashed var(--border); border-radius: var(--r-lg);
+  padding: 2.75rem 2rem; text-align: center; cursor: pointer;
+  background: var(--surface); margin-bottom: 1.5rem;
+  background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+  background-size: 22px 22px; background-position: center;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.dropzone:hover, .dropzone.over {
+  border-color: var(--accent); background-color: var(--accent-dim);
+}
+.dropzone.has-file {
+  border-color: var(--green); border-style: solid;
+  background-color: rgba(52,211,153,0.05); background-image: none;
+}
+.dropzone p { font-size: 0.88rem; color: var(--text-muted); }
+.dropzone.has-file p { color: var(--green); font-weight: 500; }
+.dropzone input { display: none; }
+
+
+/* CONTROLS ROW */
+.controls-row {
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+.controls-label {
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-muted);
+}
+
+/* TOGGLE */
+.toggle-group {
+  display: flex; border: 1px solid var(--border); border-radius: 5px; overflow: hidden;
+}
+.toggle-group button {
+  padding: 0.3rem 0.9rem; border: none; background: transparent; cursor: pointer;
+  font-size: 0.8rem; color: var(--text-muted); font-family: inherit;
+  transition: all 0.15s;
+}
+.toggle-group button.active { background: var(--accent); color: #000; font-weight: 600; }
+
+/* EXTRA CONTROLS (header pages / page range) */
+#headerPagesControl {
+  align-items: center; gap: 0.6rem;
+}
+#headerPagesControl label {
+  font-size: 0.76rem; color: var(--text-muted); margin: 0;
+}
+#headerPagesControl input {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 4px; color: var(--text); padding: 0.22rem 0.4rem;
+  font-size: 0.8rem; font-family: inherit; transition: border-color 0.15s;
+}
+#headerPagesControl input[type=number] { width: 4rem; }
+#headerPagesControl input[type=text] { width: 9rem; }
+#headerPagesControl input:focus { outline: none; border-color: var(--accent); }
+
+/* CARD */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 1.5rem 1.75rem; margin-bottom: 1.25rem;
+}
+.card-header {
+  display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem;
+  padding-bottom: 0.85rem; border-bottom: 1px solid var(--border);
+}
+.card-label {
+  font-size: 0.67rem; font-weight: 700; letter-spacing: 0.13em;
+  text-transform: uppercase; color: var(--text-muted); flex-shrink: 0;
+}
+.schema-name-input {
+  background: transparent; border: none; color: var(--text);
+  font-size: 0.85rem; padding: 0; font-family: inherit; flex: 1; min-width: 0;
+}
+.schema-name-input:focus { outline: none; }
+.schema-name-input::placeholder { color: var(--text-dim); }
+
+/* FIELD ROWS */
+.field-row {
+  display: grid; grid-template-columns: 18px 1fr 92px 2fr 22px;
+  gap: 0.35rem; align-items: center; margin-bottom: 0.28rem;
+}
+.field-row input[type=text], .field-row select {
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--text); padding: 0.27rem 0.4rem; font-size: 0.8rem;
+  border-radius: 4px; width: 100%; font-family: inherit; transition: border-color 0.15s;
+}
+.field-row input[type=text]:focus, .field-row select:focus {
+  outline: none; border-color: var(--accent);
+}
+.field-row select option { background: var(--surface-2); color: var(--text); }
+.field-row input[type=checkbox] {
+  width: 14px; height: 14px; margin: 0; cursor: pointer; accent-color: var(--accent);
+}
+.field-row.disabled input[type=text], .field-row.disabled select {
+  opacity: 0.22; pointer-events: none;
+}
+.field-row .remove-btn {
+  background: none; border: none; color: var(--text-dim); cursor: pointer;
+  font-size: 1rem; padding: 0; line-height: 1; transition: color 0.15s;
+}
+.field-row .remove-btn:hover { color: var(--danger); }
+
+.enum-values { grid-column: 1 / -1; margin-left: 1.2rem; margin-bottom: 0.28rem; }
+.enum-values label {
+  font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 0.16rem;
+}
+.enum-values input {
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--text); padding: 0.22rem 0.4rem; font-size: 0.78rem;
+  border-radius: 4px; width: 100%; font-family: inherit;
+}
+.enum-values input:focus { outline: none; border-color: var(--accent); }
+
+/* BUTTONS */
+.btn-row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.7rem; }
+
+.btn-add {
+  padding: 0.32rem 0.8rem; font-size: 0.78rem; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--surface-2); color: var(--text-muted);
+  cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+.btn-add:hover { border-color: var(--accent); color: var(--accent); }
+
+.btn-ghost {
+  background: none; border: none; color: var(--text-muted); font-size: 0.78rem;
+  cursor: pointer; padding: 0; font-family: inherit;
+  text-decoration: underline; text-underline-offset: 3px; transition: color 0.15s;
+}
+.btn-ghost:hover { color: var(--text); }
+
+/* INSTRUCTIONS */
+.instructions-area {
+  width: 100%; min-height: 52px; font-size: 0.8rem;
+  padding: 0.48rem 0.6rem; background: var(--surface-2);
+  border: 1px solid var(--border); border-radius: 4px;
+  font-family: inherit; resize: vertical; color: var(--text);
+  transition: border-color 0.15s;
+}
+.instructions-area:focus { outline: none; border-color: var(--accent); }
+.instructions-area::placeholder { color: var(--text-dim); }
+
+/* ACTION ROW */
+.action-row { display: flex; gap: 0.75rem; align-items: center; margin-top: 0.5rem; }
+
+.extract-btn {
+  padding: 0.65rem 1.75rem; font-size: 0.88rem; font-weight: 700;
+  background: var(--accent); color: #000; border: none;
+  border-radius: 6px; cursor: pointer; font-family: inherit;
+  letter-spacing: 0.03em; transition: background 0.15s;
+}
+.extract-btn:hover:not(:disabled) { background: var(--accent-h); }
+.extract-btn:disabled {
+  background: var(--surface-2); color: var(--text-dim);
+  border: 1px solid var(--border); cursor: not-allowed;
+}
+
+.save-btn {
+  padding: 0.6rem 1.1rem; font-size: 0.8rem; font-weight: 500;
+  background: var(--amber-dim); border: 1px solid rgba(251,191,36,0.22);
+  color: var(--amber); border-radius: 6px; cursor: pointer;
+  font-family: inherit; transition: background 0.15s;
+}
+.save-btn:hover { background: rgba(251,191,36,0.14); }
+
+/* STATUS + PROGRESS */
+#status {
+  margin: 0.75rem 0; font-size: 0.82rem; color: var(--text-muted);
+  white-space: pre-line; line-height: 1.6;
+}
+#progressArea { margin-top: 1.25rem; }
+.progress-meta {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 0.35rem;
+}
+#progressPct { font-size: 0.72rem; color: var(--text-muted); }
+.progress-track {
+  height: 2px; background: var(--surface-2); border-radius: 1px;
+  overflow: hidden; margin-bottom: 0.5rem;
+}
+#progressBar {
+  height: 100%; background: var(--accent); border-radius: 1px;
+  width: 0%; transition: width 0.3s;
+}
+#progressLog {
+  font-size: 0.72rem; color: var(--text-muted); max-height: 110px;
+  overflow-y: auto; line-height: 1.65;
+}
+
+/* RESULTS */
+pre {
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 1rem; border-radius: var(--r); overflow-x: auto;
+  font-size: 0.77rem; color: var(--text); line-height: 1.65; margin-top: 0.5rem;
+}
+.table-wrap {
+  max-height: 480px; overflow: auto; border-radius: var(--r);
+  border: 1px solid var(--border); margin-top: 0.75rem;
+}
+table.results { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+table.results th {
+  background: var(--surface-2); color: var(--text-muted);
+  font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em;
+  padding: 0.38rem 0.6rem; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; text-align: left;
+}
+table.results td {
+  padding: 0.3rem 0.6rem; border-bottom: 1px solid var(--border);
+  color: var(--text); vertical-align: top;
+}
+table.results tr:last-child td { border-bottom: none; }
+table.results tr:hover td { background: var(--surface-2); }
+
+.download-btn {
+  display: inline-block; margin-top: 0.5rem; margin-right: 0.4rem;
+  padding: 0.26rem 0.72rem; background: var(--surface-2);
+  border: 1px solid var(--border); border-radius: 4px;
+  cursor: pointer; font-size: 0.74rem; text-decoration: none;
+  color: var(--text-muted); font-family: inherit; transition: all 0.15s;
+}
+.download-btn:hover { border-color: var(--accent); color: var(--accent); }
 </style>
 </head>
 <body>
 
-<style>
-  .auth-bar {
-    display: flex; align-items: center; justify-content: flex-end;
-    gap: 12px; margin-bottom: 0.5rem; font-size: 14px;
-  }
-  .auth-bar .user-email { color: #555; }
-  .auth-bar button {
-    padding: 6px 14px; border: 1px solid #ccc; border-radius: 6px;
-    background: #f9f9f9; cursor: pointer; font-size: 13px;
-  }
-  .auth-bar button:hover { background: #eee; }
-  .auth-bar .sign-in-btn { background: #2563eb; color: #fff; border: none; }
-  .auth-bar .sign-in-btn:hover { background: #1d4ed8; }
-  .auth-overlay {
-    position: fixed; inset: 0; background: rgba(255,255,255,0.95);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 1000; flex-direction: column; gap: 1rem;
-  }
-  .auth-overlay h2 { margin: 0; }
-  .auth-overlay p { color: #666; margin: 0; }
-</style>
-
-<div class="auth-bar" id="authBar" style="display:none;">
-  <span class="user-email" id="userEmail"></span>
-  <button id="signOutBtn" style="display:none;">Sign out</button>
-  <button id="signInBtn" class="sign-in-btn" style="display:none;">Sign in with Google</button>
-</div>
-
 <div class="auth-overlay" id="authOverlay">
-  <h2>Petey</h2>
+  <h2>Petey<span style="color:var(--accent)">.</span></h2>
   <p>Sign in to get started</p>
-  <button id="overlaySignIn" class="sign-in-btn" style="padding:10px 24px; font-size:16px; border-radius:8px; border:none; background:#2563eb; color:#fff; cursor:pointer;">Sign in with Google</button>
+  <button id="overlaySignIn" class="overlay-btn">Sign in with Google</button>
 </div>
 
-<h1>Petey</h1>
-<p class="subtitle">
-  <span>The Easy PDF Extractor</span>
-  <span><a href="/template-builder">Schema Builder</a> &middot; <a href="/settings/page">Settings</a></span>
-</p>
+<main class="main">
 
-<div class="dropzone" id="dropzone">
-  <p id="dropLabel">Drop PDF(s) here, or click to select</p>
-  <input type="file" id="fileInput" accept=".pdf" multiple>
-</div>
-<div style="margin-top:-1rem; margin-bottom:1.5rem; font-size:0.85rem;">
-  <button id="folderBtn" style="background:none; border:none; color:#228be6; cursor:pointer; padding:0; font-size:0.85rem;">Select folder</button>
-  <input type="file" id="folderInput" accept=".pdf" webkitdirectory style="display:none;">
-</div>
-
-<div class="controls">
-  <label>Mode:</label>
-  <div class="toggle-group" id="modeToggle">
-    <button class="active" data-mode="single">Discrete queries</button>
-    <button data-mode="table">Table</button>
-  </div>
-  <label style="margin-left:1rem;">Parser:</label>
-  <select id="parserSelect">
-    <option value="pymupdf">PyMuPDF (default)</option>
-    <option value="marker">Marker (better layout)</option>
-    <option value="aryn">Aryn (tables, parallel)</option>
-  </select>
-  <label style="margin-left:1rem;">Load:</label>
-  <select id="loadSchema">
-    <option value="">New schema</option>
-  </select>
-</div>
-
-<div class="schema-section">
-  <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.75rem;">
-    <h2 style="margin:0;">Fields</h2>
-    <input type="text" id="schemaName" placeholder="Schema name (optional)"
-           style="padding:0.3rem 0.5rem; font-size:0.9rem; border:1px solid #ccc; border-radius:4px;">
-  </div>
-  <div id="fieldRows"></div>
-  <div class="btn-row" style="margin-top:0.5rem;">
-    <button class="add-btn" id="addField">+ Add field</button>
-    <button class="yaml-toggle" id="yamlToggle">Import YAML</button>
-  </div>
-  <div id="yamlSection" style="display:none; margin-top:0.75rem;">
-    <input type="file" id="yamlFile" accept=".yaml,.yml" style="margin-bottom:0.5rem; font-size:0.9rem;">
-  </div>
-</div>
-
-<div class="instructions-section">
-  <label for="instructions">Additional instructions (optional)</label>
-  <textarea class="instructions-area" id="instructions"
-    placeholder="e.g. MCI item rows appear indented below each case. Dates are in MM/DD/YYYY format."></textarea>
-</div>
-
-<div class="btn-row">
-  <button class="extract-btn" id="extractBtn" disabled>Extract</button>
-  <button class="save-btn" id="saveBtn">Download YAML</button>
-</div>
-
-<div id="progressArea" style="display:none; margin-top:16px;">
-  <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
-    <div style="flex:1; background:#e5e7eb; border-radius:6px; height:8px; overflow:hidden;">
-      <div id="progressBar" style="height:100%; background:#228be6; border-radius:6px; width:0%; transition:width 0.3s;"></div>
+  <div class="hero">
+    <div class="hero-top">
+      <h1>Petey<span class="dot">.</span></h1>
+      <div style="display:flex; gap:1.25rem; align-items:flex-end; padding-bottom:0.2rem;">
+        <a href="/about" class="page-top-link">About</a>
+        <a href="/template-builder" class="page-top-link">Schema Designer</a>
+        <a href="/settings/page" class="page-top-link">Settings</a>
+        <a href="https://github.com/afriedman412/petey" target="_blank" rel="noopener" class="page-top-link" title="GitHub" style="padding-bottom:0;"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
+      </div>
     </div>
-    <span id="progressPct" style="font-size:13px; color:#555; min-width:40px;">0%</span>
+    <p class="hero-sub">Easy PDF Extraction</p>
   </div>
-  <div id="progressLog" style="font-size:12px; color:#555; max-height:120px; overflow-y:auto;"></div>
-</div>
-<div id="status"></div>
-<div id="results"></div>
+
+  <div class="dropzone" id="dropzone">
+    <p id="dropLabel">Drop PDFs here, or click to select</p>
+    <input type="file" id="fileInput" accept=".pdf" multiple>
+  </div>
+
+  <div class="controls-row">
+    <span class="controls-label">Mode</span>
+    <div class="toggle-group" id="modeToggle">
+      <button class="active" data-mode="single">Query</button>
+      <button data-mode="table">Table</button>
+    </div>
+    <span id="headerPagesControl" style="display:none; align-items:center; gap:0.6rem;">
+      <label style="margin:0;">Header pages</label>
+      <input type="number" id="headerPages" value="0" min="0" max="10">
+      <label style="margin:0 0 0 0.5rem;">Page range</label>
+      <input type="text" id="pageRange" placeholder="e.g. 2-5 or 1,3,5-7">
+    </span>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-label">Schema</span>
+      <input type="text" class="schema-name-input" id="schemaName" placeholder="Untitled schema">
+    </div>
+    <div id="fieldRows"></div>
+    <div class="btn-row">
+      <button class="btn-add" id="addField">+ Add field</button>
+      <button class="btn-ghost" id="yamlToggle">Import Schema</button>
+      <input type="file" id="yamlFile" accept=".yaml,.yml" style="display:none;">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-label">Instructions</span>
+      <span style="font-size:0.7rem; color:var(--text-dim);">optional</span>
+    </div>
+    <textarea class="instructions-area" id="instructions"
+      placeholder="e.g. MCI item rows appear indented below each case. Dates are in MM/DD/YYYY format."></textarea>
+  </div>
+
+  <div class="action-row">
+    <button class="extract-btn" id="extractBtn" disabled>Extract</button>
+    <button class="save-btn" id="saveBtn">Download Schema</button>
+  </div>
+
+  <div id="progressArea" style="display:none; margin-top:1.25rem;">
+    <div class="progress-meta">
+      <span id="progressPct">0%</span>
+    </div>
+    <div class="progress-track"><div id="progressBar"></div></div>
+    <div id="progressLog"></div>
+  </div>
+
+  <div id="status"></div>
+  <div id="results"></div>
+
+</main>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
@@ -216,37 +393,18 @@ const firebaseConfig = await cfgResp.json();
 let _currentUser = null;
 
 if (firebaseConfig.authDisabled) {
-  // Local dev mode — skip Firebase auth entirely
   document.getElementById('authOverlay').style.display = 'none';
-  document.getElementById('authBar').style.display = 'none';
 } else {
   const firebaseApp = initializeApp(firebaseConfig);
   const auth = getAuth(firebaseApp);
   const provider = new GoogleAuthProvider();
 
-  const signInBtn = document.getElementById('signInBtn');
-  const signOutBtn = document.getElementById('signOutBtn');
-  const overlaySignIn = document.getElementById('overlaySignIn');
-  signInBtn.addEventListener('click', () => signInWithPopup(auth, provider));
-  signOutBtn.addEventListener('click', () => signOut(auth));
-  overlaySignIn.addEventListener('click', () => signInWithPopup(auth, provider));
+  document.getElementById('overlaySignIn').addEventListener('click', () => signInWithPopup(auth, provider));
 
   onAuthStateChanged(auth, user => {
-    const bar = document.getElementById('authBar');
     const overlay = document.getElementById('authOverlay');
-    bar.style.display = 'flex';
     _currentUser = user;
-    if (user) {
-      overlay.style.display = 'none';
-      document.getElementById('userEmail').textContent = user.email;
-      signInBtn.style.display = 'none';
-      signOutBtn.style.display = '';
-    } else {
-      overlay.style.display = 'flex';
-      document.getElementById('userEmail').textContent = '';
-      signInBtn.style.display = '';
-      signOutBtn.style.display = 'none';
-    }
+    overlay.style.display = user ? 'none' : 'flex';
   });
 }
 
@@ -265,38 +423,11 @@ let fields = [];
 
 const dz = document.getElementById('dropzone');
 const fi = document.getElementById('fileInput');
-const folderInput = document.getElementById('folderInput');
 const dropLabel = document.getElementById('dropLabel');
 const st = document.getElementById('status');
 const results = document.getElementById('results');
 const fieldRows = document.getElementById('fieldRows');
 const extractBtn = document.getElementById('extractBtn');
-const loadSel = document.getElementById('loadSchema');
-
-// Load saved schemas
-authFetch('/schemas').then(r => r.json()).then(schemas => {
-  schemas.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s.file;
-    opt.textContent = s.name;
-    loadSel.appendChild(opt);
-  });
-});
-
-loadSel.addEventListener('change', async () => {
-  if (!loadSel.value) { fields = []; renderFields(); return; }
-  const resp = await authFetch('/schemas/' + loadSel.value);
-  const spec = await resp.json();
-  document.getElementById('schemaName').value = spec.name || '';
-  document.getElementById('instructions').value = spec.instructions || '';
-  recordType = spec.record_type === 'array' ? 'table' : 'single';
-  updateModeToggle();
-  fields = Object.entries(spec.fields || {}).map(([name, cfg]) => ({
-    name, type: cfg.type, description: cfg.description || '',
-    values: (cfg.values || []).join(', '), enabled: true,
-  }));
-  renderFields();
-});
 
 // Mode toggle
 document.getElementById('modeToggle').addEventListener('click', e => {
@@ -309,6 +440,8 @@ function updateModeToggle() {
   document.querySelectorAll('#modeToggle button').forEach(b => {
     b.classList.toggle('active', b.dataset.mode === recordType);
   });
+  document.getElementById('headerPagesControl').style.display =
+    recordType === 'table' ? 'inline-flex' : 'none';
 }
 
 // File drop
@@ -321,11 +454,6 @@ dz.addEventListener('drop', e => {
   if (pdfs.length) setFiles(pdfs);
 });
 fi.addEventListener('change', e => {
-  const pdfs = [...e.target.files].filter(f => f.name.toLowerCase().endsWith('.pdf'));
-  if (pdfs.length) setFiles(pdfs);
-});
-document.getElementById('folderBtn').addEventListener('click', () => folderInput.click());
-folderInput.addEventListener('change', e => {
   const pdfs = [...e.target.files].filter(f => f.name.toLowerCase().endsWith('.pdf'));
   if (pdfs.length) setFiles(pdfs);
 });
@@ -362,7 +490,7 @@ function renderFields() {
         '<option value="string"' + (f.type==='string'?' selected':'') + '>Text</option>' +
         '<option value="number"' + (f.type==='number'?' selected':'') + '>Number</option>' +
         '<option value="date"' + (f.type==='date'?' selected':'') + '>Date</option>' +
-        '<option value="enum"' + (f.type==='enum'?' selected':'') + '>Enum</option>' +
+        '<option value="enum"' + (f.type==='enum'?' selected':'') + '>Category</option>' +
       '</select>' +
       '<input type="text" placeholder="Description" value="' + esc(f.description) + '" data-i="' + i + '" data-key="description">' +
       '<button class="remove-btn" data-i="' + i + '">&times;</button>';
@@ -406,8 +534,7 @@ function esc(s) { return (s||'').replace(/"/g, '&quot;').replace(/</g, '&lt;'); 
 
 // YAML import
 document.getElementById('yamlToggle').addEventListener('click', () => {
-  const sec = document.getElementById('yamlSection');
-  sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
+  document.getElementById('yamlFile').click();
 });
 
 document.getElementById('yamlFile').addEventListener('change', e => {
@@ -422,13 +549,14 @@ document.getElementById('yamlFile').addEventListener('change', e => {
       document.getElementById('schemaName').value = spec.name || '';
       document.getElementById('instructions').value = spec.instructions || '';
       recordType = spec.record_type === 'array' ? 'table' : 'single';
+      document.getElementById('headerPages').value = spec.header_pages || 0;
+      document.getElementById('pageRange').value = spec.pages || '';
       updateModeToggle();
       fields = Object.entries(spec.fields || {}).map(([name, cfg]) => ({
         name, type: cfg.type, description: cfg.description || '',
         values: (cfg.values || []).join(', '), enabled: true,
       }));
       renderFields();
-      document.getElementById('yamlSection').style.display = 'none';
     }).catch(() => alert('Invalid YAML file'));
   };
   reader.readAsText(file);
@@ -439,7 +567,13 @@ function buildSpec() {
   const spec = {};
   const name = document.getElementById('schemaName').value.trim();
   if (name) spec.name = name;
-  if (recordType === 'table') spec.record_type = 'array';
+  if (recordType === 'table') {
+    spec.record_type = 'array';
+    const hp = parseInt(document.getElementById('headerPages').value) || 0;
+    if (hp > 0) spec.header_pages = hp;
+    const pr = document.getElementById('pageRange').value.trim();
+    if (pr) spec.pages = pr;
+  }
   const instr = document.getElementById('instructions').value.trim();
   if (instr) spec.instructions = instr;
   spec.fields = {};
@@ -467,7 +601,6 @@ async function extractFile(file, spec, instr) {
   form.append('file', file);
   form.append('schema_spec', JSON.stringify(spec));
   if (instr) form.append('instructions', instr);
-  form.append('parser', document.getElementById('parserSelect').value);
   const resp = await authFetch('/extract', { method: 'POST', body: form });
   if (!resp.ok) {
     let msg = 'Extraction failed (status ' + resp.status + ')';
@@ -480,6 +613,41 @@ async function extractFile(file, spec, instr) {
     throw new Error(msg);
   }
   return await resp.json();
+}
+
+async function extractFileStream(file, spec, instr, onPage) {
+  const form = new FormData();
+  form.append('file', file);
+  form.append('schema_spec', JSON.stringify(spec));
+  if (instr) form.append('instructions', instr);
+  const resp = await authFetch('/extract/stream', { method: 'POST', body: form });
+  if (!resp.ok) {
+    let msg = 'Extraction failed (status ' + resp.status + ')';
+    try {
+      const body = await resp.text();
+      const errData = JSON.parse(body);
+      msg = errData.error || errData.detail || msg;
+    } catch (_) {}
+    if (msg.includes('API key') || msg.includes('api key')) throw new ApiKeyError(msg);
+    throw new Error(msg);
+  }
+  const reader = resp.body.getReader();
+  const decoder = new TextDecoder();
+  let buf = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    const lines = buf.split('\n');
+    buf = lines.pop();
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      const msg = JSON.parse(line);
+      if (msg.type === 'progress' && onPage) onPage(msg.page);
+      if (msg.type === 'result') return msg.data;
+    }
+  }
+  throw new Error('Stream ended without result');
 }
 
 extractBtn.addEventListener('click', async () => {
@@ -531,12 +699,17 @@ extractBtn.addEventListener('click', async () => {
       progressLog.appendChild(logEntry);
       progressLog.scrollTop = progressLog.scrollHeight;
       try {
-        const data = await extractFile(file, spec, instr);
+        const useStream = recordType === 'table' && total === 1;
+        const data = useStream
+          ? await extractFileStream(file, spec, instr, page => {
+              st.textContent = file.name + ' — page ' + page + '...';
+            })
+          : await extractFile(file, spec, instr);
         logEntry.textContent = file.name + (data._error ? ' — error' : ' — done');
         if (data._info && data._info.length) {
           for (const msg of data._info) {
             const infoEl = document.createElement('div');
-            infoEl.style.cssText = 'color:#dc2626; font-style:italic;';
+            infoEl.style.cssText = 'color:#f87171; font-style:italic;';
             infoEl.textContent = file.name + ': ' + msg;
             progressLog.appendChild(infoEl);
             progressLog.scrollTop = progressLog.scrollHeight;
@@ -544,7 +717,6 @@ extractBtn.addEventListener('click', async () => {
         }
         if (data._warning) warnings.push(file.name + ': ' + data._warning);
 
-        // Append to server-side file immediately
         if (resultsFile && !data._error) {
           authFetch('/results/append', {
             method: 'POST',
@@ -583,8 +755,8 @@ extractBtn.addEventListener('click', async () => {
   }
 
   if (apiKeyError) {
-    st.innerHTML = '<span style="color:#dc2626; font-weight:600;">' + apiKeyError + '</span>' +
-      '<br><a href="/settings/page" style="color:#2563eb;">Go to Settings</a>';
+    st.innerHTML = '<span style="color:#f87171; font-weight:600;">' + apiKeyError + '</span>' +
+      '<br><a href="/settings/page" style="color:var(--accent);">Go to Settings</a>';
     extractBtn.disabled = false;
     updateExtractBtn();
     return;
@@ -604,14 +776,14 @@ extractBtn.addEventListener('click', async () => {
   if (allRecords.length) {
     if (allRecords.length > AUTO_FILE_THRESHOLD) {
       autoDownloadCsv(allRecords);
-      results.innerHTML = '<p>Large result set (' + allRecords.length + ' records) — downloaded as CSV.</p>';
+      results.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem;">Large result set (' + allRecords.length + ' records) — downloaded as CSV.</p>';
     } else {
       renderTable(allRecords);
     }
   } else if (allResults.length) {
     if (allResults.length > AUTO_FILE_THRESHOLD) {
       autoDownloadJson(allResults);
-      results.innerHTML = '<p>Large result set (' + allResults.length + ' results) — downloaded as JSON.</p>';
+      results.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem;">Large result set (' + allResults.length + ' results) — downloaded as JSON.</p>';
     } else {
       const pre = document.createElement('pre');
       const jsonData = allResults.length === 1 ? allResults[0] : allResults;

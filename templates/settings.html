@@ -2,109 +2,190 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Settings — Petey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; color: #333; }
-  h1 { margin-bottom: 8px; }
-  .nav { margin-bottom: 24px; font-size: 14px; }
-  .nav a { color: #2563eb; text-decoration: none; }
-  .nav a:hover { text-decoration: underline; }
+:root {
+  --bg:         #111111;
+  --surface:    #1c1c1c;
+  --surface-2:  #262626;
+  --border:     #333333;
+  --accent:     #d8572a;
+  --accent-h:   #e06b3e;
+  --accent-dim: rgba(216,87,42,0.12);
+  --amber:      #f7b538;
+  --amber-dim:  rgba(247,181,56,0.12);
+  --green:      #86efac;
+  --danger:     #c32f27;
+  --text:       #f2ece4;
+  --text-muted: #db7c26;
+  --text-dim:   #999999;
+  --r:          8px;
+  --r-lg:       12px;
+}
 
-  .section { margin-bottom: 28px; }
-  .section h2 { font-size: 16px; margin-bottom: 12px; color: #555; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--bg); }
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
 
-  label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 4px; }
-  select, input[type="text"], input[type="password"] {
-    width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px;
-    font-size: 14px; font-family: inherit;
-  }
-  select:focus, input:focus { outline: none; border-color: #2563eb; }
+/* PAGE TOP LINK */
+.page-top-link {
+  font-size: 0.78rem; color: var(--text-muted); text-decoration: none;
+  letter-spacing: 0.03em; transition: color 0.15s; align-self: flex-end;
+  padding-bottom: 0.2rem;
+}
+.page-top-link:hover { color: var(--text); }
 
-  .field { margin-bottom: 16px; }
-  .field .hint { font-size: 12px; color: #888; margin-top: 4px; }
+/* AUTH OVERLAY */
+.auth-overlay {
+  position: fixed; inset: 0; background: rgba(11,15,26,0.97);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100; flex-direction: column; gap: 1.25rem;
+}
+.auth-overlay h2 {
+  font-size: 2.8rem; font-weight: 800; letter-spacing: -0.05em; line-height: 1;
+}
+.auth-overlay p { color: var(--text-muted); font-size: 0.88rem; }
+.auth-overlay .overlay-btn {
+  padding: 11px 28px; font-size: 0.9rem; font-weight: 700; border-radius: 8px;
+  border: none; background: var(--accent); color: #000; cursor: pointer;
+  font-family: inherit; transition: background 0.15s;
+}
+.auth-overlay .overlay-btn:hover { background: var(--accent-h); }
 
-  .key-row { display: flex; gap: 8px; }
-  .key-row input { flex: 1; }
-  .key-row button {
-    padding: 8px 14px; border: 1px solid #ccc; border-radius: 6px;
-    background: #f9f9f9; cursor: pointer; font-size: 13px; white-space: nowrap;
-  }
-  .key-row button:hover { background: #eee; }
+/* MAIN */
+.main { max-width: 600px; margin: 0 auto; padding: 2.75rem 2rem 5rem; }
 
-  .save-btn {
-    padding: 10px 24px; background: #2563eb; color: #fff; border: none;
-    border-radius: 6px; font-size: 14px; cursor: pointer;
-  }
-  .save-btn:hover { background: #1d4ed8; }
-  .save-btn:disabled { background: #93b4f5; cursor: default; }
+/* PAGE HEADER */
+.page-header { margin-bottom: 2.25rem; }
+.page-header h1 {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 2.4rem; font-weight: 400; letter-spacing: -0.01em; line-height: 1;
+}
 
-  .status { margin-top: 12px; font-size: 14px; }
-  .status.ok { color: #16a34a; }
-  .status.err { color: #dc2626; }
+/* CARD */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 1.5rem 1.75rem; margin-bottom: 1.25rem;
+}
+.card-header {
+  padding-bottom: 0.85rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border);
+}
+.card-label {
+  font-size: 0.67rem; font-weight: 700; letter-spacing: 0.13em;
+  text-transform: uppercase; color: var(--text-muted);
+}
 
-  .validate-btn {
-    padding: 8px 14px; border: 1px solid #ccc; border-radius: 6px;
-    background: #f9f9f9; cursor: pointer; font-size: 13px; white-space: nowrap;
-  }
-  .validate-btn:hover { background: #eee; }
-  .key-status { font-size: 12px; margin-top: 4px; }
-  .key-status.valid { color: #16a34a; }
-  .key-status.invalid { color: #dc2626; }
+/* FIELD */
+.field { margin-bottom: 1.1rem; }
+.field:last-child { margin-bottom: 0; }
+.field label {
+  display: block; font-size: 0.8rem; font-weight: 500; color: var(--text-muted);
+  margin-bottom: 0.35rem; letter-spacing: 0.02em;
+}
+.field .hint { font-size: 0.72rem; color: var(--text-dim); margin-top: 0.25rem; }
 
-  .auth-bar {
-    display: flex; align-items: center; justify-content: flex-end;
-    gap: 12px; margin-bottom: 1rem; font-size: 14px;
-  }
-  .auth-bar .user-email { color: #555; }
-  .auth-bar button {
-    padding: 6px 14px; border: 1px solid #ccc; border-radius: 6px;
-    background: #f9f9f9; cursor: pointer; font-size: 13px;
-  }
-  .auth-bar button:hover { background: #eee; }
-  .auth-bar .sign-in-btn { background: #2563eb; color: #fff; border: none; }
-  .auth-bar .sign-in-btn:hover { background: #1d4ed8; }
-  .auth-overlay {
-    position: fixed; inset: 0; background: rgba(255,255,255,0.95);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 1000; flex-direction: column; gap: 1rem;
-  }
-  .auth-overlay h2 { margin: 0; }
-  .auth-overlay p { color: #666; margin: 0; }
+/* INPUTS */
+select, input[type="text"], input[type="password"] {
+  width: 100%; padding: 0.45rem 0.6rem; background: var(--surface-2);
+  border: 1px solid var(--border); border-radius: 5px;
+  font-size: 0.83rem; font-family: inherit; color: var(--text);
+  transition: border-color 0.15s;
+}
+select:focus, input:focus { outline: none; border-color: var(--accent); }
+select option { background: var(--surface-2); color: var(--text); }
+input::placeholder { color: var(--text-dim); }
+
+/* KEY ROW */
+.key-row { display: flex; gap: 0.5rem; }
+.key-row input { flex: 1; }
+.key-row button {
+  padding: 0.45rem 0.85rem; border: 1px solid var(--border); border-radius: 5px;
+  background: var(--surface-2); color: var(--text-muted); cursor: pointer;
+  font-size: 0.75rem; font-family: inherit; white-space: nowrap; transition: all 0.15s;
+}
+.key-row button:hover { border-color: var(--text-muted); color: var(--text); }
+
+.validate-btn {
+  padding: 0.45rem 0.85rem; border: 1px solid var(--border); border-radius: 5px;
+  background: var(--surface-2); color: var(--text-muted); cursor: pointer;
+  font-size: 0.75rem; font-family: inherit; white-space: nowrap; transition: all 0.15s;
+}
+.validate-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.key-status { font-size: 0.72rem; margin-top: 0.3rem; }
+.key-status.valid { color: var(--green); }
+.key-status.invalid { color: var(--danger); }
+
+/* SAVE BUTTON */
+.save-btn {
+  padding: 0.65rem 1.75rem; font-size: 0.88rem; font-weight: 700;
+  background: var(--accent); color: #000; border: none;
+  border-radius: 6px; cursor: pointer; font-family: inherit;
+  letter-spacing: 0.03em; transition: background 0.15s; margin-top: 0.5rem;
+}
+.save-btn:hover { background: var(--accent-h); }
+.save-btn:disabled { background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--border); cursor: default; }
+
+/* STATUS */
+.status { margin-top: 0.75rem; font-size: 0.82rem; }
+.status.ok { color: var(--green); }
+.status.err { color: var(--danger); }
+
+/* API KEY INFO BANNER */
+.info-banner {
+  font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;
+  padding: 0.6rem 0.75rem; background: var(--surface-2); border-radius: 5px;
+  border-left: 2px solid var(--border);
+}
 </style>
 </head>
 <body>
 
-<div class="auth-bar" id="authBar" style="display:none;">
-  <span class="user-email" id="userEmail"></span>
-  <button id="signOutBtn" style="display:none;">Sign out</button>
-  <button id="signInBtn" class="sign-in-btn" style="display:none;">Sign in with Google</button>
-</div>
-
 <div class="auth-overlay" id="authOverlay">
-  <h2>Petey</h2>
-  <p>Sign in to manage your settings</p>
-  <button id="overlaySignIn" class="sign-in-btn" style="padding:10px 24px; font-size:16px; border-radius:8px; border:none; background:#2563eb; color:#fff; cursor:pointer;">Sign in with Google</button>
+  <h2>Petey<span style="color:var(--accent)">.</span></h2>
+  <p>Sign in to manage settings</p>
+  <button id="overlaySignIn" class="overlay-btn">Sign in with Google</button>
 </div>
 
-  <h1>Settings</h1>
-  <div class="nav"><a href="/">&#8592; Back to extractor</a></div>
+<main class="main">
 
-  <div class="section">
-    <h2>Model</h2>
+  <div class="page-header">
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:0.5rem;">
+      <h1>Settings<span style="color:var(--accent)">.</span></h1>
+      <div style="display:flex; gap:1.25rem; align-items:flex-end;">
+        <a class="page-top-link" href="/">Extractor</a>
+        <a class="page-top-link" href="/about">About</a>
+        <a class="page-top-link" href="/template-builder">Schema Designer</a>
+        <a href="https://github.com/afriedman412/petey" target="_blank" rel="noopener" class="page-top-link" title="GitHub" style="padding-bottom:0;"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-label">Model</span>
+    </div>
     <div class="field">
       <label for="model">Extraction model</label>
       <select id="model"></select>
     </div>
   </div>
 
-  <div class="section">
-    <h2>API Keys</h2>
-    <p style="font-size:13px; color:#888; margin-bottom:16px;">
-      Keys are stored securely per-user and never sent back in full.
-      Leave a field unchanged to keep the existing key.
-    </p>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-label">API Keys</span>
+    </div>
+    <div class="info-banner">
+      Keys are stored securely per-user and never returned in full. Leave a field unchanged to keep the existing key.
+    </div>
 
     <div class="field">
       <label for="openai_key">OpenAI API Key</label>
@@ -129,17 +210,23 @@
     </div>
 
     <div class="field">
-      <label for="aryn_key">Aryn API Key</label>
+      <label for="mistral_key">Mistral API Key</label>
       <div class="key-row">
-        <input type="password" id="aryn_key" placeholder="aryn_..." autocomplete="off">
-        <button type="button" id="toggleAryn">Show</button>
+        <input type="password" id="mistral_key" placeholder="..." autocomplete="off">
+        <button type="button" id="toggleMistral">Show</button>
       </div>
-      <div class="hint">Required for the Aryn parser</div>
+      <div class="hint">Required for Mistral OCR</div>
     </div>
   </div>
 
   <button class="save-btn" id="saveBtn">Save settings</button>
   <div class="status" id="status"></div>
+  <div id="signOutArea" style="display:none; margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border);">
+    <span id="userEmail" style="font-size:0.78rem; color:var(--text-muted);"></span>
+    <button id="signOutBtn" style="margin-left:1rem; background:none; border:none; font-size:0.78rem; color:var(--text-muted); cursor:pointer; font-family:inherit; text-decoration:underline; text-underline-offset:3px;">Sign out</button>
+  </div>
+
+</main>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
@@ -153,33 +240,26 @@ let _currentUser = null;
 
 if (firebaseConfig.authDisabled) {
   document.getElementById('authOverlay').style.display = 'none';
-  document.getElementById('authBar').style.display = 'none';
   loadSettings();
 } else {
   const firebaseApp = initializeApp(firebaseConfig);
   const auth = getAuth(firebaseApp);
   const provider = new GoogleAuthProvider();
 
-  document.getElementById('signInBtn').addEventListener('click', () => signInWithPopup(auth, provider));
-  document.getElementById('signOutBtn').addEventListener('click', () => signOut(auth));
   document.getElementById('overlaySignIn').addEventListener('click', () => signInWithPopup(auth, provider));
+  document.getElementById('signOutBtn').addEventListener('click', () => signOut(auth));
 
   onAuthStateChanged(auth, user => {
-    const bar = document.getElementById('authBar');
     const overlay = document.getElementById('authOverlay');
-    bar.style.display = 'flex';
     _currentUser = user;
     if (user) {
       overlay.style.display = 'none';
       document.getElementById('userEmail').textContent = user.email;
-      document.getElementById('signInBtn').style.display = 'none';
-      document.getElementById('signOutBtn').style.display = '';
+      document.getElementById('signOutArea').style.display = 'block';
       loadSettings();
     } else {
       overlay.style.display = 'flex';
-      document.getElementById('userEmail').textContent = '';
-      document.getElementById('signInBtn').style.display = '';
-      document.getElementById('signOutBtn').style.display = 'none';
+      document.getElementById('signOutArea').style.display = 'none';
     }
   });
 }
@@ -196,7 +276,7 @@ async function authFetch(url, opts = {}) {
 const modelSelect = document.getElementById('model');
 const openaiInput = document.getElementById('openai_key');
 const anthropicInput = document.getElementById('anthropic_key');
-const arynInput = document.getElementById('aryn_key');
+const mistralInput = document.getElementById('mistral_key');
 const statusEl = document.getElementById('status');
 
 function toggleVis(id, btn) {
@@ -211,8 +291,8 @@ document.getElementById('toggleOpenai').addEventListener('click', function() {
 document.getElementById('toggleAnthropic').addEventListener('click', function() {
   toggleVis('anthropic_key', this);
 });
-document.getElementById('toggleAryn').addEventListener('click', function() {
-  toggleVis('aryn_key', this);
+document.getElementById('toggleMistral').addEventListener('click', function() {
+  toggleVis('mistral_key', this);
 });
 
 async function loadSettings() {
@@ -240,8 +320,9 @@ async function loadSettings() {
     anthropicInput.value = data.anthropic_api_key || '';
     anthropicInput.placeholder = data.anthropic_api_key ? data.anthropic_api_key : 'sk-ant-...';
 
-    arynInput.value = data.aryn_api_key || '';
-    arynInput.placeholder = data.aryn_api_key ? data.aryn_api_key : 'aryn_...';
+    mistralInput.value = data.mistral_api_key || '';
+    mistralInput.placeholder = data.mistral_api_key ? data.mistral_api_key : '...';
+
   } catch (e) {
     statusEl.textContent = 'Error loading settings: ' + e.message;
     statusEl.className = 'status err';
@@ -260,8 +341,8 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
   if (anthropicInput.value && !anthropicInput.value.includes('...')) {
     body.anthropic_api_key = anthropicInput.value;
   }
-  if (arynInput.value && !arynInput.value.includes('...')) {
-    body.aryn_api_key = arynInput.value;
+  if (mistralInput.value && !mistralInput.value.includes('...')) {
+    body.mistral_api_key = mistralInput.value;
   }
 
   try {
@@ -274,7 +355,7 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     const data = await resp.json();
     openaiInput.value = data.openai_api_key || '';
     anthropicInput.value = data.anthropic_api_key || '';
-    arynInput.value = data.aryn_api_key || '';
+    mistralInput.value = data.mistral_api_key || '';
     statusEl.className = 'status ok';
     statusEl.textContent = 'Settings saved.';
   } catch (e) {

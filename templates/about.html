@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About — Petey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:          #111111;
+  --surface:     #1c1c1c;
+  --surface-2:   #262626;
+  --border:      #333333;
+  --accent:      #d8572a;
+  --accent-h:    #e06b3e;
+  --text:        #f2ece4;
+  --text-muted:  #db7c26;
+  --text-dim:    #999999;
+  --r-lg:        12px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--bg); }
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* PAGE TOP LINK */
+.page-top-link {
+  font-size: 0.78rem; color: var(--text-muted); text-decoration: none;
+  letter-spacing: 0.03em; transition: color 0.15s; align-self: flex-end;
+  padding-bottom: 0.2rem;
+}
+.page-top-link:hover { color: var(--text); }
+
+/* MAIN */
+.main { max-width: 700px; margin: 0 auto; padding: 2.75rem 2rem 5rem; }
+
+/* HERO */
+.hero { margin-bottom: 2.5rem; }
+.hero-top {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-bottom: 0.45rem;
+}
+.hero h1 {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 3.2rem; font-weight: 400; letter-spacing: -0.01em; line-height: 0.95;
+}
+.hero h1 .dot { color: var(--accent); }
+.hero-sub { font-size: 0.82rem; color: var(--text-muted); letter-spacing: 0.04em; }
+
+/* PROSE */
+.prose {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 2rem 2.25rem;
+}
+.prose p {
+  font-size: 0.92rem; line-height: 1.75; color: var(--text);
+  margin-bottom: 1.25rem;
+}
+.prose p:last-child { margin-bottom: 0; }
+</style>
+</head>
+<body>
+
+<main class="main">
+
+  <div class="hero">
+    <div class="hero-top">
+      <h1>About<span class="dot">.</span></h1>
+      <div style="display:flex; gap:1.25rem; align-items:flex-end; padding-bottom:0.2rem;">
+        <a href="/" class="page-top-link">Extractor</a>
+        <a href="/template-builder" class="page-top-link">Schema Designer</a>
+        <a href="/settings/page" class="page-top-link">Settings</a>
+        <a href="https://github.com/afriedman412/petey" target="_blank" rel="noopener" class="page-top-link" title="GitHub" style="padding-bottom:0;"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="prose">
+    <p>The PDF format was designed to look identical on any screen or printer. It was format and technology agnostic, a universal container for the printed page. But all that mattered was its visual presentation. As long as it rendered correctly, the internal representation didn't matter.</p>
+
+    <p>And so the inside of a PDF is often chaotic. It is just a bunch of items — words, characters, shapes, images — and their coordinates, with little or no regard for the relationship between anything. What reads as one cohesive line of text could be three groups of words that happened to be positioned sequentially with the same y-value. You have probably experienced this if you have ever tried to select text in a PDF and find yourself highlighting disconnected words on four different lines.</p>
+
+    <p>The primary challenge of getting your data out of a PDF is imposing some order on this code soup. A lot of hard-working folks have developed methods and tools to accomplish this over the years, finding ingenious ways to infer meaning from the relative positions of all the elements of a document. But it's tricky, precise work.</p>
+
+    <p>As it turns out, AI can be a big help here. It turns out you don't need a particularly advanced LLM to interpret some fairly difficult PDFs. But models need infrastructure. Not everyone has time to teach themselves how to be an amateur ML engineer, even with the magic of vibe coding.</p>
+
+    <p>Petey wires everything together for you. Just pass it your files and a schema that explains what you want, and it will return a JSON or CSV with your data.</p>
+  </div>
+
+</main>
+
+</body>
+</html>

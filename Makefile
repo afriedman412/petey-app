@@ -35,7 +35,7 @@ docker-run:
 
 deploy:
 	gcloud config set project petey-dev
-	gcloud run deploy petey --source . --region=us-east1 --allow-unauthenticated --memory=1Gi
+	gcloud run deploy petey --source . --region=us-east1 --allow-unauthenticated --memory=4Gi
 
 clean:
 	rm -rf $(VENV)

@@ -10,6 +10,7 @@ from petey.schema import build_model, load_schema  # noqa: F401
 from petey.extract import (
     extract_text as _raw_extract_text,
     extract_async as _extract_async,
+    extract_pages_async as _extract_pages_async,
     TEXT_WARN_THRESHOLD,
 )
 from server.settings import get_settings, get_provider
@@ -82,16 +83,60 @@ async def async_extract(
                 "Add one in Settings before extracting."
             )
 
-    aryn_api_key = settings.get("aryn_api_key") or None
-
     return await _extract_async(
         pdf_path, response_model,
         model=model_id, api_key=api_key,
         instructions=instructions,
         parser=parser,
-        aryn_api_key=aryn_api_key,
         ocr_fallback=ocr_fallback,
         text=text,
+    )
+
+
+def _get_api_key(uid: str) -> tuple[str, str]:
+    """Return (model_id, api_key) from user settings, raising if missing."""
+    settings = get_settings(uid)
+    model_id = settings["model"]
+    provider = get_provider(model_id)
+    if provider == "anthropic":
+        api_key = settings.get("anthropic_api_key") or None
+        if not api_key:
+            raise ValueError(
+                "No Anthropic API key configured. "
+                "Add one in Settings before extracting."
+            )
+    else:
+        api_key = settings.get("openai_api_key") or None
+        if not api_key:
+            raise ValueError(
+                "No OpenAI API key configured. "
+                "Add one in Settings before extracting."
+            )
+    return model_id, api_key
+
+
+async def async_extract_pages(
+    pdf_path: str,
+    response_model: type[BaseModel],
+    uid: str,
+    instructions: str = "",
+    parser: str = "pymupdf",
+    pages_per_chunk: int = 1,
+    header_pages: int = 0,
+    page_range: str | None = None,
+    on_result=None,
+) -> list[dict]:
+    """Page-chunked extraction using the user's settings."""
+    model_id, api_key = _get_api_key(uid)
+    return await _extract_pages_async(
+        pdf_path, response_model,
+        model=model_id, api_key=api_key,
+        instructions=instructions,
+        parser=parser,
+        pages_per_chunk=pages_per_chunk,
+        header_pages=header_pages,
+        page_range=page_range,
+        on_result=on_result,
     )
 
 

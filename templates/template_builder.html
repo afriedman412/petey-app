@@ -2,158 +2,336 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Schema Builder — Petey</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Schema Designer — Petey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; }
-  body { font-family: system-ui, sans-serif; max-width: 900px;
-         margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; }
-  h1 { margin-bottom: 0.25rem; }
-  .subtitle { color: #666; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-  .subtitle a { color: #2563eb; text-decoration: none; font-size: 14px; }
-  .subtitle a:hover { text-decoration: underline; }
+:root {
+  --bg:          #111111;
+  --surface:     #1c1c1c;
+  --surface-2:   #262626;
+  --border:      #333333;
+  --accent:      #d8572a;
+  --accent-h:    #e06b3e;
+  --accent-dim:  rgba(216,87,42,0.12);
+  --amber:       #f7b538;
+  --amber-dim:   rgba(247,181,56,0.12);
+  --green:       #86efac;
+  --danger:      #c32f27;
+  --text:        #f2ece4;
+  --text-muted:  #db7c26;
+  --text-dim:    #999999;
+  --r:           8px;
+  --r-lg:        12px;
+}
 
-  .meta-section { margin-bottom: 1.5rem; }
-  .meta-section label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.3rem; }
-  .meta-section input, .meta-section textarea {
-    width: 100%; padding: 0.4rem 0.6rem; font-size: 0.95rem;
-    border: 1px solid #ccc; border-radius: 4px; font-family: inherit;
-  }
-  .meta-section textarea { min-height: 40px; resize: vertical; }
-  .meta-row { display: flex; gap: 1rem; margin-bottom: 0.75rem; }
-  .meta-row > div { flex: 1; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--bg); }
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
 
-  .controls { display: flex; gap: 1rem; align-items: center;
-              margin-bottom: 1.5rem; flex-wrap: wrap; }
-  .controls label { font-weight: 600; }
-  .toggle-group { display: flex; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; }
-  .toggle-group button {
-    padding: 0.4rem 1rem; border: none; background: #fff; cursor: pointer;
-    font-size: 0.9rem; transition: background 0.15s;
-  }
-  .toggle-group button.active { background: #228be6; color: #fff; }
+/* PAGE TOP LINK */
+.page-top-link {
+  font-size: 0.78rem; color: var(--text-muted); text-decoration: none;
+  letter-spacing: 0.03em; transition: color 0.15s; align-self: flex-end;
+  padding-bottom: 0.2rem;
+}
+.page-top-link:hover { color: var(--text); }
 
-  .schema-section { margin-bottom: 1.5rem; }
-  .schema-section h2 { font-size: 1.1rem; margin-bottom: 0.5rem; }
-  .field-row {
-    display: grid; grid-template-columns: 1fr 120px 2fr 30px;
-    gap: 0.5rem; align-items: center; margin-bottom: 0.4rem;
-  }
-  .field-row input[type=text], .field-row select {
-    padding: 0.35rem 0.5rem; font-size: 0.9rem; border: 1px solid #ccc;
-    border-radius: 4px; width: 100%;
-  }
-  .field-row .remove-btn {
-    background: none; border: none; color: #e03131; cursor: pointer;
-    font-size: 1.2rem; padding: 0;
-  }
-  .enum-values {
-    grid-column: 1 / -1; margin-left: 0.5rem; margin-bottom: 0.5rem;
-  }
-  .enum-values input {
-    padding: 0.3rem 0.5rem; font-size: 0.85rem; border: 1px solid #ddd;
-    border-radius: 4px; width: 100%;
-  }
-  .enum-values label { font-size: 0.8rem; color: #666; }
-  .nested-section {
-    grid-column: 1 / -1; margin-left: 1.5rem; margin-bottom: 0.5rem;
-    border-left: 2px solid #dee2e6; padding-left: 1rem;
-  }
-  .nested-section .field-row {
-    grid-template-columns: 1fr 120px 2fr 30px;
-  }
-  .nested-section h3 { font-size: 0.85rem; color: #666; margin-bottom: 0.3rem; }
+/* MAIN */
+.main { max-width: 940px; margin: 0 auto; padding: 2.75rem 2rem 5rem; }
 
-  .add-btn, .download-btn, .copy-btn, .load-btn {
-    padding: 0.5rem 1.2rem; border: none; border-radius: 4px;
-    cursor: pointer; font-size: 0.95rem;
-  }
-  .add-btn { background: #e7f5ff; color: #228be6; }
-  .download-btn { background: #228be6; color: #fff; font-weight: 600; }
-  .copy-btn { background: #ebfbee; color: #2b8a3e; }
-  .load-btn { background: #f1f3f5; color: #333; border: 1px solid #ccc; }
-  .btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+/* HERO */
+.hero { margin-bottom: 2.5rem; }
+.hero-top {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-bottom: 0.45rem;
+}
+.hero h1 {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 3.2rem; font-weight: 400; letter-spacing: -0.01em; line-height: 0.95;
+}
+.hero h1 .dot { color: var(--accent); }
+.hero-sub { font-size: 0.82rem; color: var(--text-muted); letter-spacing: 0.04em; }
 
-  .instructions-section { margin-bottom: 1.5rem; }
-  .instructions-section label { font-size: 0.9rem; color: #666; display: block; margin-bottom: 0.3rem; }
-  .instructions-area { width: 100%; min-height: 60px; font-size: 0.9rem;
-               padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px;
-               font-family: system-ui, sans-serif; resize: vertical; }
+/* CONTROLS ROW */
+.controls-row {
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+.controls-label {
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-muted);
+}
 
-  .preview { margin-top: 1rem; }
-  .preview h2 { font-size: 1.1rem; margin-bottom: 0.5rem; }
-  pre { background: #f1f3f5; padding: 1rem; border-radius: 6px;
-        overflow-x: auto; font-size: 0.85rem; white-space: pre-wrap; }
+/* TOGGLE */
+.toggle-group {
+  display: flex; border: 1px solid var(--border); border-radius: 5px; overflow: hidden;
+}
+.toggle-group button {
+  padding: 0.3rem 0.9rem; border: none; background: transparent; cursor: pointer;
+  font-size: 0.8rem; color: var(--text-muted); font-family: inherit;
+  transition: all 0.15s;
+}
+.toggle-group button.active { background: var(--accent); color: #000; font-weight: 600; }
 
-  .cli-hint { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px;
-              padding: 1rem; margin-top: 1rem; font-size: 0.85rem; }
-  .cli-hint code { background: #e9ecef; padding: 0.15rem 0.4rem; border-radius: 3px; }
+/* EXTRA CONTROLS */
+#headerPagesWrap {
+  align-items: center; gap: 0.6rem;
+}
+#headerPagesWrap label {
+  font-size: 0.76rem; color: var(--text-muted); margin: 0;
+}
+#headerPagesWrap input {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 4px; color: var(--text); padding: 0.22rem 0.4rem;
+  font-size: 0.8rem; font-family: inherit; transition: border-color 0.15s;
+}
+#headerPagesWrap input[type=number] { width: 4rem; }
+#headerPagesWrap input[type=text] { width: 9rem; }
+#headerPagesWrap input:focus { outline: none; border-color: var(--accent); }
 
-  #status { margin: 0.5rem 0; font-size: 0.9rem; color: #16a34a; }
+/* CARD */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 1.5rem 1.75rem; margin-bottom: 1.25rem;
+}
+.card-header {
+  display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem;
+  padding-bottom: 0.85rem; border-bottom: 1px solid var(--border);
+}
+.card-label {
+  font-size: 0.67rem; font-weight: 700; letter-spacing: 0.13em;
+  text-transform: uppercase; color: var(--text-muted); flex-shrink: 0;
+}
+
+/* META INPUTS */
+.meta-field { margin-bottom: 0.85rem; }
+.meta-field:last-child { margin-bottom: 0; }
+.meta-field label {
+  display: block; font-size: 0.76rem; color: var(--text-muted);
+  margin-bottom: 0.3rem; font-weight: 500;
+}
+.meta-field input {
+  width: 100%; background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--text); padding: 0.35rem 0.5rem; font-size: 0.83rem;
+  border-radius: 4px; font-family: inherit; transition: border-color 0.15s;
+}
+.meta-field input:focus { outline: none; border-color: var(--accent); }
+.meta-field input::placeholder { color: var(--text-dim); }
+
+/* FIELD ROWS */
+.field-row {
+  display: grid; grid-template-columns: 1fr 92px 2fr 22px;
+  gap: 0.35rem; align-items: center; margin-bottom: 0.28rem;
+}
+.field-row input[type=text], .field-row select {
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--text); padding: 0.27rem 0.4rem; font-size: 0.8rem;
+  border-radius: 4px; width: 100%; font-family: inherit; transition: border-color 0.15s;
+}
+.field-row input[type=text]:focus, .field-row select:focus {
+  outline: none; border-color: var(--accent);
+}
+.field-row select option { background: var(--surface-2); color: var(--text); }
+.field-row .remove-btn {
+  background: none; border: none; color: var(--text-dim); cursor: pointer;
+  font-size: 1rem; padding: 0; line-height: 1; transition: color 0.15s;
+}
+.field-row .remove-btn:hover { color: var(--danger); }
+
+.enum-values { grid-column: 1 / -1; margin-left: 1.2rem; margin-bottom: 0.28rem; }
+.enum-values label {
+  font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 0.16rem;
+}
+.enum-values input {
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--text); padding: 0.22rem 0.4rem; font-size: 0.78rem;
+  border-radius: 4px; width: 100%; font-family: inherit;
+}
+.enum-values input:focus { outline: none; border-color: var(--accent); }
+
+/* NESTED SECTION */
+.nested-section {
+  grid-column: 1 / -1; margin-left: 1.2rem; margin-bottom: 0.4rem;
+  border-left: 2px solid var(--border); padding-left: 1rem;
+}
+.nested-section .field-row {
+  grid-template-columns: 1fr 92px 2fr 22px;
+}
+.nested-section h3 {
+  font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.35rem;
+  font-weight: 600; letter-spacing: 0.04em;
+}
+
+/* BUTTONS */
+.btn-row { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.7rem; }
+
+.btn-add {
+  padding: 0.32rem 0.8rem; font-size: 0.78rem; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--surface-2); color: var(--text-muted);
+  cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+.btn-add:hover { border-color: var(--accent); color: var(--accent); }
+
+.btn-ghost {
+  background: none; border: none; color: var(--text-muted); font-size: 0.78rem;
+  cursor: pointer; padding: 0; font-family: inherit;
+  text-decoration: underline; text-underline-offset: 3px; transition: color 0.15s;
+}
+.btn-ghost:hover { color: var(--text); }
+
+/* INSTRUCTIONS */
+.instructions-area {
+  width: 100%; min-height: 52px; font-size: 0.8rem;
+  padding: 0.48rem 0.6rem; background: var(--surface-2);
+  border: 1px solid var(--border); border-radius: 4px;
+  font-family: inherit; resize: vertical; color: var(--text);
+  transition: border-color 0.15s;
+}
+.instructions-area:focus { outline: none; border-color: var(--accent); }
+.instructions-area::placeholder { color: var(--text-dim); }
+
+/* ACTION ROW */
+.action-row { display: flex; gap: 0.75rem; align-items: center; margin-top: 0.5rem; }
+
+.download-btn-primary {
+  padding: 0.65rem 1.75rem; font-size: 0.88rem; font-weight: 700;
+  background: var(--accent); color: #000; border: none;
+  border-radius: 6px; cursor: pointer; font-family: inherit;
+  letter-spacing: 0.03em; transition: background 0.15s;
+}
+.download-btn-primary:hover { background: var(--accent-h); }
+
+.copy-btn {
+  padding: 0.6rem 1.1rem; font-size: 0.8rem; font-weight: 500;
+  background: var(--amber-dim); border: 1px solid rgba(251,191,36,0.22);
+  color: var(--amber); border-radius: 6px; cursor: pointer;
+  font-family: inherit; transition: background 0.15s;
+}
+.copy-btn:hover { background: rgba(251,191,36,0.14); }
+
+/* STATUS */
+#status {
+  margin: 0.75rem 0; font-size: 0.82rem; color: var(--text-muted);
+  white-space: pre-line; line-height: 1.6;
+}
+
+/* PREVIEW */
+pre {
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 1rem; border-radius: var(--r); overflow-x: auto;
+  font-size: 0.77rem; color: var(--text); line-height: 1.65; margin-top: 0.5rem;
+  white-space: pre-wrap;
+}
+
+/* CLI HINT */
+.cli-hint {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+  padding: 1.25rem 1.5rem; margin-top: 1.25rem; font-size: 0.78rem;
+  color: var(--text-muted); line-height: 1.7;
+}
+.cli-hint strong { color: var(--text); font-weight: 600; }
+.cli-hint code {
+  background: var(--surface-2); padding: 0.12rem 0.4rem; border-radius: 3px;
+  color: var(--amber); font-size: 0.76rem;
+}
 </style>
 </head>
 <body>
 
-<h1>Schema Builder</h1>
-<p class="subtitle">
-  <span>Build YAML schemas for the Petey CLI</span>
-  <a href="/">Back to extractor</a>
-</p>
+<main class="main">
 
-<div class="meta-section">
-  <div class="meta-row">
-    <div>
-      <label for="schemaName">Schema name</label>
-      <input type="text" id="schemaName" placeholder="e.g. PAR Decision">
+  <div class="hero">
+    <div class="hero-top">
+      <h1>Schema Designer<span class="dot">.</span></h1>
+      <div style="display:flex; gap:1.25rem; align-items:flex-end; padding-bottom:0.2rem;">
+        <a href="/" class="page-top-link">Extractor</a>
+        <a href="/about" class="page-top-link">About</a>
+        <a href="/settings/page" class="page-top-link">Settings</a>
+        <a href="https://github.com/afriedman412/petey" target="_blank" rel="noopener" class="page-top-link" title="GitHub" style="padding-bottom:0;"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
+      </div>
+    </div>
+    <p class="hero-sub">Build YAML schemas for Petey</p>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-label">Schema Info</span>
+    </div>
+    <div class="meta-field">
+      <label for="schemaName">Name</label>
+      <input type="text" id="schemaName" placeholder="e.g. Invoice">
+    </div>
+    <div class="meta-field">
+      <label for="schemaDesc">Description <span style="color:var(--text-dim);">(optional)</span></label>
+      <input type="text" id="schemaDesc" placeholder="e.g. Standard vendor invoice with line items">
     </div>
   </div>
-  <div>
-    <label for="schemaDesc">Description (optional)</label>
-    <input type="text" id="schemaDesc" placeholder="e.g. DHCR Petition for Administrative Review">
+
+  <div class="controls-row">
+    <span class="controls-label">Record type</span>
+    <div class="toggle-group" id="modeToggle">
+      <button class="active" data-mode="single">Single</button>
+      <button data-mode="array">Table</button>
+    </div>
+    <span id="headerPagesWrap" style="display:none; align-items:center; gap:0.6rem;">
+      <label style="margin:0;">Header pages</label>
+      <input type="number" id="headerPages" value="0" min="0" max="10">
+      <label style="margin:0 0 0 0.5rem;">Page range</label>
+      <input type="text" id="pageRange" placeholder="e.g. 2-5 or 1,3,5-7">
+    </span>
   </div>
-</div>
 
-<div class="controls">
-  <label>Record type:</label>
-  <div class="toggle-group" id="modeToggle">
-    <button class="active" data-mode="single">Single record</button>
-    <button data-mode="array">Array (multiple rows)</button>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-label">Fields</span>
+    </div>
+    <div id="fieldRows"></div>
+    <div class="btn-row">
+      <button class="btn-add" id="addField">+ Add field</button>
+      <button class="btn-ghost" id="loadToggle">Import YAML</button>
+      <input type="file" id="loadYaml" accept=".yaml,.yml" style="display:none;">
+    </div>
   </div>
-  <label style="margin-left:1rem;">Load:</label>
-  <input type="file" id="loadYaml" accept=".yaml,.yml" style="font-size:0.9rem;">
-</div>
 
-<div class="schema-section">
-  <h2>Fields</h2>
-  <div id="fieldRows"></div>
-  <div class="btn-row" style="margin-top:0.5rem;">
-    <button class="add-btn" id="addField">+ Add field</button>
+  <div class="card">
+    <div class="card-header">
+      <span class="card-label">Instructions</span>
+      <span style="font-size:0.7rem; color:var(--text-dim);">optional</span>
+    </div>
+    <textarea class="instructions-area" id="instructions"
+      placeholder="e.g. Dates are in MM/DD/YYYY format. Line items appear in the table on page 2."></textarea>
   </div>
-</div>
 
-<div class="instructions-section">
-  <label for="instructions">Additional instructions (optional)</label>
-  <textarea class="instructions-area" id="instructions"
-    placeholder="e.g. Dates are in MM/DD/YYYY format. MCI items appear indented below each case."></textarea>
-</div>
+  <div class="action-row">
+    <button class="download-btn-primary" id="downloadBtn">Download YAML</button>
+    <button class="copy-btn" id="copyBtn">Copy to clipboard</button>
+  </div>
 
-<div class="btn-row">
-  <button class="download-btn" id="downloadBtn">Download YAML</button>
-  <button class="copy-btn" id="copyBtn">Copy to clipboard</button>
-</div>
-<div id="status"></div>
+  <div id="status"></div>
 
-<div class="preview">
-  <h2>Preview</h2>
-  <pre id="yamlPreview"></pre>
-</div>
+  <div class="card" style="margin-top: 1.25rem;">
+    <div class="card-header">
+      <span class="card-label">Preview</span>
+    </div>
+    <pre id="yamlPreview" style="margin-top:0; border:none; padding:0; background:transparent;"></pre>
+  </div>
 
-<div class="cli-hint">
-  <strong>Using with the Petey CLI:</strong><br>
-  <code>pip install petey</code><br><br>
-  <code>petey extract --schema your_schema.yaml document.pdf</code><br>
-  <code>petey extract --schema your_schema.yaml folder/ -o results.csv</code><br><br>
-  See <code>petey extract --help</code> for all options.
-</div>
+  <div class="cli-hint">
+    <strong>Using with the Petey CLI:</strong><br>
+    <code>pip install petey</code><br><br>
+    <code>petey extract --schema your_schema.yaml document.pdf</code><br>
+    <code>petey extract --schema your_schema.yaml folder/ -o results.csv</code><br><br>
+    See <code>petey extract --help</code> for all options.
+  </div>
+
+</main>
 
 <script>
 let recordType = 'single';
@@ -166,17 +344,22 @@ document.getElementById('modeToggle').addEventListener('click', e => {
   document.querySelectorAll('#modeToggle button').forEach(b => {
     b.classList.toggle('active', b.dataset.mode === recordType);
   });
+  document.getElementById('headerPagesWrap').style.display =
+    recordType === 'array' ? 'inline-flex' : 'none';
   updatePreview();
 });
 
 // --- Load YAML ---
+document.getElementById('loadToggle').addEventListener('click', () => {
+  document.getElementById('loadYaml').click();
+});
+
 document.getElementById('loadYaml').addEventListener('change', e => {
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = () => {
     try {
-      // Simple YAML parsing for schema files — send to server
       fetch('/parse-yaml', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -189,6 +372,10 @@ document.getElementById('loadYaml').addEventListener('change', e => {
         document.querySelectorAll('#modeToggle button').forEach(b => {
           b.classList.toggle('active', b.dataset.mode === recordType);
         });
+        document.getElementById('headerPages').value = spec.header_pages || 0;
+        document.getElementById('pageRange').value = spec.pages || '';
+        document.getElementById('headerPagesWrap').style.display =
+          recordType === 'array' ? 'inline-flex' : 'none';
         fields = parseFieldsFromSpec(spec.fields || {});
         renderFields();
       }).catch(() => alert('Invalid YAML file'));
@@ -234,7 +421,7 @@ function renderFields() {
         '<option value="string"' + (f.type === 'string' ? ' selected' : '') + '>Text</option>' +
         '<option value="number"' + (f.type === 'number' ? ' selected' : '') + '>Number</option>' +
         '<option value="date"' + (f.type === 'date' ? ' selected' : '') + '>Date</option>' +
-        '<option value="enum"' + (f.type === 'enum' ? ' selected' : '') + '>Enum</option>' +
+        '<option value="enum"' + (f.type === 'enum' ? ' selected' : '') + '>Category</option>' +
         '<option value="array"' + (f.type === 'array' ? ' selected' : '') + '>Nested array</option>' +
       '</select>' +
       '<input type="text" placeholder="Description" value="' + esc(f.description) + '" data-i="' + i + '" data-key="description">' +
@@ -263,7 +450,7 @@ function renderFields() {
             '<option value="string"' + (sf.type === 'string' ? ' selected' : '') + '>Text</option>' +
             '<option value="number"' + (sf.type === 'number' ? ' selected' : '') + '>Number</option>' +
             '<option value="date"' + (sf.type === 'date' ? ' selected' : '') + '>Date</option>' +
-            '<option value="enum"' + (sf.type === 'enum' ? ' selected' : '') + '>Enum</option>' +
+            '<option value="enum"' + (sf.type === 'enum' ? ' selected' : '') + '>Category</option>' +
           '</select>' +
           '<input type="text" placeholder="Description" value="' + esc(sf.description) + '" data-i="' + i + '" data-si="' + si + '" data-key="description">' +
           '<button class="remove-btn" data-i="' + i + '" data-si="' + si + '">&times;</button>';
@@ -278,9 +465,9 @@ function renderFields() {
         }
       });
       const addSub = document.createElement('button');
-      addSub.className = 'add-btn';
+      addSub.className = 'btn-add';
       addSub.textContent = '+ Add subfield';
-      addSub.style.fontSize = '0.85rem';
+      addSub.style.fontSize = '0.72rem';
       addSub.style.marginTop = '0.3rem';
       addSub.dataset.i = i;
       nested.appendChild(addSub);
@@ -326,7 +513,7 @@ function renderFields() {
     });
   });
 
-  container.querySelectorAll('.nested-section .add-btn').forEach(el => {
+  container.querySelectorAll('.nested-section .btn-add').forEach(el => {
     el.addEventListener('click', e => {
       const idx = parseInt(e.currentTarget.dataset.i);
       if (!fields[idx].subfields) fields[idx].subfields = [];
@@ -354,9 +541,13 @@ function buildYaml() {
 
   let yaml = '';
   const cleanName = name.replace(/\.ya?ml$/i, '');
-  if (cleanName) yaml += 'name: ' + cleanName + '\n';
-  if (desc) yaml += 'description: ' + desc + '\n';
+  if (cleanName) yaml += 'name: ' + yamlStr(cleanName) + '\n';
+  if (desc) yaml += 'description: ' + yamlStr(desc) + '\n';
   if (recordType === 'array') yaml += 'record_type: array\n';
+  const headerPages = parseInt(document.getElementById('headerPages').value) || 0;
+  if (recordType === 'array' && headerPages > 0) yaml += 'header_pages: ' + headerPages + '\n';
+  const pageRange = document.getElementById('pageRange').value.trim();
+  if (recordType === 'array' && pageRange) yaml += 'pages: ' + yamlStr(pageRange) + '\n';
   if (instr) yaml += 'instructions: ' + yamlStr(instr) + '\n';
   if (name || desc || recordType === 'array' || instr) yaml += '\n';
 
@@ -404,6 +595,8 @@ function updatePreview() {
 document.getElementById('schemaName').addEventListener('input', updatePreview);
 document.getElementById('schemaDesc').addEventListener('input', updatePreview);
 document.getElementById('instructions').addEventListener('input', updatePreview);
+document.getElementById('headerPages').addEventListener('input', updatePreview);
+document.getElementById('pageRange').addEventListener('input', updatePreview);
 
 // --- Download / Copy ---
 document.getElementById('downloadBtn').addEventListener('click', () => {

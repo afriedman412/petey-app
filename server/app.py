@@ -13,7 +13,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 
 from server.auth import FirebaseAuthMiddleware, get_uid
 from server.extract import (
-    async_extract, load_schema,
+    async_extract, async_extract_pages, load_schema,
     list_schemas, SCHEMAS_DIR, _build_model,
     extract_text, check_text_length,
 )
@@ -127,29 +127,35 @@ async def extract_endpoint(
         tmp.write(await file.read())
         tmp_path = tmp.name
     try:
-        if parser in ("marker", "aryn"):
-            text, info = "", []
+        is_array = spec.get("record_type") == "array"
+        if is_array:
+            records = await async_extract_pages(
+                tmp_path, response_model,
+                uid=uid, instructions=instructions,
+                parser=spec.get("parser", "tables"),
+                header_pages=spec.get("header_pages", 0),
+                page_range=spec.get("pages") or None,
+            )
+            rows = []
+            for chunk in records:
+                if not chunk.get("_error") and "items" in chunk:
+                    rows.extend(chunk["items"])
+            data = {"_source_file": file.filename, "records": rows}
         else:
             text, info = extract_text(tmp_path)
-        warning = check_text_length(text)
-        result = await async_extract(
-            tmp_path, response_model,
-            uid=uid, instructions=instructions,
-            parser=parser, ocr_fallback=ocr_fallback,
-            text=text if info else None,
-        )
-        data = result.model_dump()
-        if spec.get("record_type") == "array" and "items" in data:
-            data = {
-                "_source_file": file.filename,
-                "records": data["items"],
-            }
-        else:
+            warning = check_text_length(text)
+            result = await async_extract(
+                tmp_path, response_model,
+                uid=uid, instructions=instructions,
+                parser=parser, ocr_fallback=ocr_fallback,
+                text=text if info else None,
+            )
+            data = result.model_dump()
             data["_source_file"] = file.filename
-        if warning:
-            data["_warning"] = warning
-        if info:
-            data["_info"] = info
+            if warning:
+                data["_warning"] = warning
+            if info:
+                data["_info"] = info
     except Exception as e:
         data = {
             "_source_file": file.filename,
@@ -158,6 +164,72 @@ async def extract_endpoint(
     finally:
         Path(tmp_path).unlink(missing_ok=True)
     return data
+
+
+@app.post("/extract/stream")
+async def extract_stream_endpoint(
+    request: Request,
+    file: UploadFile,
+    schema_spec: str = Form(None),
+    instructions: str = Form(""),
+    uid: str = Depends(get_uid),
+):
+    """Streaming array extraction — emits NDJSON page progress then result."""
+    settings = get_settings(uid)
+    provider = get_provider(settings["model"])
+    if provider == "anthropic" and not settings.get("anthropic_api_key"):
+        return JSONResponse({"error": "No Anthropic API key configured."}, 400)
+    if provider == "openai" and not settings.get("openai_api_key"):
+        return JSONResponse({"error": "No OpenAI API key configured."}, 400)
+
+    if not schema_spec:
+        return JSONResponse({"error": "No schema provided"}, 400)
+    spec = json.loads(schema_spec)
+    response_model = _build_model(spec)
+
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+        tmp.write(await file.read())
+        tmp_path = tmp.name
+
+    filename = file.filename
+
+    async def _stream():
+        queue = asyncio.Queue()
+
+        def on_result(label, data):
+            queue.put_nowait(json.dumps({"type": "progress", "page": label}) + "\n")
+
+        async def run():
+            try:
+                records = await async_extract_pages(
+                    tmp_path, response_model,
+                    uid=uid, instructions=instructions,
+                    parser=spec.get("parser", "tables"),
+                    header_pages=spec.get("header_pages", 0),
+                    page_range=spec.get("pages") or None,
+                    on_result=on_result,
+                )
+                rows = []
+                for chunk in records:
+                    if not chunk.get("_error") and "items" in chunk:
+                        rows.extend(chunk["items"])
+                result = {"_source_file": filename, "records": rows}
+            except Exception as e:
+                result = {"_source_file": filename, "_error": str(e)}
+            finally:
+                Path(tmp_path).unlink(missing_ok=True)
+            queue.put_nowait(json.dumps({"type": "result", "data": result}) + "\n")
+
+        task = asyncio.create_task(run())
+        done = False
+        while not done:
+            msg = await queue.get()
+            yield msg
+            if json.loads(msg)["type"] == "result":
+                done = True
+        await task
+
+    return StreamingResponse(_stream(), media_type="application/x-ndjson")
 
 
 @app.post("/par/extract")
@@ -327,6 +399,9 @@ async def get_settings_endpoint(
         "anthropic_api_key": mask_key(
             settings.get("anthropic_api_key", "")
         ),
+        "mistral_api_key": mask_key(
+            settings.get("mistral_api_key", "")
+        ),
         "models": MODELS,
     }
 
@@ -350,6 +425,11 @@ async def save_settings(
         and "..." not in body["anthropic_api_key"]
     ):
         updates["anthropic_api_key"] = body["anthropic_api_key"]
+    if (
+        "mistral_api_key" in body
+        and "..." not in body["mistral_api_key"]
+    ):
+        updates["mistral_api_key"] = body["mistral_api_key"]
     settings = update_settings(uid, updates)
     return {
         "model": settings["model"],
@@ -358,6 +438,9 @@ async def save_settings(
         ),
         "anthropic_api_key": mask_key(
             settings.get("anthropic_api_key", "")
+        ),
+        "mistral_api_key": mask_key(
+            settings.get("mistral_api_key", "")
         ),
     }
 
@@ -427,6 +510,11 @@ async def settings_page():
 @app.get("/template-builder", response_class=HTMLResponse)
 async def template_builder_page():
     return _load_template("template_builder.html")
+
+
+@app.get("/about", response_class=HTMLResponse)
+async def about_page():
+    return _load_template("about.html")
 
 
 @app.get("/par", response_class=HTMLResponse)
