@@ -433,6 +433,7 @@ table.results tr:hover td { background: var(--surface-2); }
       <span>Extracting</span><span id="extractPct">0 / ?</span>
     </div>
     <div class="progress-track"><div id="extractBar" style="height:100%; background:var(--accent); border-radius:1px; width:0%; transition:width 0.3s;"></div></div>
+    <button id="cancelRunBtn" style="margin-top:0.75rem; padding:0.4rem 1rem; font-size:0.78rem; font-weight:600; background:transparent; color:var(--danger); border:1px solid var(--danger); border-radius:5px; cursor:pointer; font-family:inherit; transition:all 0.15s;" onmouseover="this.style.background='var(--danger)';this.style.color='#000'" onmouseout="this.style.background='transparent';this.style.color='var(--danger)'">Cancel run</button>
   </div>
 
   <div id="status"></div>
@@ -782,12 +783,15 @@ async function extractFile(file, spec, instr) {
   return await resp.json();
 }
 
+let _streamAbort = null;
+
 async function extractFileStream(file, spec, instr, onEvent) {
+  _streamAbort = new AbortController();
   const form = new FormData();
   form.append('file', file);
   form.append('schema_spec', JSON.stringify(spec));
   if (instr) form.append('instructions', instr);
-  const resp = await authFetch('/extract/stream', { method: 'POST', body: form });
+  const resp = await authFetch('/extract/stream', { method: 'POST', body: form, signal: _streamAbort.signal });
   if (!resp.ok) {
     let msg = 'Extraction failed (status ' + resp.status + ')';
     try {
@@ -811,11 +815,21 @@ async function extractFileStream(file, spec, instr, onEvent) {
       if (!line.trim()) continue;
       const msg = JSON.parse(line);
       if (onEvent) onEvent(msg);
-      if (msg.type === 'result') return msg.data;
+      if (msg.type === 'result') { _streamAbort = null; return msg.data; }
     }
   }
+  _streamAbort = null;
   throw new Error('Stream ended without result');
 }
+
+document.getElementById('cancelRunBtn').addEventListener('click', () => {
+  if (!confirm('Cancel the current extraction? Progress will be lost.')) return;
+  if (_streamAbort) { _streamAbort.abort(); _streamAbort = null; }
+  st.textContent = 'Cancelled.';
+  document.getElementById('streamProgress').style.display = 'none';
+  extractBtn.disabled = false;
+  updateExtractBtn();
+});
 
 async function mildExtract() {
   results.innerHTML = '';
@@ -853,12 +867,17 @@ async function mildExtract() {
 
   // Step 2: Extract with inferred schema
   const isTable = spec.record_type === 'array';
-  st.textContent = isTable ? 'Extracting data (page by page)...' : 'Extracting data...';
+  if (isTable) {
+    st.textContent = 'Connecting...';
+    const sp = document.getElementById('streamProgress');
+    sp.style.display = '';
+  } else {
+    st.textContent = 'Extracting data...';
+  }
   try {
     let data;
     if (isTable) {
       const sp = document.getElementById('streamProgress');
-      sp.style.display = '';
       let parsed = 0, extracted = 0, total = '?';
       data = await extractFileStream(selectedFiles[0], spec, instr, evt => {
         if (evt.type === 'parse') {
@@ -979,7 +998,13 @@ extractBtn.addEventListener('click', async () => {
     for (let j = i; j < Math.min(i + CONCURRENCY, total); j++) {
       batch.push(selectedFiles[j]);
     }
-    st.textContent = 'Processing ' + completed + ' / ' + total + '...';
+    const useStream = recordType === 'table' && total === 1;
+    if (useStream && completed === 0) {
+      st.textContent = 'Connecting...';
+      document.getElementById('streamProgress').style.display = '';
+    } else {
+      st.textContent = 'Processing ' + completed + ' / ' + total + '...';
+    }
 
     const promises = batch.map(async file => {
       if (apiKeyError) return;
@@ -988,7 +1013,6 @@ extractBtn.addEventListener('click', async () => {
       progressLog.appendChild(logEntry);
       progressLog.scrollTop = progressLog.scrollHeight;
       try {
-        const useStream = recordType === 'table' && total === 1;
         let data;
         if (useStream) {
           const sp = document.getElementById('streamProgress');
