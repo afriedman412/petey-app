@@ -16,4 +16,5 @@ build/
 .ruff_cache/
 MCI_test/
 settings.json
+runs.json
 TODO*
