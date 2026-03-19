@@ -27,6 +27,8 @@ def extract_text(
     pdf_path: str,
     *,
     ocr_fallback: bool = True,
+    page_range: str | None = None,
+    header_pages: int = 0,
 ) -> tuple[str, list[str]]:
     """Extract text from PDF with optional OCR fallback.
 
@@ -35,7 +37,31 @@ def extract_text(
     "No usable text layer, using OCR".
     """
     info = []
-    text = _raw_extract_text(pdf_path)
+
+    if page_range or header_pages:
+        # Use page-level extraction for filtered ranges
+        from petey.extract import (
+            extract_text_pages as _etp,
+            _parse_page_range,
+        )
+        import fitz
+        doc = fitz.open(pdf_path)
+        total = len(doc)
+        doc.close()
+
+        pages = _etp(pdf_path)
+        parts = []
+        if header_pages > 0:
+            parts.extend(pages[:header_pages])
+        if page_range:
+            indices = _parse_page_range(page_range, total)
+            indices = [i for i in indices if i >= header_pages]
+            parts.extend(pages[i] for i in indices if i < len(pages))
+        else:
+            parts.extend(pages[header_pages:])
+        text = "\n\n".join(parts)
+    else:
+        text = _raw_extract_text(pdf_path)
 
     if ocr_fallback and len(text.strip()) < 200:
         info.append("No usable text layer detected, using OCR")
@@ -63,9 +89,11 @@ async def async_extract(
     instructions: str = "",
     parser: str = "pymupdf",
     ocr_fallback: bool = False,
+    ocr_backend: str = "none",
     text: str | None = None,
 ) -> BaseModel:
     """Extract using the model/key from the user's settings."""
+    _set_ocr_env(uid)
     settings = get_settings(uid)
     model_id = settings["model"]
     provider = get_provider(model_id)
@@ -90,8 +118,22 @@ async def async_extract(
         instructions=instructions,
         parser=parser,
         ocr_fallback=ocr_fallback,
+        ocr_backend=ocr_backend,
         text=text,
     )
+
+
+def _set_ocr_env(uid: str):
+    """Set OCR API key env vars from user settings."""
+    import os
+    settings = get_settings(uid)
+    for key_name, env_var in [
+        ("mistral_api_key", "MISTRAL_API_KEY"),
+        ("datalab_api_key", "DATALAB_API_KEY"),
+    ]:
+        val = settings.get(key_name, "")
+        if val:
+            os.environ[env_var] = val
 
 
 def _get_api_key(uid: str) -> tuple[str, str]:
@@ -129,6 +171,7 @@ async def async_extract_pages(
     on_parse=None,
 ) -> list[dict]:
     """Page-chunked extraction using the user's settings."""
+    _set_ocr_env(uid)
     model_id, api_key = _get_api_key(uid)
     settings = get_settings(uid)
     concurrency = settings.get("concurrency", 10)

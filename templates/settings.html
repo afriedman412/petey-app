@@ -212,6 +212,15 @@ input::placeholder { color: var(--text-dim); }
       <div class="key-status" id="mistralKeyStatus"></div>
       <div class="hint">Required for Mistral OCR</div>
     </div>
+
+    <div class="field">
+      <label for="datalab_key">Datalab API Key</label>
+      <div class="key-row">
+        <input type="password" id="datalab_key" placeholder="..." autocomplete="off">
+        <button type="button" id="toggleDatalab">Show</button>
+      </div>
+      <div class="hint">Required for Surya OCR — get a key at <a href="https://www.datalab.to/app/keys" target="_blank" style="color:var(--accent);">datalab.to</a></div>
+    </div>
   </div>
 
   <button class="save-btn" id="saveBtn">Save settings</button>
@@ -272,6 +281,7 @@ const modelSelect = document.getElementById('model');
 const openaiInput = document.getElementById('openai_key');
 const anthropicInput = document.getElementById('anthropic_key');
 const mistralInput = document.getElementById('mistral_key');
+const datalabInput = document.getElementById('datalab_key');
 const statusEl = document.getElementById('status');
 
 function toggleVis(id, btn) {
@@ -285,6 +295,9 @@ document.getElementById('toggleOpenai').addEventListener('click', function() {
 });
 document.getElementById('toggleAnthropic').addEventListener('click', function() {
   toggleVis('anthropic_key', this);
+});
+document.getElementById('toggleDatalab').addEventListener('click', function() {
+  toggleVis('datalab_key', this);
 });
 document.getElementById('toggleMistral').addEventListener('click', function() {
   toggleVis('mistral_key', this);
@@ -318,6 +331,9 @@ async function loadSettings() {
     mistralInput.value = data.mistral_api_key || '';
     mistralInput.placeholder = data.mistral_api_key ? data.mistral_api_key : '...';
 
+    datalabInput.value = data.datalab_api_key || '';
+    datalabInput.placeholder = data.datalab_api_key ? data.datalab_api_key : '...';
+
   } catch (e) {
     statusEl.textContent = 'Error loading settings: ' + e.message;
     statusEl.className = 'status err';
@@ -339,6 +355,9 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
   if (mistralInput.value && !mistralInput.value.includes('...')) {
     body.mistral_api_key = mistralInput.value;
   }
+  if (datalabInput.value && !datalabInput.value.includes('...')) {
+    body.datalab_api_key = datalabInput.value;
+  }
 
   try {
     const resp = await authFetch('/settings', {
@@ -351,6 +370,7 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     openaiInput.value = data.openai_api_key || '';
     anthropicInput.value = data.anthropic_api_key || '';
     mistralInput.value = data.mistral_api_key || '';
+    datalabInput.value = data.datalab_api_key || '';
     statusEl.className = 'status ok';
     statusEl.textContent = 'Settings saved.';
   } catch (e) {

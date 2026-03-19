@@ -140,9 +140,16 @@ body {
 
 /* FIELD ROWS */
 .field-row {
-  display: grid; grid-template-columns: 18px 1fr 92px 2fr 22px;
+  display: grid; grid-template-columns: 16px 18px 1fr 92px 2fr 22px;
   gap: 0.35rem; align-items: center; margin-bottom: 0.28rem;
 }
+.field-row .drag-handle {
+  cursor: grab; color: var(--text-dim); font-size: 0.7rem; user-select: none;
+  display: flex; align-items: center; justify-content: center;
+}
+.field-row .drag-handle:active { cursor: grabbing; }
+.field-row.dragging { opacity: 0.4; }
+.field-row.drag-over { border-top: 2px solid var(--accent); margin-top: -2px; }
 .field-row input[type=text], .field-row select {
   background: var(--surface-2); border: 1px solid var(--border);
   color: var(--text); padding: 0.27rem 0.4rem; font-size: 0.8rem;
@@ -324,7 +331,11 @@ table.results tr:hover td { background: var(--surface-2); }
       <button class="active" data-mode="single" data-tip="Extract one record per document">Query</button>
       <button data-mode="table" data-tip="Extract rows from tables across pages">Table</button>
     </div>
-    <span id="headerPagesControl" style="display:none; align-items:center; gap:0.6rem;">
+  </div>
+
+  <div class="controls-row" data-spice-min="medium">
+    <span class="controls-label">Pages</span>
+    <span id="headerPagesControl" style="display:inline-flex; align-items:center; gap:0.6rem;">
       <label style="margin:0;">Header pages</label>
       <input type="number" id="headerPages" value="0" min="0" max="10">
       <label style="margin:0 0 0 0.5rem;">Page range</label>
@@ -343,8 +354,13 @@ table.results tr:hover td { background: var(--surface-2); }
         <option value="tables">Tables</option>
       </select>
     </label>
-    <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.8rem; color:var(--text-muted); cursor:pointer; margin-left:0.5rem;">
-      <input type="checkbox" id="ocrFallback" style="accent-color:var(--accent); cursor:pointer;"> Mistral OCR (set API key in Settings)
+    <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.8rem; color:var(--text-muted); margin-left:0.5rem;">
+      OCR
+      <select id="ocrSelect" style="background:var(--surface-2); border:1px solid var(--border); border-radius:4px; color:var(--text); padding:0.2rem 0.4rem; font-size:0.78rem; font-family:inherit;">
+        <option value="none">Tesseract (Default)</option>
+        <option value="surya">Surya</option>
+        <option value="mistral">Mistral</option>
+      </select>
     </label>
   </div>
 
@@ -516,7 +532,7 @@ async function startRun(filename, spec, instructions, totalPages) {
         spice_mode: spiceMode,
         model: settings.model || '',
         parser: spec.parser || document.getElementById('parserSelect')?.value || 'pymupdf',
-        ocr_backend: document.getElementById('ocrFallback')?.checked ? 'mistral' : 'none',
+        ocr_backend: document.getElementById('ocrSelect')?.value || 'none',
         record_type: spec.record_type || 'single',
         concurrency: settings.concurrency || 10,
         total_pages: totalPages || 0,
@@ -616,8 +632,6 @@ function updateModeToggle() {
   document.querySelectorAll('#modeToggle button').forEach(b => {
     b.classList.toggle('active', b.dataset.mode === recordType);
   });
-  document.getElementById('headerPagesControl').style.display =
-    recordType === 'table' ? 'inline-flex' : 'none';
 }
 
 // Logo reset
@@ -631,7 +645,7 @@ document.getElementById('logoReset').addEventListener('click', e => {
   document.getElementById('instructions').value = '';
   document.getElementById('headerPages').value = '0';
   document.getElementById('pageRange').value = '';
-  document.getElementById('ocrFallback').checked = false;
+  document.getElementById('ocrSelect').value = 'none';
   document.getElementById('parserSelect').value = 'pymupdf';
   updateModeToggle();
   renderFields();
@@ -691,13 +705,18 @@ document.getElementById('addField').addEventListener('click', () => {
   if (inputs.length) inputs[inputs.length - 1].focus();
 });
 
+let _dragIdx = null;
+
 function renderFields() {
   fieldRows.innerHTML = '';
   fields.forEach((f, i) => {
     if (f.enabled === undefined) f.enabled = true;
     const row = document.createElement('div');
     row.className = 'field-row' + (f.enabled ? '' : ' disabled');
+    row.draggable = true;
+    row.dataset.idx = i;
     row.innerHTML =
+      '<span class="drag-handle" title="Drag to reorder">⠿</span>' +
       '<input type="checkbox"' + (f.enabled ? ' checked' : '') + ' data-i="' + i + '" data-key="enabled" title="Include this field">' +
       '<input type="text" placeholder="Field name" value="' + esc(f.name) + '" data-i="' + i + '" data-key="name">' +
       '<select data-i="' + i + '" data-key="type">' +
@@ -708,6 +727,35 @@ function renderFields() {
       '</select>' +
       '<input type="text" placeholder="Description" value="' + esc(f.description) + '" data-i="' + i + '" data-key="description">' +
       '<button class="remove-btn" data-i="' + i + '">&times;</button>';
+
+    row.addEventListener('dragstart', e => {
+      _dragIdx = i;
+      row.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    row.addEventListener('dragend', () => {
+      row.classList.remove('dragging');
+      fieldRows.querySelectorAll('.field-row').forEach(r => r.classList.remove('drag-over'));
+      _dragIdx = null;
+    });
+    row.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      row.classList.add('drag-over');
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
+    row.addEventListener('drop', e => {
+      e.preventDefault();
+      row.classList.remove('drag-over');
+      const from = _dragIdx;
+      const to = parseInt(row.dataset.idx);
+      if (from !== null && from !== to) {
+        const [moved] = fields.splice(from, 1);
+        fields.splice(to, 0, moved);
+        renderFields();
+      }
+    });
+
     fieldRows.appendChild(row);
 
     if (f.type === 'enum') {
@@ -783,11 +831,11 @@ function buildSpec() {
   if (name) spec.name = name;
   if (recordType === 'table') {
     spec.record_type = 'array';
-    const hp = parseInt(document.getElementById('headerPages').value) || 0;
-    if (hp > 0) spec.header_pages = hp;
-    const pr = document.getElementById('pageRange').value.trim();
-    if (pr) spec.pages = pr;
   }
+  const hp = parseInt(document.getElementById('headerPages').value) || 0;
+  if (hp > 0) spec.header_pages = hp;
+  const pr = document.getElementById('pageRange').value.trim();
+  if (pr) spec.pages = pr;
   const instr = document.getElementById('instructions').value.trim();
   if (instr) spec.instructions = instr;
   spec.fields = {};
@@ -816,7 +864,8 @@ async function extractFile(file, spec, instr) {
   form.append('schema_spec', JSON.stringify(spec));
   if (instr) form.append('instructions', instr);
   form.append('parser', document.getElementById('parserSelect').value);
-  if (document.getElementById('ocrFallback').checked) form.append('ocr_fallback', 'true');
+  const ocrVal = document.getElementById('ocrSelect').value;
+  if (ocrVal && ocrVal !== 'none') form.append('ocr_backend', ocrVal);
   const resp = await authFetch('/extract', { method: 'POST', body: form });
   if (!resp.ok) {
     let msg = 'Extraction failed (status ' + resp.status + ')';
@@ -975,13 +1024,7 @@ async function mildExtract() {
       if (data.records && Array.isArray(data.records)) {
         renderTable(data.records);
       } else {
-        const pre = document.createElement('pre');
-        pre.textContent = JSON.stringify(data, null, 2);
-        results.appendChild(pre);
-        const jsonBlob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const jsonUrl = URL.createObjectURL(jsonBlob);
-        results.insertAdjacentHTML('beforeend',
-          '<a class="download-btn" href="' + jsonUrl + '" download="' + extractedFilename('json') + '">Download JSON</a>');
+        renderSingleResult(data);
       }
       // Show inferred schema so user can save/reuse
       const schemaYaml = specToYaml(spec);
@@ -1215,15 +1258,10 @@ extractBtn.addEventListener('click', async () => {
     if (allResults.length > AUTO_FILE_THRESHOLD) {
       autoDownloadJson(allResults);
       results.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem;">Large result set (' + allResults.length + ' results) — downloaded as JSON.</p>';
+    } else if (allResults.length === 1) {
+      renderSingleResult(allResults[0]);
     } else {
-      const pre = document.createElement('pre');
-      const jsonData = allResults.length === 1 ? allResults[0] : allResults;
-      pre.textContent = JSON.stringify(jsonData, null, 2);
-      results.appendChild(pre);
-      const jsonBlob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
-      const jsonUrl = URL.createObjectURL(jsonBlob);
-      results.insertAdjacentHTML('beforeend',
-        '<a class="download-btn" href="' + jsonUrl + '" download="' + extractedFilename('json') + '">Download JSON</a>');
+      renderTable(allResults);
     }
   }
 
@@ -1277,7 +1315,7 @@ function flattenRecords(records) {
     const flat = {};
     let nestedItems = null;
     for (const [k, v] of Object.entries(rec)) {
-      if (Array.isArray(v)) { nestedItems = v; }
+      if (Array.isArray(v) && v.length && typeof v[0] === 'object') { nestedItems = v; }
       else { flat[k] = v; if (!keySet.has(k)) { keySet.add(k); allKeys.push(k); } }
     }
     if (nestedItems && nestedItems.length) {
@@ -1296,41 +1334,94 @@ function flattenRecords(records) {
   return { flatRecords, allKeys };
 }
 
-function renderTable(records) {
-  if (!records.length) { results.textContent = 'No records found.'; return; }
-
-  const { flatRecords, allKeys } = flattenRecords(records);
-
-  let html = '<div class="table-wrap"><table class="results"><thead><tr>';
-  for (const k of allKeys) html += '<th>' + k + '</th>';
-  html += '</tr></thead><tbody>';
-  for (const row of flatRecords) {
-    html += '<tr>';
-    for (const k of allKeys) {
-      const v = row[k];
-      html += '<td>' + (v != null ? String(v).replace(/</g,'&lt;') : '') + '</td>';
-    }
-    html += '</tr>';
+function renderSingleResult(data) {
+  const keys = Object.keys(data).filter(k => !k.startsWith('_'));
+  let html = '<div class="table-wrap"><table class="results"><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>';
+  for (const k of keys) {
+    const v = data[k];
+    const display = v != null ? String(v).replace(/</g, '&lt;') : '';
+    html += '<tr><td style="font-weight:500; white-space:nowrap;">' + k + '</td><td>' + display + '</td></tr>';
   }
   html += '</tbody></table></div>';
 
-  const csvRows = [allKeys.join(',')];
-  for (const row of flatRecords) {
-    csvRows.push(allKeys.map(k => {
-      const s = row[k] != null ? String(row[k]) : '';
-      return s.includes(',') || s.includes('"') || s.includes('\n')
-        ? '"' + s.replace(/"/g, '""') + '"' : s;
-    }).join(','));
-  }
-  const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  html += '<a class="download-btn" href="' + url + '" download="' + extractedFilename('csv') + '">Download CSV</a>';
-
-  const jsonBlob = new Blob([JSON.stringify(records, null, 2)], { type: 'application/json' });
+  const jsonBlob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const jsonUrl = URL.createObjectURL(jsonBlob);
   html += '<a class="download-btn" href="' + jsonUrl + '" download="' + extractedFilename('json') + '">Download JSON</a>';
 
   results.innerHTML = html;
+}
+
+function renderTable(records) {
+  if (!records.length) { results.textContent = 'No records found.'; return; }
+
+  const { flatRecords, allKeys } = flattenRecords(records);
+  let sortCol = null, sortAsc = true;
+
+  function buildTable() {
+    const sorted = [...flatRecords];
+    if (sortCol !== null) {
+      sorted.sort((a, b) => {
+        const va = a[sortCol], vb = b[sortCol];
+        if (va == null && vb == null) return 0;
+        if (va == null) return 1;
+        if (vb == null) return -1;
+        const na = Number(va), nb = Number(vb);
+        if (!isNaN(na) && !isNaN(nb)) return sortAsc ? na - nb : nb - na;
+        return sortAsc ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
+      });
+    }
+
+    let html = '<div class="table-wrap"><table class="results"><thead><tr>';
+    for (const k of allKeys) {
+      const arrow = sortCol === k ? (sortAsc ? ' \u25B2' : ' \u25BC') : '';
+      html += '<th style="cursor:pointer; user-select:none;" data-col="' + k + '">' + k + arrow + '</th>';
+    }
+    html += '</tr></thead><tbody>';
+    for (const row of sorted) {
+      html += '<tr>';
+      for (const k of allKeys) {
+        const v = row[k];
+        html += '<td>' + (v != null ? String(v).replace(/</g,'&lt;') : '') + '</td>';
+      }
+      html += '</tr>';
+    }
+    html += '</tbody></table></div>';
+    return html;
+  }
+
+  function render() {
+    let html = buildTable();
+
+    const csvRows = [allKeys.join(',')];
+    for (const row of flatRecords) {
+      csvRows.push(allKeys.map(k => {
+        const s = row[k] != null ? String(row[k]) : '';
+        return s.includes(',') || s.includes('"') || s.includes('\n')
+          ? '"' + s.replace(/"/g, '""') + '"' : s;
+      }).join(','));
+    }
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    html += '<a class="download-btn" href="' + url + '" download="' + extractedFilename('csv') + '">Download CSV</a>';
+
+    const jsonBlob = new Blob([JSON.stringify(records, null, 2)], { type: 'application/json' });
+    const jsonUrl = URL.createObjectURL(jsonBlob);
+    html += '<a class="download-btn" href="' + jsonUrl + '" download="' + extractedFilename('json') + '">Download JSON</a>';
+
+    results.innerHTML = html;
+
+    // Wire up sort click handlers
+    results.querySelectorAll('th[data-col]').forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.dataset.col;
+        if (sortCol === col) { sortAsc = !sortAsc; }
+        else { sortCol = col; sortAsc = true; }
+        render();
+      });
+    });
+  }
+
+  render();
 }
 
 // Download schema as YAML

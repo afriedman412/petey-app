@@ -24,6 +24,7 @@ DEFAULTS = {
     "openai_api_key": "",
     "anthropic_api_key": "",
     "mistral_api_key": "",
+    "datalab_api_key": "",
     "concurrency": 10,
     "parse_multiplier": 5,
 }

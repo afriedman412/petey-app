@@ -122,6 +122,7 @@ async def extract_endpoint(
     instructions: str = Form(""),
     parser: str = Form("pymupdf"),
     ocr_fallback: bool = Form(False),
+    ocr_backend: str = Form("none"),
     uid: str = Depends(get_uid),
 ):
     # Check that the user has the required API key before processing
@@ -169,12 +170,18 @@ async def extract_endpoint(
                     rows.extend(chunk["items"])
             data = {"_source_file": file.filename, "records": rows}
         else:
-            text, info = extract_text(tmp_path)
+            page_range = spec.get("pages") or None
+            header_pages = spec.get("header_pages", 0)
+            text, info = extract_text(
+                tmp_path, page_range=page_range,
+                header_pages=header_pages,
+            )
             warning = check_text_length(text)
             result = await async_extract(
                 tmp_path, response_model,
                 uid=uid, instructions=instructions,
                 parser=parser, ocr_fallback=ocr_fallback,
+                ocr_backend=ocr_backend,
                 text=text if info else None,
             )
             data = result.model_dump()
@@ -478,6 +485,9 @@ async def get_settings_endpoint(
         "mistral_api_key": mask_key(
             settings.get("mistral_api_key", "")
         ),
+        "datalab_api_key": mask_key(
+            settings.get("datalab_api_key", "")
+        ),
         "concurrency": settings.get("concurrency", 10),
         "parse_multiplier": settings.get("parse_multiplier", 5),
         "models": MODELS,
@@ -508,6 +518,11 @@ async def save_settings(
         and "..." not in body["mistral_api_key"]
     ):
         updates["mistral_api_key"] = body["mistral_api_key"]
+    if (
+        "datalab_api_key" in body
+        and "..." not in body["datalab_api_key"]
+    ):
+        updates["datalab_api_key"] = body["datalab_api_key"]
     if "concurrency" in body:
         updates["concurrency"] = max(
             1, min(50, int(body["concurrency"]))
@@ -527,6 +542,9 @@ async def save_settings(
         ),
         "mistral_api_key": mask_key(
             settings.get("mistral_api_key", "")
+        ),
+        "datalab_api_key": mask_key(
+            settings.get("datalab_api_key", "")
         ),
         "concurrency": settings.get("concurrency", 10),
         "parse_multiplier": settings.get(
