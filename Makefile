@@ -50,7 +50,9 @@ docker-run:
 
 
 
-FIREBASE_API_KEY ?= AIzaSyDekJcIIwflaqkb_THwcHDGfqoipIFWL1I
+include .env
+export
+
 FIREBASE_AUTH_DOMAIN ?= petey-dev.firebaseapp.com
 FIREBASE_PROJECT_ID ?= petey-dev
 

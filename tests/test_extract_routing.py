@@ -209,6 +209,9 @@ class TestAsyncExtractPagesRouting:
                 new_callable=AsyncMock,
             ) as mock_ext,
             patch("server.extract._set_ocr_env"),
+            patch(
+                "server.extract.configure_concurrency",
+            ) as mock_cfg,
         ):
             mock_ext.return_value = []
             await async_extract_pages(
@@ -217,7 +220,8 @@ class TestAsyncExtractPagesRouting:
 
         kw = mock_ext.call_args.kwargs
         assert kw["concurrency"] == 5
-        assert kw["parse_multiplier"] == 3
+        assert "parse_multiplier" not in kw
+        mock_cfg.assert_called_with(api_limit=5)
 
 
 # -------------------------------------------------------------------

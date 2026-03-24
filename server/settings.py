@@ -26,7 +26,6 @@ DEFAULTS = {
     "mistral_api_key": "",
     "datalab_api_key": "",
     "concurrency": 10,
-    "parse_multiplier": 5,
 }
 
 MODELS = [
