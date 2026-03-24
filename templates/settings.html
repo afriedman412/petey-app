@@ -218,8 +218,10 @@ input::placeholder { color: var(--text-dim); }
       <div class="key-row">
         <input type="password" id="datalab_key" placeholder="..." autocomplete="off">
         <button type="button" id="toggleDatalab">Show</button>
+        <button type="button" class="validate-btn" id="validateDatalab">Validate</button>
       </div>
-      <div class="hint">Required for Surya OCR — get a key at <a href="https://www.datalab.to/app/keys" target="_blank" style="color:var(--accent);">datalab.to</a></div>
+      <div class="key-status" id="datalabKeyStatus"></div>
+      <div class="hint">Required for Marker and Chandra — get a key at <a href="https://www.datalab.to/app/keys" target="_blank" style="color:var(--accent);">datalab.to</a></div>
     </div>
   </div>
 
@@ -420,6 +422,9 @@ document.getElementById('validateAnthropic').addEventListener('click', () => {
 });
 document.getElementById('validateMistral').addEventListener('click', () => {
   validateKey('mistral', mistralInput, 'mistralKeyStatus');
+});
+document.getElementById('validateDatalab').addEventListener('click', () => {
+  validateKey('datalab', datalabInput, 'datalabKeyStatus');
 });
 </script>
 </body>

@@ -13,8 +13,10 @@ from petey.extract import (
     extract_pages_async as _extract_pages_async,
     infer_schema_async as _infer_schema_async,
     TEXT_WARN_THRESHOLD,
+    API_PARSERS,
 )
 from server.settings import get_settings, get_provider
+from server.parse_client import parse_fn as _remote_parse_fn, page_parse_fn as _remote_page_parse_fn
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SCHEMAS_DIR = BASE_DIR / "schemas"
@@ -23,7 +25,7 @@ SCHEMAS_DIR = BASE_DIR / "schemas"
 _build_model = build_model
 
 
-def extract_text(
+async def extract_text(
     pdf_path: str,
     *,
     ocr_fallback: bool = True,
@@ -39,17 +41,18 @@ def extract_text(
     info = []
 
     if page_range or header_pages:
-        # Use page-level extraction for filtered ranges
-        from petey.extract import (
-            extract_text_pages as _etp,
-            _parse_page_range,
-        )
-        import fitz
-        doc = fitz.open(pdf_path)
-        total = len(doc)
-        doc.close()
+        from petey.extract import _parse_page_range
+        from server.parse_client import get_page_count
 
-        pages = _etp(pdf_path)
+        total = await get_page_count(pdf_path)
+
+        # Parse all pages via remote service
+        pages = []
+        for i in range(total):
+            pages.append(await _remote_page_parse_fn(
+                pdf_path, i, "pymupdf", "none",
+            ))
+
         parts = []
         if header_pages > 0:
             parts.extend(pages[:header_pages])
@@ -61,7 +64,7 @@ def extract_text(
             parts.extend(pages[header_pages:])
         text = "\n\n".join(parts)
     else:
-        text = _raw_extract_text(pdf_path)
+        text = await _remote_parse_fn(pdf_path, "pymupdf", "none")
 
     if ocr_fallback and len(text.strip()) < 200:
         info.append("No usable text layer detected, using OCR")
@@ -112,6 +115,10 @@ async def async_extract(
                 "Add one in Settings before extracting."
             )
 
+    # API-based parsers (marker, etc.) are handled directly by petey —
+    # only local parsers need the remote parse service.
+    use_remote = parser not in API_PARSERS
+
     return await _extract_async(
         pdf_path, response_model,
         model=model_id, api_key=api_key,
@@ -120,6 +127,7 @@ async def async_extract(
         ocr_fallback=ocr_fallback,
         ocr_backend=ocr_backend,
         text=text,
+        parse_fn=_remote_parse_fn if use_remote else None,
     )
 
 
@@ -176,6 +184,8 @@ async def async_extract_pages(
     settings = get_settings(uid)
     concurrency = settings.get("concurrency", 10)
     parse_multiplier = settings.get("parse_multiplier", 5)
+    use_remote = parser not in API_PARSERS
+
     return await _extract_pages_async(
         pdf_path, response_model,
         model=model_id, api_key=api_key,
@@ -188,6 +198,7 @@ async def async_extract_pages(
         on_parse=on_parse,
         concurrency=concurrency,
         parse_multiplier=parse_multiplier,
+        parse_fn=_remote_page_parse_fn if use_remote else None,
     )
 
 

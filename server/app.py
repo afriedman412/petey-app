@@ -24,6 +24,7 @@ from server.settings import (
 )
 from server.validate_keys import (
     validate_openai_key, validate_anthropic_key, validate_mistral_key,
+    validate_datalab_key,
 )
 from server.runs import (
     create_run, update_run, finish_run, list_runs, get_run, delete_run,
@@ -172,7 +173,7 @@ async def extract_endpoint(
         else:
             page_range = spec.get("pages") or None
             header_pages = spec.get("header_pages", 0)
-            text, info = extract_text(
+            text, info = await extract_text(
                 tmp_path, page_range=page_range,
                 header_pages=header_pages,
             )
@@ -332,7 +333,7 @@ async def par_extract_endpoint(
 
     async def _stream():
         queue = asyncio.Queue()
-        sem = asyncio.Semaphore(5)
+        sem = asyncio.Semaphore(settings.get("concurrency", 10))
 
         async def _process(idx, filename, tmp_path):
             async def on_progress(step):
@@ -574,6 +575,8 @@ async def validate_key_endpoint(
         valid, message = await validate_anthropic_key(key)
     elif provider == "mistral":
         valid, message = await validate_mistral_key(key)
+    elif provider == "datalab":
+        valid, message = await validate_datalab_key(key)
     else:
         return JSONResponse(
             {"error": "Unknown provider"}, 400

@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]
+pymupdf
+pymupdf4llm
+pdfplumber
+python-multipart

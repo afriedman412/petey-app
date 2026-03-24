@@ -6,6 +6,7 @@ import httpx
 OPENAI_MODELS_URL = "https://api.openai.com/v1/models"
 ANTHROPIC_MESSAGES_URL = "https://api.anthropic.com/v1/messages"
 MISTRAL_MODELS_URL = "https://api.mistral.ai/v1/models"
+DATALAB_CONVERT_URL = "https://www.datalab.to/api/v1/convert"
 
 
 async def validate_openai_key(api_key: str) -> tuple[bool, str]:
@@ -77,6 +78,29 @@ async def validate_mistral_key(api_key: str) -> tuple[bool, str]:
             return True, "Valid"
         if resp.status_code == 401:
             return False, "Invalid API key"
+        return False, f"Unexpected status {resp.status_code}"
+    except httpx.TimeoutException:
+        return False, "Request timed out"
+    except Exception as e:
+        return False, str(e)
+
+
+async def validate_datalab_key(api_key: str) -> tuple[bool, str]:
+    """Validate a Datalab API key by POSTing to /convert with no file.
+
+    A valid key returns 422 (missing file); an invalid key returns 401.
+    """
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.post(
+                DATALAB_CONVERT_URL,
+                headers={"X-API-Key": api_key},
+            )
+        if resp.status_code == 401:
+            return False, "Invalid API key"
+        # Valid key with no file body returns 400 or 422
+        if resp.status_code in (200, 400, 422):
+            return True, "Valid"
         return False, f"Unexpected status {resp.status_code}"
     except httpx.TimeoutException:
         return False, "Request timed out"

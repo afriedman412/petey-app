@@ -1,10 +1,11 @@
 VENV = venv
 PYTHON = $(VENV)/bin/python
 PIP = $(VENV)/bin/pip
+PARSER_URL ?= https://petey-parser-425941924538.us-east1.run.app
 
 BASE_IMAGE = us-east1-docker.pkg.dev/petey-dev/petey/base:latest
 
-.PHONY: venv install run deploy build-base clean
+.PHONY: venv install run deploy deploy-web deploy-parser build-base clean
 
 venv:
 	python3 -m venv $(VENV)
@@ -23,7 +24,11 @@ endif
 ifdef GIT
 	$(PIP) install git+https://github.com/afriedman412/petey.git
 endif
-	export FIREBASE_AUTH_DISABLED=1 && $(VENV)/bin/uvicorn server.app:app --reload
+	FIREBASE_AUTH_DISABLED=1 PARSER_URL=http://localhost:8081 $(VENV)/bin/uvicorn parser.app:app --port 8081 & \
+	FIREBASE_AUTH_DISABLED=1 PARSER_URL=http://localhost:8081 $(VENV)/bin/uvicorn server.app:app --reload
+
+stop:
+	@-pkill -f "uvicorn parser.app:app --port 8081" 2>/dev/null || true
 
 build-base:
 	gcloud config set project petey-dev
@@ -43,9 +48,32 @@ docker-run:
 		-e FIREBASE_AUTH_DISABLED=1 \
 		petey-web
 
-deploy:
+
+
+FIREBASE_API_KEY ?= AIzaSyDekJcIIwflaqkb_THwcHDGfqoipIFWL1I
+FIREBASE_AUTH_DOMAIN ?= petey-dev.firebaseapp.com
+FIREBASE_PROJECT_ID ?= petey-dev
+
+deploy-web:
 	gcloud config set project petey-dev
-	gcloud run deploy petey --source . --region=us-east1 --allow-unauthenticated --memory=4Gi --cpu=4 --timeout=3600
+	gcloud run deploy petey --source . --region=us-east1 --allow-unauthenticated --memory=4Gi --cpu=4 --timeout=3600 \
+		--set-env-vars=PARSER_URL=$(PARSER_URL),FIREBASE_API_KEY=$(FIREBASE_API_KEY),FIREBASE_AUTH_DOMAIN=$(FIREBASE_AUTH_DOMAIN),FIREBASE_PROJECT_ID=$(FIREBASE_PROJECT_ID)
+
+deploy-parser:
+	gcloud config set project petey-dev
+	cd parser && gcloud run deploy petey-parser --source . --region=us-east1 --port=8081 --cpu=4 --memory=2Gi --min-instances=0 --max-instances=10 --allow-unauthenticated
+
+deploy:
+ifdef SERVICE
+ifeq ($(SERVICE),w)
+	$(MAKE) deploy-web
+else ifeq ($(SERVICE),p)
+	$(MAKE) deploy-parser
+endif
+else
+	$(MAKE) deploy-web
+	$(MAKE) deploy-parser
+endif
 
 clean:
 	rm -rf $(VENV)

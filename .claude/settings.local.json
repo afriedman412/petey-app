@@ -13,7 +13,13 @@
       "Bash(kill 36885)",
       "Bash(python3:*)",
       "Bash(./venv/bin/pip install fastapi uvicorn)",
-      "Bash(./venv/bin/python -c \"from app import app; print\\(''OK''\\)\")"
+      "Bash(./venv/bin/python -c \"from app import app; print\\(''OK''\\)\")",
+      "Bash(FIREBASE_AUTH_DISABLED=1 venv/bin/python -m pytest tests/test_parser.py -x -v)",
+      "Bash(venv/bin/pip install:*)",
+      "Bash(FIREBASE_AUTH_DISABLED=1 venv/bin/python -m pytest tests/ -x -v)",
+      "Bash(gcloud run:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebSearch"
     ]
   }
 }

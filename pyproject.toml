@@ -24,7 +24,10 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest",
+    "pytest-asyncio",
     "httpx",
+    "firebase-admin",
+    "google-cloud-firestore",
 ]
 
 [tool.setuptools.packages.find]
