@@ -126,15 +126,9 @@ input:focus { outline: none; border-color: var(--accent); }
     </div>
 
     <div class="field">
-      <label for="concurrency">LLM Concurrency</label>
+      <label for="concurrency">Concurrency</label>
       <input type="number" id="concurrency" min="1" max="50" value="10">
-      <div class="hint">Simultaneous LLM calls per extraction. Higher = faster but may hit rate limits. (1-50)</div>
-    </div>
-
-    <div class="field">
-      <label for="parseMultiplier">Parse Concurrency Multiplier</label>
-      <input type="number" id="parseMultiplier" min="1" max="20" value="5">
-      <div class="hint">Parsing threads = LLM concurrency x this value. Higher keeps the LLM pipeline full. (1-20)</div>
+      <div class="hint">Max simultaneous calls (parsing, OCR, LLM all share this pool). Higher = faster but may hit rate limits. (1-50)</div>
     </div>
   </div>
 
@@ -178,7 +172,6 @@ async function authFetch(url, opts = {}) {
 }
 
 const concurrencyInput = document.getElementById('concurrency');
-const parseMultInput = document.getElementById('parseMultiplier');
 const statusEl = document.getElementById('status');
 
 async function loadSettings() {
@@ -187,7 +180,6 @@ async function loadSettings() {
     if (!resp.ok) return;
     const data = await resp.json();
     concurrencyInput.value = data.concurrency || 10;
-    parseMultInput.value = data.parse_multiplier || 5;
   } catch (_) {}
 }
 
@@ -202,13 +194,11 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         concurrency: parseInt(concurrencyInput.value, 10),
-        parse_multiplier: parseInt(parseMultInput.value, 10),
       }),
     });
     if (!resp.ok) throw new Error('Save failed');
     const data = await resp.json();
     concurrencyInput.value = data.concurrency || 10;
-    parseMultInput.value = data.parse_multiplier || 5;
     statusEl.className = 'status ok';
     statusEl.textContent = 'Saved.';
   } catch (e) {

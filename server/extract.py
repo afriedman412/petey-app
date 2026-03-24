@@ -15,6 +15,7 @@ from petey.extract import (
     TEXT_WARN_THRESHOLD,
     API_PARSERS,
 )
+from petey.concurrency import configure as configure_concurrency
 from server.settings import get_settings, get_provider
 from server.parse_client import parse_fn as _remote_parse_fn, page_parse_fn as _remote_page_parse_fn
 
@@ -119,6 +120,10 @@ async def async_extract(
     # only local parsers need the remote parse service.
     use_remote = parser not in API_PARSERS
 
+    configure_concurrency(
+        api_limit=settings.get("concurrency", 10),
+    )
+
     return await _extract_async(
         pdf_path, response_model,
         model=model_id, api_key=api_key,
@@ -183,8 +188,9 @@ async def async_extract_pages(
     model_id, api_key = _get_api_key(uid)
     settings = get_settings(uid)
     concurrency = settings.get("concurrency", 10)
-    parse_multiplier = settings.get("parse_multiplier", 5)
     use_remote = parser not in API_PARSERS
+
+    configure_concurrency(api_limit=concurrency)
 
     return await _extract_pages_async(
         pdf_path, response_model,
@@ -197,7 +203,6 @@ async def async_extract_pages(
         on_result=on_result,
         on_parse=on_parse,
         concurrency=concurrency,
-        parse_multiplier=parse_multiplier,
         parse_fn=_remote_page_parse_fn if use_remote else None,
     )
 

@@ -17,6 +17,7 @@ from server.extract import (
     async_extract, async_extract_pages, load_schema,
     list_schemas, SCHEMAS_DIR, _build_model,
     extract_text, check_text_length, async_infer_schema,
+    API_PARSERS,
 )
 from server.par_extract import async_process_file as par_process_file, extract_text as par_extract_text
 from server.settings import (
@@ -333,7 +334,6 @@ async def par_extract_endpoint(
 
     async def _stream():
         queue = asyncio.Queue()
-        sem = asyncio.Semaphore(settings.get("concurrency", 10))
 
         async def _process(idx, filename, tmp_path):
             async def on_progress(step):
@@ -345,23 +345,22 @@ async def par_extract_endpoint(
                     "step": step,
                 }) + "\n")
 
-            async with sem:
-                try:
-                    data = await par_process_file(
-                        tmp_path, model=model_id,
-                        api_key=api_key, on_progress=on_progress,
-                    )
-                    data["_source_file"] = filename
-                except Exception as e:
-                    data = {
-                        "_source_file": filename, "_error": str(e),
-                    }
-                finally:
-                    Path(tmp_path).unlink(missing_ok=True)
+            try:
+                data = await par_process_file(
+                    tmp_path, model=model_id,
+                    api_key=api_key, on_progress=on_progress,
+                )
+                data["_source_file"] = filename
+            except Exception as e:
+                data = {
+                    "_source_file": filename, "_error": str(e),
+                }
+            finally:
+                Path(tmp_path).unlink(missing_ok=True)
 
-                await queue.put(json.dumps({
-                    "type": "result", "data": data,
-                }) + "\n")
+            await queue.put(json.dumps({
+                "type": "result", "data": data,
+            }) + "\n")
 
         tasks = [
             asyncio.create_task(_process(i, fn, tp))
@@ -490,7 +489,7 @@ async def get_settings_endpoint(
             settings.get("datalab_api_key", "")
         ),
         "concurrency": settings.get("concurrency", 10),
-        "parse_multiplier": settings.get("parse_multiplier", 5),
+        "api_parsers": list(API_PARSERS.keys()),
         "models": MODELS,
     }
 
@@ -528,10 +527,6 @@ async def save_settings(
         updates["concurrency"] = max(
             1, min(50, int(body["concurrency"]))
         )
-    if "parse_multiplier" in body:
-        updates["parse_multiplier"] = max(
-            1, min(20, int(body["parse_multiplier"]))
-        )
     settings = update_settings(uid, updates)
     return {
         "model": settings["model"],
@@ -548,9 +543,6 @@ async def save_settings(
             settings.get("datalab_api_key", "")
         ),
         "concurrency": settings.get("concurrency", 10),
-        "parse_multiplier": settings.get(
-            "parse_multiplier", 5
-        ),
     }
 
 

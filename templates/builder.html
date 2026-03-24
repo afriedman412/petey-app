@@ -852,8 +852,19 @@ function buildSpec() {
   return spec;
 }
 
-// Extract
-const CONCURRENCY = 5;
+// Extract — concurrency default
+const DEFAULT_CONCURRENCY = 10;
+
+async function getConcurrency() {
+  try {
+    const resp = await authFetch('/settings');
+    if (resp.ok) {
+      const data = await resp.json();
+      return data.concurrency || DEFAULT_CONCURRENCY;
+    }
+  } catch (_) {}
+  return DEFAULT_CONCURRENCY;
+}
 
 class ApiKeyError extends Error {
   constructor(msg) { super(msg); this.name = 'ApiKeyError'; }
@@ -1132,11 +1143,12 @@ extractBtn.addEventListener('click', async () => {
   }
   updateBars();
 
-  // Process in batches of CONCURRENCY
+  // Process in batches based on parser type
+  const concurrency = await getConcurrency();
   let apiKeyError = null;
-  for (let i = 0; i < total && !apiKeyError; i += CONCURRENCY) {
+  for (let i = 0; i < total && !apiKeyError; i += concurrency) {
     const batch = [];
-    for (let j = i; j < Math.min(i + CONCURRENCY, total); j++) {
+    for (let j = i; j < Math.min(i + concurrency, total); j++) {
       batch.push(selectedFiles[j]);
     }
 
