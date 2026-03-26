@@ -141,7 +141,7 @@ body {
 /* FIELD ROWS */
 .field-row {
   display: grid; grid-template-columns: 16px 18px 1fr 92px 2fr 22px;
-  gap: 0.35rem; align-items: center; margin-bottom: 0.28rem;
+  gap: 0.35rem; align-items: start; margin-bottom: 0.28rem;
 }
 .field-row .drag-handle {
   cursor: grab; color: var(--text-dim); font-size: 0.7rem; user-select: none;
@@ -150,19 +150,22 @@ body {
 .field-row .drag-handle:active { cursor: grabbing; }
 .field-row.dragging { opacity: 0.4; }
 .field-row.drag-over { border-top: 2px solid var(--accent); margin-top: -2px; }
-.field-row input[type=text], .field-row select {
+.field-row input[type=text], .field-row select, .field-row textarea {
   background: var(--surface-2); border: 1px solid var(--border);
   color: var(--text); padding: 0.27rem 0.4rem; font-size: 0.8rem;
   border-radius: 4px; width: 100%; font-family: inherit; transition: border-color 0.15s;
 }
-.field-row input[type=text]:focus, .field-row select:focus {
+.field-row input[type=text]:focus, .field-row select:focus, .field-row textarea:focus {
   outline: none; border-color: var(--accent);
+}
+.field-row textarea {
+  resize: none; overflow: hidden; min-height: 1.8em; line-height: 1.4;
 }
 .field-row select option { background: var(--surface-2); color: var(--text); }
 .field-row input[type=checkbox] {
   width: 14px; height: 14px; margin: 0; cursor: pointer; accent-color: var(--accent);
 }
-.field-row.disabled input[type=text], .field-row.disabled select {
+.field-row.disabled input[type=text], .field-row.disabled select, .field-row.disabled textarea {
   opacity: 0.22; pointer-events: none;
 }
 .field-row .remove-btn {
@@ -311,29 +314,18 @@ table.results tr:hover td { background: var(--surface-2); }
   <script src="/static/navbar.js"></script>
   <nav-bar active="extractor" subtitle="Easy PDF Extraction"></nav-bar>
 
-  <!-- Spice mode selector -->
-  <div class="controls-row" style="margin-bottom:1.5rem;">
-    <span class="controls-label">Spice level</span>
-    <div class="toggle-group" id="spiceToggle">
-      <button data-spice="mild" class="active" data-tip="Drop a PDF, get results">Mild</button>
-      <button data-spice="medium" data-tip="Describe what you want or let us infer it">Medium</button>
-      <button data-spice="spicy" data-tip="Full schema builder, parser, OCR options">Spicy</button>
-    </div>
-  </div>
-
   <script src="/static/dropzone.js"></script>
   <drop-zone id="dropzone" max-files="5000"></drop-zone>
 
-  <!-- Mode toggle: medium + spicy -->
-  <div class="controls-row" data-spice-min="medium">
+  <div class="controls-row">
     <span class="controls-label">Mode</span>
     <div class="toggle-group" id="modeToggle">
-      <button class="active" data-mode="single" data-tip="Extract one record per document">Query</button>
+      <button class="active" data-mode="query" data-tip="Extract one record per document">Query</button>
       <button data-mode="table" data-tip="Extract rows from tables across pages">Table</button>
     </div>
   </div>
 
-  <div class="controls-row" data-spice-min="medium">
+  <div class="controls-row">
     <span class="controls-label">Pages</span>
     <span id="headerPagesControl" style="display:inline-flex; align-items:center; gap:0.6rem;">
       <label style="margin:0;">Header pages</label>
@@ -343,8 +335,7 @@ table.results tr:hover td { background: var(--surface-2); }
     </span>
   </div>
 
-  <!-- Options: spicy only -->
-  <div class="controls-row" data-spice-min="spicy">
+  <div class="controls-row">
     <span class="controls-label">Options</span>
     <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.8rem; color:var(--text-muted); cursor:pointer;">
       Parser
@@ -365,8 +356,7 @@ table.results tr:hover td { background: var(--surface-2); }
     </label>
   </div>
 
-  <!-- Schema card: spicy only -->
-  <div class="card" data-spice-min="spicy">
+  <div class="card">
     <div class="card-header">
       <span class="card-label">Schema</span>
       <input type="text" class="schema-name-input" id="schemaName" placeholder="Untitled schema">
@@ -380,11 +370,10 @@ table.results tr:hover td { background: var(--surface-2); }
     </div>
   </div>
 
-  <!-- Instructions: medium + spicy -->
-  <div class="card" data-spice-min="medium">
+  <div class="card">
     <div class="card-header">
-      <span class="card-label" id="instructionsLabel">What data do you want?</span>
-      <span style="font-size:0.7rem; color:var(--text-dim);" id="instructionsHint">Leave blank to infer from the document</span>
+      <span class="card-label">Additional Instructions</span>
+      <span style="font-size:0.7rem; color:var(--text-dim);">optional</span>
     </div>
     <textarea class="instructions-area" id="instructions"
       placeholder="e.g. Extract all line items with date, description, and amount"></textarea>
@@ -392,7 +381,7 @@ table.results tr:hover td { background: var(--surface-2); }
 
   <div class="action-row">
     <button class="extract-btn" id="extractBtn" disabled>Extract</button>
-    <button class="save-btn" id="saveBtn" data-spice-min="medium">Download Schema</button>
+    <button class="save-btn" id="saveBtn">Download Schema</button>
   </div>
 
   <div id="streamProgress" style="display:none; margin-top:1.25rem;">
@@ -530,7 +519,6 @@ async function startRun(filename, spec, instructions, totalPages) {
         filename,
         schema_spec: spec,
         instructions: instructions || '',
-        spice_mode: spiceMode,
         model: settings.model || '',
         parser: spec.parser || document.getElementById('parserSelect')?.value || 'pymupdf',
         ocr_backend: document.getElementById('ocrSelect')?.value || 'none',
@@ -580,10 +568,6 @@ async function finishRun(runId, status, pagesParsed, pagesExtracted) {
 let selectedFiles = [];
 let recordType = 'query';
 let fields = [];
-let spiceMode = localStorage.getItem('petey_spice') || 'mild';
-
-const SPICE_LEVELS = ['mild', 'medium', 'spicy'];
-
 const dzEl = document.getElementById('dropzone');
 const st = document.getElementById('status');
 const results = document.getElementById('results');
@@ -591,36 +575,6 @@ const fieldRows = document.getElementById('fieldRows');
 const extractBtn = document.getElementById('extractBtn');
 
 document.getElementById('instructions').addEventListener('input', () => updateExtractBtn());
-
-// Spice mode toggle
-document.getElementById('spiceToggle').addEventListener('click', e => {
-  if (e.target.tagName !== 'BUTTON') return;
-  spiceMode = e.target.dataset.spice;
-  localStorage.setItem('petey_spice', spiceMode);
-  updateSpiceMode();
-});
-
-function updateSpiceMode() {
-  const level = SPICE_LEVELS.indexOf(spiceMode);
-  document.querySelectorAll('#spiceToggle button').forEach(b => {
-    b.classList.toggle('active', b.dataset.spice === spiceMode);
-  });
-  document.querySelectorAll('[data-spice-min]').forEach(el => {
-    const min = SPICE_LEVELS.indexOf(el.dataset.spiceMin);
-    el.style.display = level >= min ? '' : 'none';
-  });
-  // Update instructions label based on mode
-  const instrLabel = document.getElementById('instructionsLabel');
-  const instrHint = document.getElementById('instructionsHint');
-  if (spiceMode === 'spicy') {
-    instrLabel.textContent = 'Additional Instructions';
-    instrHint.textContent = 'optional';
-  } else {
-    instrLabel.textContent = 'What data do you want?';
-    instrHint.textContent = 'Describe the data you want to extract';
-  }
-  updateExtractBtn();
-}
 
 // Mode toggle
 document.getElementById('modeToggle').addEventListener('click', e => {
@@ -687,15 +641,7 @@ function fileLabel(name) {
 }
 
 function updateExtractBtn() {
-  if (spiceMode === 'mild') {
-    extractBtn.disabled = !selectedFiles.length;
-  } else if (spiceMode === 'medium') {
-    // medium: need a file + instructions text
-    const instr = document.getElementById('instructions').value.trim();
-    extractBtn.disabled = !(selectedFiles.length && instr);
-  } else {
-    extractBtn.disabled = !(selectedFiles.length && fields.some(f => f.name.trim() && f.enabled));
-  }
+  extractBtn.disabled = !(selectedFiles.length && fields.some(f => f.name.trim() && f.enabled));
 }
 
 // Field builder
@@ -726,7 +672,7 @@ function renderFields() {
         '<option value="date"' + (f.type==='date'?' selected':'') + '>Date</option>' +
         '<option value="enum"' + (f.type==='enum'?' selected':'') + '>Category</option>' +
       '</select>' +
-      '<input type="text" placeholder="Description" value="' + esc(f.description) + '" data-i="' + i + '" data-key="description">' +
+      '<textarea placeholder="Description" rows="1" data-i="' + i + '" data-key="description">' + esc(f.description) + '</textarea>' +
       '<button class="remove-btn" data-i="' + i + '">&times;</button>';
 
     row.addEventListener('dragstart', e => {
@@ -768,7 +714,7 @@ function renderFields() {
     }
   });
 
-  fieldRows.querySelectorAll('input, select').forEach(el => {
+  fieldRows.querySelectorAll('input, select, textarea').forEach(el => {
     const handler = e => {
       const idx = parseInt(e.target.dataset.i);
       if (e.target.dataset.key === 'enabled') {
@@ -783,6 +729,13 @@ function renderFields() {
     el.addEventListener('input', handler);
     el.addEventListener('change', handler);
   });
+
+  // Auto-resize description textareas
+  fieldRows.querySelectorAll('textarea').forEach(ta => {
+    function autoResize() { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }
+    ta.addEventListener('input', autoResize);
+    autoResize();
+  });
   fieldRows.querySelectorAll('.remove-btn').forEach(el => {
     el.addEventListener('click', e => {
       fields.splice(parseInt(e.currentTarget.dataset.i), 1);
@@ -793,7 +746,7 @@ function renderFields() {
   updateExtractBtn();
 }
 
-function esc(s) { return (s||'').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+function esc(s) { return (s||'').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
 
 // YAML import
 document.getElementById('yamlToggle').addEventListener('click', () => {
@@ -941,137 +894,8 @@ document.getElementById('cancelRunBtn').addEventListener('click', () => {
   updateExtractBtn();
 });
 
-async function mildExtract() {
-  results.innerHTML = '';
-  extractBtn.disabled = true;
-  const instr = document.getElementById('instructions').value.trim();
-
-  // Step 1: Infer schema
-  st.textContent = 'Analyzing document...';
-  let spec;
-  try {
-    const form = new FormData();
-    form.append('file', selectedFiles[0]);
-    const resp = await authFetch('/infer-schema', { method: 'POST', body: form });
-    if (!resp.ok) throw new Error((await resp.json()).error || 'Schema inference failed');
-    spec = await resp.json();
-  } catch(e) {
-    const settingsLink = (e.message.includes('API key') || e.message.includes('api key'))
-      ? '<br><a href="/settings/page" style="color:var(--accent);">Go to Settings</a>' : '';
-    st.innerHTML = '<span style="color:#f87171;">' + e.message + '</span>' + settingsLink;
-    extractBtn.disabled = false;
-    updateExtractBtn();
-    return;
-  }
-
-  if (instr) spec.instructions = instr;
-
-  // Populate the schema card (hidden in mild mode, but available if user switches)
-  document.getElementById('schemaName').value = spec.name || '';
-  if (spec.mode === 'table') { recordType = 'table'; updateModeToggle(); }
-  fields = Object.entries(spec.fields || {}).map(([name, cfg]) => ({
-    name, type: cfg.type || 'string', description: cfg.description || '',
-    values: (cfg.values || []).join(', '), enabled: true,
-  }));
-  renderFields();
-
-  // Step 2: Extract with inferred schema
-  const isTable = spec.mode === 'table';
-  const runId = await startRun(selectedFiles[0].name, spec, instr);
-  if (isTable) {
-    st.textContent = 'Connecting...';
-    const sp = document.getElementById('streamProgress');
-    sp.style.display = '';
-  } else {
-    st.textContent = 'Extracting data...';
-  }
-  let mildParsed = 0, mildExtracted = 0, mildTotal = 0;
-  try {
-    let data;
-    if (isTable) {
-      const sp = document.getElementById('streamProgress');
-      let total = '?';
-      data = await extractFileStream(selectedFiles[0], spec, instr, evt => {
-        if (evt.type === 'parse') {
-          mildParsed++;
-          total = evt.total;
-          mildTotal = evt.total;
-          if (mildParsed === 1) updateRunProgress(runId, { total_pages: total });
-          document.getElementById('parsePct').textContent = mildParsed + ' / ' + total;
-          document.getElementById('parseBar').style.width = (mildParsed / total * 100) + '%';
-          st.textContent = 'Parsing — page ' + evt.page;
-        } else if (evt.type === 'extract') {
-          mildExtracted++;
-          document.getElementById('extractPct').textContent = mildExtracted + ' / ' + total;
-          document.getElementById('extractBar').style.width = (mildExtracted / total * 100) + '%';
-          st.textContent = 'Extracting — page ' + evt.page;
-          if (mildExtracted % 10 === 0) updateRunProgress(runId, { pages_parsed: mildParsed, pages_extracted: mildExtracted });
-        }
-      });
-      sp.style.display = 'none';
-    } else {
-      const form = new FormData();
-      form.append('file', selectedFiles[0]);
-      form.append('schema_spec', JSON.stringify(spec));
-      if (instr) form.append('instructions', instr);
-      const resp = await authFetch('/extract', { method: 'POST', body: form });
-      if (!resp.ok) {
-        let msg = 'Extraction failed';
-        try { const b = await resp.json(); msg = b.error || b.detail || msg; } catch(_) {}
-        throw new Error(msg);
-      }
-      data = await resp.json();
-    }
-
-    if (data._error) {
-      st.innerHTML = '<span style="color:#f87171;">' + data._error + '</span>';
-      finishRun(runId, 'error', 0, 0);
-    } else {
-      st.textContent = 'Done!';
-      // Save results to IndexedDB
-      const resultRecords = data.records && Array.isArray(data.records) ? data.records : [data];
-      saveRunResults(runId, resultRecords);
-      finishRun(runId, 'completed', mildParsed || 1, mildExtracted || 1);
-      // Show results
-      if (data.records && Array.isArray(data.records)) {
-        renderTable(data.records);
-      } else {
-        renderSingleResult(data);
-      }
-      // Show inferred schema so user can save/reuse
-      const schemaYaml = specToYaml(spec);
-      results.insertAdjacentHTML('beforeend',
-        '<details style="margin-top:1rem;">' +
-        '<summary style="cursor:pointer; font-size:0.8rem; color:var(--text-muted);">Inferred schema (switch to Medium to edit)</summary>' +
-        '<pre style="margin-top:0.5rem; font-size:0.74rem;">' + schemaYaml.replace(/</g, '&lt;') + '</pre>' +
-        '</details>');
-      const schemaBlob = new Blob([schemaYaml], { type: 'text/yaml' });
-      const schemaUrl = URL.createObjectURL(schemaBlob);
-      const fname = (spec.name || 'schema').toLowerCase().replace(/\s+/g, '_') + '.yaml';
-      results.insertAdjacentHTML('beforeend',
-        '<a class="download-btn" href="' + schemaUrl + '" download="' + fname + '">Download Schema</a>');
-    }
-  } catch(e) {
-    if (e.name === 'AbortError') {
-      finishRun(runId, 'cancelled', 0, 0);
-    } else {
-      finishRun(runId, 'error', 0, 0);
-      const settingsLink = (e.message.includes('API key') || e.message.includes('api key'))
-        ? '<br><a href="/settings/page" style="color:var(--accent);">Go to Settings</a>' : '';
-      st.innerHTML = '<span style="color:#f87171;">' + e.message + '</span>' + settingsLink;
-    }
-  }
-  extractBtn.disabled = false;
-  updateExtractBtn();
-}
-
 extractBtn.addEventListener('click', async () => {
   if (!selectedFiles.length) return;
-
-  // Mild mode: always auto-infer.
-  if (spiceMode === 'mild') {
-    return mildExtract();
-  }
 
   const spec = buildSpec();
   if (!Object.keys(spec.fields).length) return;
@@ -1504,19 +1328,11 @@ document.getElementById('previewSchema').addEventListener('click', () => {
 fields.push({ name: '', type: 'string', description: '', values: '', enabled: true });
 renderFields();
 
-// Initialize spice mode from localStorage
-updateSpiceMode();
-
 // Load settings from URL params (e.g. from Runs page "Load settings")
 (function loadFromUrl() {
   const params = new URLSearchParams(window.location.search);
   if (!params.has('run') && !params.has('schema')) return;
 
-  if (params.has('spice')) {
-    spiceMode = params.get('spice');
-    localStorage.setItem('petey_spice', spiceMode);
-    updateSpiceMode();
-  }
   if (params.has('schema')) {
     try {
       const spec = JSON.parse(params.get('schema'));

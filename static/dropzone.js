@@ -39,19 +39,6 @@ if (!document.getElementById(DROPZONE_STYLE_ID)) {
     .dropzone input { display: none; }
     .dropzone.gated { opacity: 0.6; cursor: default; }
     .dropzone.gated:hover { border-color: var(--border, #333); background-color: var(--surface, #1c1c1c); }
-    .dz-actions {
-      display: flex; justify-content: center; gap: 0.75rem;
-      margin-bottom: 1.5rem;
-    }
-    .dz-actions button {
-      font-size: 0.72rem; color: var(--text-muted, #db7c26);
-      background: none; border: 1px solid var(--border, #333);
-      border-radius: 5px; padding: 0.3rem 0.8rem; cursor: pointer;
-      font-family: inherit; transition: all 0.15s;
-    }
-    .dz-actions button:hover {
-      color: var(--text, #f2ece4); border-color: var(--text-muted, #db7c26);
-    }
   `;
   document.head.appendChild(style);
 }
@@ -73,18 +60,13 @@ class DropZone extends HTMLElement {
         <p class="dz-label">Drop PDFs here, or click to select</p>
         <input type="file" class="dz-file-input" accept=".pdf" multiple>
       </div>
-      <div class="dz-actions">
-        <button class="dz-clear-btn" style="display:none;">Clear</button>
-      </div>
     `;
 
     this._dz = this.querySelector('.dropzone');
     this._label = this.querySelector('.dz-label');
     this._fileInput = this.querySelector('.dz-file-input');
-    this._clearBtn = this.querySelector('.dz-clear-btn');
 
     this._dz.addEventListener('click', e => {
-      if (e.target === this._clearBtn) return;
       if (this._enabled && !this._gated) this._fileInput.click();
     });
 
@@ -144,11 +126,6 @@ class DropZone extends HTMLElement {
       if (pdfs.length) this._setFiles(pdfs);
     });
 
-    this._clearBtn.addEventListener('click', e => {
-      e.stopPropagation();
-      this.reset();
-      this.dispatchEvent(new CustomEvent('files-selected', { detail: { files: [] } }));
-    });
   }
 
   _setFiles(files) {
@@ -159,7 +136,6 @@ class DropZone extends HTMLElement {
     this._files = files;
     this._label.textContent = files.length === 1 ? files[0].name : files.length + ' PDFs selected';
     this._dz.classList.add('has-file');
-    this._clearBtn.style.display = '';
     this.dispatchEvent(new CustomEvent('files-selected', { detail: { files } }));
   }
 
@@ -173,7 +149,6 @@ class DropZone extends HTMLElement {
     this._dz.classList.add('gated');
     this._label.innerHTML = html;
     this._fileInput.disabled = true;
-    this._clearBtn.style.display = 'none';
   }
 
   clearGate() {
@@ -187,7 +162,6 @@ class DropZone extends HTMLElement {
     this._files = [];
     this._dz.classList.remove('has-file');
     this._fileInput.value = '';
-    this._clearBtn.style.display = 'none';
     if (!this._gated) {
       this._label.textContent = 'Drop PDFs here, or click to select';
     }

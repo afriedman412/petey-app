@@ -25,7 +25,8 @@ ifdef GIT
 	$(PIP) install git+https://github.com/afriedman412/petey.git
 endif
 	FIREBASE_AUTH_DISABLED=1 PARSER_URL=http://localhost:8081 $(VENV)/bin/uvicorn parser.app:app --port 8081 & \
-	FIREBASE_AUTH_DISABLED=1 PARSER_URL=http://localhost:8081 $(VENV)/bin/uvicorn server.app:app --reload
+	FIREBASE_AUTH_DISABLED=1 PARSER_URL=http://localhost:8081 $(VENV)/bin/uvicorn server.app:app --reload; \
+	pkill -f "uvicorn parser.app:app --port 8081" 2>/dev/null || true
 
 stop:
 	@-pkill -f "uvicorn parser.app:app --port 8081" 2>/dev/null || true

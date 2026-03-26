@@ -57,7 +57,6 @@ def create_run(uid: str, data: dict) -> dict:
         "filename": data.get("filename", ""),
         "schema_spec": data.get("schema_spec"),
         "instructions": data.get("instructions", ""),
-        "spice_mode": data.get("spice_mode", "mild"),
         "model": data.get("model", ""),
         "parser": data.get("parser", "pymupdf"),
         "ocr_backend": data.get("ocr_backend", "none"),
