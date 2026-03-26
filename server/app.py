@@ -17,7 +17,7 @@ from server.extract import (
     async_extract, async_extract_pages, load_schema,
     list_schemas, SCHEMAS_DIR, _build_model,
     extract_text, check_text_length, async_infer_schema,
-    API_PARSERS,
+    PARSERS,
 )
 from server.par_extract import async_process_file as par_process_file, extract_text as par_extract_text
 from server.settings import (
@@ -489,7 +489,10 @@ async def get_settings_endpoint(
             settings.get("datalab_api_key", "")
         ),
         "concurrency": settings.get("concurrency", 10),
-        "api_parsers": list(API_PARSERS.keys()),
+        "api_parsers": [
+            name for name, fn in PARSERS.items()
+            if asyncio.iscoroutinefunction(fn)
+        ],
         "models": MODELS,
     }
 
@@ -677,6 +680,11 @@ async def advanced_settings_page():
 @app.get("/template-builder", response_class=HTMLResponse)
 async def template_builder_page():
     return _load_template("template_builder.html")
+
+
+@app.get("/guide", response_class=HTMLResponse)
+async def guide_page():
+    return _load_template("guide.html")
 
 
 @app.get("/about", response_class=HTMLResponse)

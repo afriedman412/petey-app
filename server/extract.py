@@ -1,6 +1,7 @@
 """
 Web server extraction layer. Thin wrapper around the petey package.
 """
+import asyncio
 from pathlib import Path
 
 import yaml
@@ -13,8 +14,8 @@ from petey.extract import (
     extract_pages_async as _extract_pages_async,
     infer_schema_async as _infer_schema_async,
     TEXT_WARN_THRESHOLD,
-    API_PARSERS,
-)
+    PARSERS,
+)  # noqa: E501
 from petey.concurrency import configure as configure_concurrency
 from server.settings import get_settings, get_provider
 from server.parse_client import parse_fn as _remote_parse_fn, page_parse_fn as _remote_page_parse_fn
@@ -118,7 +119,7 @@ async def async_extract(
 
     # API-based parsers (marker, etc.) are handled directly by petey —
     # only local parsers need the remote parse service.
-    use_remote = parser not in API_PARSERS
+    use_remote = not asyncio.iscoroutinefunction(PARSERS.get(parser))
 
     configure_concurrency(
         api_limit=settings.get("concurrency", 10),
@@ -188,7 +189,7 @@ async def async_extract_pages(
     model_id, api_key = _get_api_key(uid)
     settings = get_settings(uid)
     concurrency = settings.get("concurrency", 10)
-    use_remote = parser not in API_PARSERS
+    use_remote = not asyncio.iscoroutinefunction(PARSERS.get(parser))
 
     configure_concurrency(api_limit=concurrency)
 

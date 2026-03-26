@@ -10,6 +10,7 @@ const GITHUB_ICON = '<svg width="16" height="16" viewBox="0 0 16 16" fill="curre
 
 const NAV_LINKS = [
   { id: 'extractor', label: 'Extractor', href: '/' },
+  { id: 'guide', label: 'Guide', href: '/guide' },
   { id: 'runs', label: 'Runs', href: '/runs/page' },
   { id: 'settings', label: 'Settings', href: '/settings/page' },
   { id: 'about', label: 'About', href: '/about' },

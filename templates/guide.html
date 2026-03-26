@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guide — Petey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:          #111111;
+  --surface:     #1c1c1c;
+  --surface-2:   #262626;
+  --border:      #333333;
+  --accent:      #d8572a;
+  --accent-h:    #e06b3e;
+  --accent-dim:  rgba(216,87,42,0.12);
+  --amber:       #f7b538;
+  --amber-dim:   rgba(247,181,56,0.12);
+  --green:       #86efac;
+  --danger:      #c32f27;
+  --text:        #f2ece4;
+  --text-muted:  #db7c26;
+  --text-dim:    #999999;
+  --r:           8px;
+  --r-lg:        12px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--bg); }
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.main { max-width: 940px; margin: 0 auto; padding: 2.75rem 2rem 5rem; }
+
+/* AUTH OVERLAY */
+.auth-overlay {
+  position: fixed; inset: 0; background: rgba(11,15,26,0.97);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100; flex-direction: column; gap: 1.25rem;
+}
+.auth-overlay h2 { font-size: 2.8rem; font-weight: 800; letter-spacing: -0.05em; line-height: 1; }
+.auth-overlay p { color: var(--text-muted); font-size: 0.88rem; }
+.auth-overlay .overlay-btn {
+  padding: 11px 28px; font-size: 0.9rem; font-weight: 700; border-radius: 8px;
+  border: none; background: var(--accent); color: #000; cursor: pointer;
+  font-family: inherit; transition: background 0.15s;
+}
+.auth-overlay .overlay-btn:hover { background: var(--accent-h); }
+
+/* STEP PROGRESS */
+.step-progress {
+  display: flex; align-items: center; gap: 0; margin-bottom: 2.5rem;
+}
+.step-dot {
+  width: 28px; height: 28px; border-radius: 50%; display: flex;
+  align-items: center; justify-content: center; font-size: 0.7rem;
+  font-weight: 700; border: 2px solid var(--border); color: var(--text-dim);
+  background: var(--bg); flex-shrink: 0; transition: all 0.25s;
+}
+.step-dot.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+.step-dot.done { border-color: var(--green); color: #000; background: var(--green); }
+.step-line {
+  flex: 1; height: 2px; background: var(--border); transition: background 0.25s;
+}
+.step-line.done { background: var(--green); }
+.step-label {
+  font-size: 0.62rem; color: var(--text-dim); text-align: center;
+  margin-top: 0.3rem; letter-spacing: 0.02em;
+}
+.step-label.active { color: var(--accent); }
+.step-label.done { color: var(--green); }
+.step-col { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+
+/* WIZARD STEP CONTAINERS */
+.wizard-step { display: none; }
+.wizard-step.visible { display: block; animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* USE CASE CARDS */
+.case-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.case-card {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--r-lg); padding: 1.5rem; cursor: pointer;
+  transition: all 0.2s;
+}
+.case-card:hover { border-color: var(--accent); background: var(--accent-dim); }
+.case-card.selected { border-color: var(--accent); background: var(--accent-dim); }
+.case-card .case-icon { font-size: 1.6rem; margin-bottom: 0.6rem; }
+.case-card .case-title {
+  font-size: 0.92rem; font-weight: 600; margin-bottom: 0.35rem; line-height: 1.3;
+}
+.case-card .case-desc { font-size: 0.78rem; color: var(--text-dim); line-height: 1.5; }
+
+/* FIELD BUILDER */
+.field-group-label {
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-muted); margin: 1.25rem 0 0.6rem;
+}
+.field-group-label:first-child { margin-top: 0; }
+
+.field-row {
+  display: grid; grid-template-columns: 16px 1fr 92px 2fr 22px;
+  gap: 0.35rem; align-items: start; margin-bottom: 0.28rem;
+}
+.field-row .drag-handle {
+  cursor: grab; color: var(--text-dim); font-size: 0.7rem; user-select: none;
+  display: flex; align-items: center; justify-content: center;
+}
+.field-row .drag-handle:active { cursor: grabbing; }
+.field-row.dragging { opacity: 0.4; }
+.field-row.drag-over { border-top: 2px solid var(--accent); margin-top: -2px; }
+.field-row input[type=text], .field-row select, .field-row textarea {
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--text); padding: 0.27rem 0.4rem; font-size: 0.8rem;
+  border-radius: 4px; width: 100%; font-family: inherit; transition: border-color 0.15s;
+}
+.field-row input[type=text]:focus, .field-row select:focus, .field-row textarea:focus {
+  outline: none; border-color: var(--accent);
+}
+.field-row textarea { resize: none; overflow: hidden; min-height: 1.8em; line-height: 1.4; }
+.field-row select option { background: var(--surface-2); color: var(--text); }
+.field-row .remove-btn {
+  background: none; border: none; color: var(--text-dim); cursor: pointer;
+  font-size: 1rem; padding: 0; line-height: 1; transition: color 0.15s;
+}
+.field-row .remove-btn:hover { color: var(--danger); }
+.enum-values { grid-column: 1 / -1; margin-left: 1.2rem; margin-bottom: 0.28rem; }
+.enum-values label { font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 0.16rem; }
+.enum-values input {
+  background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--text); padding: 0.22rem 0.4rem; font-size: 0.78rem;
+  border-radius: 4px; width: 100%; font-family: inherit;
+}
+.enum-values input:focus { outline: none; border-color: var(--accent); }
+
+/* PARSER CARDS */
+.parser-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.parser-card {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--r-lg); padding: 1.1rem 1.25rem; cursor: pointer;
+  transition: all 0.2s; position: relative;
+}
+.parser-card:hover { border-color: var(--text-dim); }
+.parser-card.selected { border-color: var(--accent); background: var(--accent-dim); }
+.parser-card .parser-name { font-size: 0.88rem; font-weight: 600; margin-bottom: 0.25rem; }
+.parser-card .parser-desc { font-size: 0.75rem; color: var(--text-dim); line-height: 1.45; }
+.parser-badge {
+  position: absolute; top: 0.6rem; right: 0.75rem;
+  font-size: 0.58rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--green); background: rgba(134,239,172,0.1);
+  padding: 0.15rem 0.45rem; border-radius: 3px;
+}
+
+/* CONFIG FORM */
+.config-form { display: flex; flex-direction: column; gap: 1.25rem; }
+.config-group label {
+  display: block; font-size: 0.76rem; color: var(--text-muted);
+  margin-bottom: 0.35rem; font-weight: 500;
+}
+.config-group input[type=number], .config-group input[type=text] {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 4px; color: var(--text); padding: 0.35rem 0.5rem;
+  font-size: 0.82rem; font-family: inherit; transition: border-color 0.15s;
+}
+.config-group input:focus { outline: none; border-color: var(--accent); }
+.config-group textarea {
+  width: 100%; min-height: 60px; font-size: 0.82rem;
+  padding: 0.48rem 0.6rem; background: var(--surface-2);
+  border: 1px solid var(--border); border-radius: 4px;
+  font-family: inherit; resize: vertical; color: var(--text);
+  transition: border-color 0.15s;
+}
+.config-group textarea:focus { outline: none; border-color: var(--accent); }
+.config-group textarea::placeholder { color: var(--text-dim); }
+.config-group .config-hint { font-size: 0.7rem; color: var(--text-dim); margin-top: 0.2rem; }
+
+/* SCHEMA PREVIEW */
+.schema-preview {
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 1rem 1.25rem; border-radius: var(--r); overflow-x: auto;
+  font-size: 0.77rem; color: var(--text); line-height: 1.65;
+  margin: 1rem 0; white-space: pre; font-family: 'DM Mono', 'SF Mono', 'Fira Code', monospace;
+}
+.schema-name-input {
+  background: transparent; border: none; color: var(--text);
+  font-size: 0.92rem; padding: 0; font-family: inherit; font-weight: 600;
+  width: 100%; max-width: 320px;
+}
+.schema-name-input:focus { outline: none; }
+.schema-name-input::placeholder { color: var(--text-dim); }
+
+/* RESULTS */
+.table-wrap {
+  max-height: 480px; overflow: auto; border-radius: var(--r);
+  border: 1px solid var(--border); margin-top: 0.75rem;
+}
+table.results { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+table.results th {
+  background: var(--surface-2); color: var(--text-muted);
+  font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em;
+  padding: 0.38rem 0.6rem; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; text-align: left;
+}
+table.results td {
+  padding: 0.3rem 0.6rem; border-bottom: 1px solid var(--border);
+  color: var(--text); vertical-align: top;
+}
+table.results tr:last-child td { border-bottom: none; }
+table.results tr:hover td { background: var(--surface-2); }
+.download-btn {
+  display: inline-block; margin-top: 0.5rem; margin-right: 0.4rem;
+  padding: 0.26rem 0.72rem; background: var(--surface-2);
+  border: 1px solid var(--border); border-radius: 4px;
+  cursor: pointer; font-size: 0.74rem; text-decoration: none;
+  color: var(--text-muted); font-family: inherit; transition: all 0.15s;
+}
+.download-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* PROGRESS */
+.progress-track {
+  height: 2px; background: var(--surface-2); border-radius: 1px;
+  overflow: hidden; margin-bottom: 0.5rem;
+}
+#progressLog {
+  font-size: 0.72rem; color: var(--text-muted); max-height: 110px;
+  overflow-y: auto; line-height: 1.65; margin-top: 0.5rem;
+}
+
+/* SHARED BUTTONS */
+.btn-add {
+  padding: 0.32rem 0.8rem; font-size: 0.78rem; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--surface-2); color: var(--text-muted);
+  cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+.btn-add:hover { border-color: var(--accent); color: var(--accent); }
+
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 1.5rem 1.75rem; margin-bottom: 1.25rem;
+}
+
+.step-title {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 1.35rem; font-weight: 400; margin-bottom: 0.4rem;
+}
+.step-subtitle {
+  font-size: 0.82rem; color: var(--text-dim); margin-bottom: 1.5rem; line-height: 1.5;
+}
+
+/* NAV BUTTONS */
+.wizard-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid var(--border);
+}
+.btn-next {
+  padding: 0.6rem 1.5rem; font-size: 0.85rem; font-weight: 700;
+  background: var(--accent); color: #000; border: none;
+  border-radius: 6px; cursor: pointer; font-family: inherit;
+  letter-spacing: 0.03em; transition: background 0.15s;
+}
+.btn-next:hover { background: var(--accent-h); }
+.btn-next:disabled { background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--border); cursor: not-allowed; }
+.btn-back {
+  padding: 0.6rem 1.2rem; font-size: 0.82rem; font-weight: 500;
+  background: transparent; color: var(--text-muted); border: 1px solid var(--border);
+  border-radius: 6px; cursor: pointer; font-family: inherit; transition: all 0.15s;
+}
+.btn-back:hover { border-color: var(--text-dim); color: var(--text); }
+
+/* SUMMARY ROW */
+.summary-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;
+}
+.summary-item {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 0.75rem 1rem;
+}
+.summary-item .summary-label {
+  font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.25rem;
+}
+.summary-item .summary-value { font-size: 0.88rem; font-weight: 500; }
+
+#status {
+  margin: 0.75rem 0; font-size: 0.82rem; color: var(--text-muted);
+  white-space: pre-line; line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<div class="auth-overlay" id="authOverlay" style="display:none">
+  <h2>Petey<span style="color:var(--accent)">.</span></h2>
+  <p>Sign in to get started</p>
+  <button id="overlaySignIn" class="overlay-btn">Sign in with Google</button>
+  <p style="color:var(--text-dim); font-size:0.75rem; max-width:280px; text-align:center; line-height:1.5;">Sign-in is only used to protect your API keys.</p>
+</div>
+
+<main class="main">
+
+  <script src="/static/navbar.js"></script>
+  <nav-bar active="guide" subtitle="Guided Setup"></nav-bar>
+
+  <!-- Step progress indicator -->
+  <div class="step-progress" id="stepProgress"></div>
+
+  <!-- ============================================================ -->
+  <!-- STEP 0: Use Case -->
+  <!-- ============================================================ -->
+  <div class="wizard-step visible" id="step-0">
+    <div class="step-title">What are you trying to do?</div>
+    <div class="step-subtitle">Pick the scenario that best describes your extraction task.</div>
+    <div class="case-grid">
+      <div class="case-card" data-case="1">
+        <div class="case-icon">📄</div>
+        <div class="case-title">Get specific info from each document</div>
+        <div class="case-desc">You have a batch of documents and want to pull the same fields (name, date, amount, etc.) from each one. One row of results per file.</div>
+      </div>
+      <div class="case-card" data-case="2">
+        <div class="case-icon">📊</div>
+        <div class="case-title">Extract a table from each document</div>
+        <div class="case-desc">Each document has a table or list of line items you want to extract. Multiple rows of results per file.</div>
+      </div>
+      <div class="case-card" data-case="3">
+        <div class="case-icon">📋</div>
+        <div class="case-title">Extract a table + cover page info</div>
+        <div class="case-desc">Each document has a table, plus header info on the first page (like a case number or date) that should be attached to every row.</div>
+      </div>
+      <div class="case-card" data-case="4">
+        <div class="case-icon">📜</div>
+        <div class="case-title">One long table across many pages</div>
+        <div class="case-desc">A single document with a table that spans many pages. You want all rows extracted into one dataset.</div>
+      </div>
+      <div class="case-card" data-case="5">
+        <div class="case-icon">🔍</div>
+        <div class="case-title">Get specific info from each page</div>
+        <div class="case-desc">A single document where each page has the same structure, and you want to pull the same fields from every page.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- STEP 1: Fields -->
+  <!-- ============================================================ -->
+  <div class="wizard-step" id="step-1">
+    <div class="step-title">Define your fields</div>
+    <div class="step-subtitle" id="fieldsSubtitle">What information do you want to extract? Add a field for each piece of data.</div>
+
+    <div id="headerFieldsSection" style="display:none;">
+      <div class="field-group-label">Cover page fields</div>
+      <div class="step-subtitle" style="margin-bottom:0.75rem; margin-top:0;">These fields come from the first page and will be repeated on every row.</div>
+      <div id="headerFieldRows"></div>
+      <button class="btn-add" id="addHeaderField" style="margin-bottom:1.5rem;">+ Add cover page field</button>
+      <div class="field-group-label">Table fields</div>
+      <div class="step-subtitle" style="margin-bottom:0.75rem; margin-top:0;">These are the columns in the table you want to extract.</div>
+    </div>
+
+    <div id="tableFieldRows"></div>
+    <button class="btn-add" id="addTableField">+ Add field</button>
+
+    <div class="wizard-nav">
+      <button class="btn-back" onclick="goToStep(0)">Back</button>
+      <button class="btn-next" id="fieldsNext">Next</button>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- STEP 2: Parser -->
+  <!-- ============================================================ -->
+  <div class="wizard-step" id="step-2">
+    <div class="step-title">Choose a parser</div>
+    <div class="step-subtitle">How should Petey read your PDFs? Pick the method that fits your documents.</div>
+    <div class="parser-grid">
+      <div class="parser-card" data-parser="pymupdf">
+        <div class="parser-name">PyMuPDF</div>
+        <div class="parser-desc">Fast, general-purpose text extraction. Works well for most text-based PDFs.</div>
+      </div>
+      <div class="parser-card" data-parser="pdfplumber">
+        <div class="parser-name">pdfplumber</div>
+        <div class="parser-desc">Better at preserving layout and whitespace. Good for structured documents with columns.</div>
+      </div>
+      <div class="parser-card" data-parser="tables">
+        <div class="parser-name">Tables</div>
+        <div class="parser-desc">Specialized for tabular data. Detects table boundaries and extracts rows/columns directly.</div>
+      </div>
+      <div class="parser-card" data-parser="marker">
+        <div class="parser-name">Marker (Datalab)</div>
+        <div class="parser-desc">AI-powered OCR for scanned documents, handwriting, or complex layouts. Requires a Datalab API key.</div>
+      </div>
+    </div>
+    <div class="wizard-nav">
+      <button class="btn-back" onclick="goToStep(1)">Back</button>
+      <button class="btn-next" id="parserNext">Next</button>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- STEP 3: Configuration -->
+  <!-- ============================================================ -->
+  <div class="wizard-step" id="step-3">
+    <div class="step-title">Configure extraction</div>
+    <div class="step-subtitle">Fine-tune how Petey processes your documents. Defaults are pre-filled based on your use case.</div>
+    <div class="config-form">
+      <div class="config-group" id="headerPagesGroup">
+        <label>Header pages</label>
+        <input type="number" id="cfgHeaderPages" value="0" min="0" max="10" style="width:5rem;">
+        <div class="config-hint">Number of leading pages to send alongside every page (for cover page info that should appear on every row).</div>
+      </div>
+      <div class="config-group" id="pageRangeGroup">
+        <label>Page range <span style="color:var(--text-dim); font-weight:400;">(optional)</span></label>
+        <input type="text" id="cfgPageRange" placeholder="e.g. 2-5 or 1,3,5-7" style="width:14rem;">
+        <div class="config-hint">Only process specific pages. Leave blank to process all pages.</div>
+      </div>
+      <div class="config-group">
+        <label>Additional instructions <span style="color:var(--text-dim); font-weight:400;">(optional)</span></label>
+        <textarea id="cfgInstructions" placeholder="e.g. Dates should be in MM/DD/YYYY format. Ignore footnotes."></textarea>
+        <div class="config-hint">Extra guidance for the extraction model. Be specific about formatting, edge cases, or what to ignore.</div>
+      </div>
+    </div>
+    <div class="wizard-nav">
+      <button class="btn-back" onclick="goToStep(2)">Back</button>
+      <button class="btn-next" onclick="goToStep(4)">Next</button>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- STEP 4: Upload -->
+  <!-- ============================================================ -->
+  <div class="wizard-step" id="step-4">
+    <div class="step-title">Upload your files</div>
+    <div class="step-subtitle" id="uploadSubtitle">Drop your PDFs here to get started.</div>
+    <script src="/static/dropzone.js"></script>
+    <drop-zone id="dropzone"></drop-zone>
+    <div class="wizard-nav">
+      <button class="btn-back" onclick="goToStep(3)">Back</button>
+      <button class="btn-next" id="uploadNext" disabled>Next</button>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- STEP 5: Review -->
+  <!-- ============================================================ -->
+  <div class="wizard-step" id="step-5">
+    <div class="step-title">Review & download schema</div>
+    <div class="step-subtitle">Here's what Petey will extract. Download the schema to reuse it later on the main Extractor page.</div>
+
+    <div class="summary-grid" id="summaryGrid"></div>
+
+    <div style="margin-bottom:0.75rem;">
+      <label style="font-size:0.76rem; color:var(--text-muted); font-weight:500;">Schema name</label>
+      <input type="text" class="schema-name-input" id="schemaName" placeholder="my_extraction_schema" style="display:block; margin-top:0.3rem; border-bottom:1px solid var(--border); padding-bottom:0.3rem;">
+    </div>
+
+    <div class="schema-preview" id="schemaPreview"></div>
+
+    <div style="display:flex; gap:0.75rem; margin-top:0.25rem;">
+      <button class="btn-add" id="downloadSchemaBtn" style="padding:0.45rem 1rem;">Download Schema (.yaml)</button>
+    </div>
+
+    <div class="wizard-nav">
+      <button class="btn-back" onclick="goToStep(4)">Back</button>
+      <button class="btn-next" id="extractBtn">Extract</button>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- STEP 6: Results -->
+  <!-- ============================================================ -->
+  <div class="wizard-step" id="step-6">
+    <div class="step-title">Results</div>
+    <div class="step-subtitle" id="resultsSubtitle">Extraction in progress...</div>
+
+    <div id="streamProgress" style="display:none;">
+      <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-muted); margin-bottom:0.25rem;">
+        <span>Parsing</span><span id="parsePct">0 / ?</span>
+      </div>
+      <div class="progress-track"><div id="parseBar" style="height:100%; background:var(--amber); border-radius:1px; width:0%; transition:width 0.3s;"></div></div>
+      <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-muted); margin-bottom:0.25rem; margin-top:0.5rem;">
+        <span>Extracting</span><span id="extractPct">0 / ?</span>
+      </div>
+      <div class="progress-track"><div id="extractBar" style="height:100%; background:var(--accent); border-radius:1px; width:0%; transition:width 0.3s;"></div></div>
+      <div id="progressLog"></div>
+    </div>
+
+    <div id="status"></div>
+    <div id="results"></div>
+
+    <div class="wizard-nav" id="resultsNav" style="display:none;">
+      <button class="btn-back" onclick="startOver()">Start over</button>
+      <button class="btn-next" onclick="window.location.href='/'">Go to Extractor</button>
+    </div>
+  </div>
+
+</main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+import { getAuth, signInWithPopup, signOut, onAuthStateChanged, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+
+// --- Firebase Auth ---
+const cfgResp = await fetch('/firebase-config');
+const firebaseConfig = await cfgResp.json();
+let _currentUser = null;
+
+if (firebaseConfig.authDisabled) {
+  document.getElementById('authOverlay').style.display = 'none';
+} else {
+  const firebaseApp = initializeApp(firebaseConfig);
+  const auth = getAuth(firebaseApp);
+  const provider = new GoogleAuthProvider();
+  document.getElementById('overlaySignIn').addEventListener('click', () => signInWithPopup(auth, provider));
+  document.getElementById('signOutLink').addEventListener('click', e => { e.preventDefault(); signOut(auth); });
+  onAuthStateChanged(auth, user => {
+    _currentUser = user;
+    document.getElementById('authOverlay').style.display = user ? 'none' : 'flex';
+    document.getElementById('signOutLink').style.display = user ? '' : 'none';
+  });
+}
+
+async function authFetch(url, opts = {}) {
+  if (_currentUser) {
+    const token = await _currentUser.getIdToken();
+    opts.headers = { ...(opts.headers || {}), 'Authorization': 'Bearer ' + token };
+  }
+  return fetch(url, opts);
+}
+
+// --- Wizard state ---
+const STEPS = ['Use case', 'Fields', 'Parser', 'Config', 'Upload', 'Review', 'Results'];
+let currentStep = 0;
+
+const W = {
+  useCase: null,
+  mode: 'query',
+  singleDoc: false,
+  headerFields: [],
+  tableFields: [],
+  parser: 'pymupdf',
+  headerPages: 0,
+  pageRange: '',
+  instructions: '',
+  files: [],
+  schemaName: '',
+};
+
+// Use case defaults
+const CASE_DEFAULTS = {
+  1: { mode: 'query',  singleDoc: false, parser: 'pymupdf',  headerPages: 0 },
+  2: { mode: 'table',  singleDoc: false, parser: 'tables',   headerPages: 0 },
+  3: { mode: 'table',  singleDoc: false, parser: 'tables',   headerPages: 1 },
+  4: { mode: 'table',  singleDoc: true,  parser: 'tables',   headerPages: 0 },
+  5: { mode: 'table',  singleDoc: true,  parser: 'pymupdf',  headerPages: 0 },
+};
+
+// --- Step progress indicator ---
+function renderProgress() {
+  const el = document.getElementById('stepProgress');
+  let html = '';
+  STEPS.forEach((label, i) => {
+    const cls = i < currentStep ? 'done' : i === currentStep ? 'active' : '';
+    html += '<div class="step-col">';
+    html += '<div class="step-dot ' + cls + '">' + (i < currentStep ? '✓' : (i + 1)) + '</div>';
+    html += '<div class="step-label ' + cls + '">' + label + '</div>';
+    html += '</div>';
+    if (i < STEPS.length - 1) {
+      html += '<div class="step-line' + (i < currentStep ? ' done' : '') + '"></div>';
+    }
+  });
+  el.innerHTML = html;
+}
+
+// --- Step navigation ---
+window.goToStep = function(n) {
+  document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('visible'));
+  document.getElementById('step-' + n).classList.add('visible');
+  currentStep = n;
+  renderProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+window.startOver = function() {
+  W.useCase = null;
+  W.headerFields = [];
+  W.tableFields = [{ name: '', type: 'string', description: '', values: '' }];
+  W.files = [];
+  document.getElementById('dropzone').reset();
+  document.querySelectorAll('.case-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.parser-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('status').textContent = '';
+  document.getElementById('streamProgress').style.display = 'none';
+  document.getElementById('resultsNav').style.display = 'none';
+  goToStep(0);
+};
+
+renderProgress();
+
+// --- Step 0: Use case cards ---
+document.querySelectorAll('.case-card').forEach(card => {
+  card.addEventListener('click', () => {
+    const c = parseInt(card.dataset.case);
+    W.useCase = c;
+    const defaults = CASE_DEFAULTS[c];
+    Object.assign(W, defaults);
+
+    document.querySelectorAll('.case-card').forEach(el => el.classList.remove('selected'));
+    card.classList.add('selected');
+
+    // Set up field sections based on case
+    if (c === 3) {
+      document.getElementById('headerFieldsSection').style.display = '';
+      document.getElementById('fieldsSubtitle').textContent = 'Define the cover page fields and table columns separately.';
+      if (!W.headerFields.length) W.headerFields = [{ name: '', type: 'string', description: '', values: '' }];
+    } else {
+      document.getElementById('headerFieldsSection').style.display = 'none';
+      document.getElementById('fieldsSubtitle').textContent = 'What information do you want to extract? Add a field for each piece of data.';
+    }
+    if (!W.tableFields.length) W.tableFields = [{ name: '', type: 'string', description: '', values: '' }];
+
+    // Set up upload hints
+    if (W.singleDoc) {
+      document.getElementById('uploadSubtitle').textContent = 'Drop your PDF here.';
+      document.getElementById('dropzone').setAttribute('max-files', '1');
+    } else {
+      document.getElementById('uploadSubtitle').textContent = 'Drop your PDFs here. You can select multiple files or a whole folder.';
+      document.getElementById('dropzone').setAttribute('max-files', '5000');
+    }
+
+    // Pre-select parser
+    document.querySelectorAll('.parser-card').forEach(p => {
+      p.classList.toggle('selected', p.dataset.parser === W.parser);
+    });
+    updateParserBadges();
+
+    // Pre-fill config
+    document.getElementById('cfgHeaderPages').value = W.headerPages;
+
+    goToStep(1);
+    renderFields();
+  });
+});
+
+// --- Step 1: Field builder ---
+function esc(s) { return (s||'').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+
+let _dragIdx = null;
+let _dragGroup = null;
+
+function renderFieldRows(container, fieldsArr, group) {
+  container.innerHTML = '';
+  fieldsArr.forEach((f, i) => {
+    const row = document.createElement('div');
+    row.className = 'field-row';
+    row.draggable = true;
+    row.dataset.idx = i;
+    row.dataset.group = group;
+    row.innerHTML =
+      '<span class="drag-handle" title="Drag to reorder">⠿</span>' +
+      '<input type="text" placeholder="Field name" value="' + esc(f.name) + '" data-i="' + i + '" data-key="name" data-group="' + group + '">' +
+      '<select data-i="' + i + '" data-key="type" data-group="' + group + '">' +
+        '<option value="string"' + (f.type==='string'?' selected':'') + '>Text</option>' +
+        '<option value="number"' + (f.type==='number'?' selected':'') + '>Number</option>' +
+        '<option value="date"' + (f.type==='date'?' selected':'') + '>Date</option>' +
+        '<option value="enum"' + (f.type==='enum'?' selected':'') + '>Category</option>' +
+      '</select>' +
+      '<textarea placeholder="Description" rows="1" data-i="' + i + '" data-key="description" data-group="' + group + '">' + esc(f.description) + '</textarea>' +
+      '<button class="remove-btn" data-i="' + i + '" data-group="' + group + '">&times;</button>';
+
+    row.addEventListener('dragstart', e => {
+      _dragIdx = i; _dragGroup = group;
+      row.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    row.addEventListener('dragend', () => {
+      row.classList.remove('dragging');
+      container.querySelectorAll('.field-row').forEach(r => r.classList.remove('drag-over'));
+      _dragIdx = null; _dragGroup = null;
+    });
+    row.addEventListener('dragover', e => {
+      e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+      if (_dragGroup === group) row.classList.add('drag-over');
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
+    row.addEventListener('drop', e => {
+      e.preventDefault(); row.classList.remove('drag-over');
+      if (_dragGroup !== group || _dragIdx === null) return;
+      const from = _dragIdx, to = parseInt(row.dataset.idx);
+      if (from !== to) {
+        const [moved] = fieldsArr.splice(from, 1);
+        fieldsArr.splice(to, 0, moved);
+        renderFields();
+      }
+    });
+
+    container.appendChild(row);
+
+    if (f.type === 'enum') {
+      const ev = document.createElement('div');
+      ev.className = 'enum-values';
+      ev.innerHTML = '<label>Values (comma-separated, leave blank to infer):</label>' +
+        '<input type="text" placeholder="Option A, Option B, ..." value="' + esc(f.values) + '" data-i="' + i + '" data-key="values" data-group="' + group + '">';
+      container.appendChild(ev);
+    }
+  });
+
+  container.querySelectorAll('input, select, textarea').forEach(el => {
+    const handler = e => {
+      const idx = parseInt(e.target.dataset.i);
+      const g = e.target.dataset.group;
+      const arr = g === 'header' ? W.headerFields : W.tableFields;
+      arr[idx][e.target.dataset.key] = e.target.value;
+      if (e.target.dataset.key === 'type') renderFields();
+      updateFieldsNext();
+    };
+    el.addEventListener('input', handler);
+    el.addEventListener('change', handler);
+  });
+
+  // Auto-resize textareas
+  container.querySelectorAll('textarea').forEach(ta => {
+    function autoResize() { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }
+    ta.addEventListener('input', autoResize);
+    autoResize();
+  });
+
+  container.querySelectorAll('.remove-btn').forEach(el => {
+    el.addEventListener('click', e => {
+      const g = e.currentTarget.dataset.group;
+      const arr = g === 'header' ? W.headerFields : W.tableFields;
+      arr.splice(parseInt(e.currentTarget.dataset.i), 1);
+      renderFields();
+      updateFieldsNext();
+    });
+  });
+}
+
+function renderFields() {
+  if (W.useCase === 3) {
+    renderFieldRows(document.getElementById('headerFieldRows'), W.headerFields, 'header');
+  }
+  renderFieldRows(document.getElementById('tableFieldRows'), W.tableFields, 'table');
+  updateFieldsNext();
+}
+
+function updateFieldsNext() {
+  const hasTableField = W.tableFields.some(f => f.name.trim());
+  const needsHeader = W.useCase === 3;
+  const hasHeaderField = !needsHeader || W.headerFields.some(f => f.name.trim());
+  document.getElementById('fieldsNext').disabled = !(hasTableField && hasHeaderField);
+}
+
+document.getElementById('addTableField').addEventListener('click', () => {
+  W.tableFields.push({ name: '', type: 'string', description: '', values: '' });
+  renderFields();
+  const inputs = document.getElementById('tableFieldRows').querySelectorAll('input[data-key="name"]');
+  if (inputs.length) inputs[inputs.length - 1].focus();
+});
+
+document.getElementById('addHeaderField').addEventListener('click', () => {
+  W.headerFields.push({ name: '', type: 'string', description: '', values: '' });
+  renderFields();
+  const inputs = document.getElementById('headerFieldRows').querySelectorAll('input[data-key="name"]');
+  if (inputs.length) inputs[inputs.length - 1].focus();
+});
+
+document.getElementById('fieldsNext').addEventListener('click', () => {
+  if (!document.getElementById('fieldsNext').disabled) goToStep(2);
+});
+
+// --- Step 2: Parser ---
+function updateParserBadges() {
+  const rec = CASE_DEFAULTS[W.useCase]?.parser;
+  document.querySelectorAll('.parser-card').forEach(card => {
+    const existing = card.querySelector('.parser-badge');
+    if (existing) existing.remove();
+    if (card.dataset.parser === rec) {
+      const badge = document.createElement('div');
+      badge.className = 'parser-badge';
+      badge.textContent = 'Recommended';
+      card.appendChild(badge);
+    }
+  });
+}
+
+document.querySelectorAll('.parser-card').forEach(card => {
+  card.addEventListener('click', () => {
+    W.parser = card.dataset.parser;
+    document.querySelectorAll('.parser-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+  });
+});
+
+document.getElementById('parserNext').addEventListener('click', () => {
+  goToStep(3);
+});
+
+// --- Step 4: Upload ---
+document.getElementById('dropzone').addEventListener('files-selected', e => {
+  W.files = e.detail.files;
+  document.getElementById('uploadNext').disabled = !W.files.length;
+});
+
+document.getElementById('uploadNext').addEventListener('click', () => {
+  if (W.files.length) {
+    W.headerPages = parseInt(document.getElementById('cfgHeaderPages').value) || 0;
+    W.pageRange = document.getElementById('cfgPageRange').value.trim();
+    W.instructions = document.getElementById('cfgInstructions').value.trim();
+    buildReviewStep();
+    goToStep(5);
+  }
+});
+
+// --- Step 5: Review ---
+function buildSpec() {
+  const spec = {};
+  const name = W.schemaName || 'guide_schema';
+  spec.name = name;
+  if (W.mode === 'table') spec.mode = 'table';
+  if (W.headerPages > 0) spec.header_pages = W.headerPages;
+  if (W.pageRange) spec.pages = W.pageRange;
+  if (W.instructions) spec.instructions = W.instructions;
+  spec.fields = {};
+  const allFields = [...W.headerFields.filter(f => f.name.trim()), ...W.tableFields.filter(f => f.name.trim())];
+  for (const f of allFields) {
+    const cfg = { type: f.type, description: f.description };
+    if (f.type === 'enum') {
+      const vals = f.values.split(',').map(v => v.trim()).filter(Boolean);
+      if (vals.length) cfg.values = vals;
+    }
+    spec.fields[f.name.trim()] = cfg;
+  }
+  return spec;
+}
+
+function specToYaml(spec) {
+  function yamlStr(s) {
+    if (s.includes('\n') || s.includes(':') || s.includes('#') || s.includes("'"))
+      return '"' + s.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+    return s;
+  }
+  let y = '';
+  if (spec.name) y += 'name: ' + yamlStr(spec.name.replace(/\.ya?ml$/i, '')) + '\n';
+  if (spec.mode) y += 'mode: ' + spec.mode + '\n';
+  if (spec.header_pages) y += 'header_pages: ' + spec.header_pages + '\n';
+  if (spec.pages) y += 'pages: ' + yamlStr(spec.pages) + '\n';
+  if (spec.instructions) y += 'instructions: ' + yamlStr(spec.instructions) + '\n';
+  y += '\nfields:\n';
+  for (const [name, cfg] of Object.entries(spec.fields)) {
+    y += '  ' + yamlStr(name) + ':\n';
+    y += '    type: ' + cfg.type + '\n';
+    if (cfg.description) y += '    description: ' + yamlStr(cfg.description) + '\n';
+    if (cfg.values && cfg.values.length) y += '    values: [' + cfg.values.join(', ') + ']\n';
+    y += '\n';
+  }
+  return y.trimEnd() + '\n';
+}
+
+const CASE_LABELS = {
+  1: 'Query (one row per document)',
+  2: 'Table (rows from each document)',
+  3: 'Table + cover page info',
+  4: 'Table (single long document)',
+  5: 'Per-page extraction',
+};
+
+function buildReviewStep() {
+  W.schemaName = document.getElementById('schemaName').value || '';
+  const spec = buildSpec();
+  const fieldCount = Object.keys(spec.fields).length;
+
+  const grid = document.getElementById('summaryGrid');
+  grid.innerHTML =
+    '<div class="summary-item"><div class="summary-label">Use Case</div><div class="summary-value">' + CASE_LABELS[W.useCase] + '</div></div>' +
+    '<div class="summary-item"><div class="summary-label">Parser</div><div class="summary-value">' + W.parser + '</div></div>' +
+    '<div class="summary-item"><div class="summary-label">Fields</div><div class="summary-value">' + fieldCount + ' field' + (fieldCount !== 1 ? 's' : '') + '</div></div>' +
+    '<div class="summary-item"><div class="summary-label">Files</div><div class="summary-value">' + W.files.length + ' PDF' + (W.files.length !== 1 ? 's' : '') + '</div></div>';
+
+  document.getElementById('schemaPreview').textContent = specToYaml(spec);
+}
+
+document.getElementById('schemaName').addEventListener('input', () => {
+  W.schemaName = document.getElementById('schemaName').value;
+  const spec = buildSpec();
+  document.getElementById('schemaPreview').textContent = specToYaml(spec);
+});
+
+document.getElementById('downloadSchemaBtn').addEventListener('click', () => {
+  const spec = buildSpec();
+  const yaml = specToYaml(spec);
+  const filename = (spec.name || 'schema').toLowerCase().replace(/\s+/g, '_') + '.yaml';
+  triggerDownload(new Blob([yaml], { type: 'text/yaml' }), filename);
+});
+
+// --- Step 6: Extraction ---
+class ApiKeyError extends Error {
+  constructor(msg) { super(msg); this.name = 'ApiKeyError'; }
+}
+
+async function extractFile(file, spec, instr) {
+  const form = new FormData();
+  form.append('file', file);
+  form.append('schema_spec', JSON.stringify(spec));
+  if (instr) form.append('instructions', instr);
+  form.append('parser', W.parser);
+  const resp = await authFetch('/extract', { method: 'POST', body: form });
+  if (!resp.ok) {
+    let msg = 'Extraction failed (status ' + resp.status + ')';
+    try { const body = await resp.text(); const d = JSON.parse(body); msg = d.error || d.detail || msg; } catch (_) {}
+    if (msg.includes('API key') || msg.includes('api key')) throw new ApiKeyError(msg);
+    throw new Error(msg);
+  }
+  return await resp.json();
+}
+
+let _streamAbort = null;
+
+async function extractFileStream(file, spec, instr, onEvent) {
+  _streamAbort = new AbortController();
+  const form = new FormData();
+  form.append('file', file);
+  form.append('schema_spec', JSON.stringify(spec));
+  if (instr) form.append('instructions', instr);
+  const resp = await authFetch('/extract/stream', { method: 'POST', body: form, signal: _streamAbort.signal });
+  if (!resp.ok) {
+    let msg = 'Extraction failed (status ' + resp.status + ')';
+    try { const body = await resp.text(); const d = JSON.parse(body); msg = d.error || d.detail || msg; } catch (_) {}
+    if (msg.includes('API key') || msg.includes('api key')) throw new ApiKeyError(msg);
+    throw new Error(msg);
+  }
+  const reader = resp.body.getReader();
+  const decoder = new TextDecoder();
+  let buf = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    const lines = buf.split('\n');
+    buf = lines.pop();
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      const msg = JSON.parse(line);
+      if (onEvent) onEvent(msg);
+      if (msg.type === 'result') { _streamAbort = null; return msg.data; }
+    }
+  }
+  _streamAbort = null;
+  throw new Error('Stream ended without result');
+}
+
+async function getConcurrency() {
+  try {
+    const resp = await authFetch('/settings');
+    if (resp.ok) { const data = await resp.json(); return data.concurrency || 10; }
+  } catch (_) {}
+  return 10;
+}
+
+document.getElementById('extractBtn').addEventListener('click', async () => {
+  if (!W.files.length) return;
+  const spec = buildSpec();
+  if (!Object.keys(spec.fields).length) return;
+
+  goToStep(6);
+
+  const st = document.getElementById('status');
+  const resultsEl = document.getElementById('results');
+  resultsEl.innerHTML = '';
+  st.textContent = '';
+
+  const total = W.files.length;
+  const instr = W.instructions;
+  const warnings = [];
+  const allRecords = [];
+  const allResults = [];
+
+  const sp = document.getElementById('streamProgress');
+  const useStream = W.mode === 'table' && total === 1;
+  sp.style.display = '';
+
+  document.getElementById('parseBar').style.width = '0%';
+  document.getElementById('parsePct').textContent = '0 / ?';
+  document.getElementById('extractBar').style.width = '0%';
+  document.getElementById('extractPct').textContent = '0 / ?';
+
+  const progressLog = document.getElementById('progressLog');
+  progressLog.innerHTML = '';
+
+  let sent = 0, done = 0;
+  let spicyParsed = 0, spicyExtracted = 0;
+  let cachedPageCount = 0;
+  let totalLabel = 'counting...';
+
+  function updateBars() {
+    if (cachedPageCount && totalLabel === 'counting...') totalLabel = String(cachedPageCount);
+    if (useStream) {
+      document.getElementById('parsePct').textContent = spicyParsed + ' / ' + totalLabel;
+      document.getElementById('parseBar').style.width = cachedPageCount ? (spicyParsed / cachedPageCount * 100) + '%' : '0%';
+      document.getElementById('extractPct').textContent = spicyExtracted + ' / ' + totalLabel;
+      document.getElementById('extractBar').style.width = cachedPageCount ? (spicyExtracted / cachedPageCount * 100) + '%' : '0%';
+    } else {
+      document.getElementById('parsePct').textContent = sent + ' / ' + total + ' files sent';
+      document.getElementById('parseBar').style.width = (sent / total * 100) + '%';
+      document.getElementById('extractPct').textContent = done + ' / ' + total + ' files done';
+      document.getElementById('extractBar').style.width = (done / total * 100) + '%';
+    }
+  }
+  updateBars();
+  st.textContent = 'Extracting...';
+
+  const concurrency = await getConcurrency();
+  let apiKeyError = null;
+
+  for (let i = 0; i < total && !apiKeyError; i += concurrency) {
+    const batch = [];
+    for (let j = i; j < Math.min(i + concurrency, total); j++) batch.push(W.files[j]);
+
+    const promises = batch.map(async file => {
+      if (apiKeyError) return;
+      sent++;
+      updateBars();
+      const logEntry = document.createElement('div');
+      logEntry.textContent = file.name + ' — extracting...';
+      progressLog.appendChild(logEntry);
+      progressLog.scrollTop = progressLog.scrollHeight;
+      st.textContent = file.name + ' — extracting...';
+      try {
+        let data;
+        if (useStream) {
+          data = await extractFileStream(file, spec, instr, evt => {
+            if (evt.type === 'parse') {
+              spicyParsed++;
+              if (spicyParsed === 1 && !cachedPageCount) { cachedPageCount = evt.total; totalLabel = String(evt.total); }
+              updateBars();
+              st.textContent = file.name + ' — parsing page ' + evt.page;
+            } else if (evt.type === 'extract') {
+              spicyExtracted++;
+              updateBars();
+              st.textContent = file.name + ' — extracting page ' + evt.page;
+            }
+          });
+        } else {
+          data = await extractFile(file, spec, instr);
+        }
+        logEntry.textContent = file.name + (data._error ? ' — error' : ' — done');
+        if (data._warning) warnings.push(file.name + ': ' + data._warning);
+        if (data._error) { warnings.push(file.name + ': ' + data._error); return; }
+        if (data.records && Array.isArray(data.records)) {
+          for (const rec of data.records) { rec._source_file = file.name; allRecords.push(rec); }
+        } else {
+          allResults.push(data);
+        }
+      } catch (e) {
+        if (e instanceof ApiKeyError) { apiKeyError = e.message; return; }
+        warnings.push(file.name + ': ' + e.message);
+      }
+      done++;
+      updateBars();
+    });
+    await Promise.all(promises);
+    if (apiKeyError) break;
+  }
+
+  sp.style.display = 'none';
+
+  if (apiKeyError) {
+    st.innerHTML = '<span style="color:#f87171; font-weight:600;">' + apiKeyError + '</span>' +
+      '<br><a href="/settings/page" style="color:var(--accent);">Go to Settings</a>';
+    document.getElementById('resultsNav').style.display = '';
+    return;
+  }
+
+  let statusText = 'Done — ' + total + ' file' + (total > 1 ? 's' : '') + ' processed.';
+  if (warnings.length) statusText += '\nWarnings:\n' + warnings.join('\n');
+  st.textContent = statusText;
+  st.style.whiteSpace = 'pre-line';
+  document.getElementById('resultsSubtitle').textContent = 'Extraction complete.';
+
+  const AUTO_THRESHOLD = 200;
+
+  if (allRecords.length) {
+    if (allRecords.length > AUTO_THRESHOLD) {
+      autoDownloadCsv(allRecords);
+      resultsEl.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem;">Large result set (' + allRecords.length + ' records) — downloaded as CSV.</p>';
+    } else {
+      renderTable(allRecords, resultsEl);
+    }
+  } else if (allResults.length) {
+    if (allResults.length > AUTO_THRESHOLD) {
+      autoDownloadJson(allResults);
+      resultsEl.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem;">Large result set (' + allResults.length + ' results) — downloaded as JSON.</p>';
+    } else if (allResults.length === 1) {
+      renderSingleResult(allResults[0], resultsEl);
+    } else {
+      renderTable(allResults, resultsEl);
+    }
+  }
+
+  document.getElementById('resultsNav').style.display = '';
+});
+
+// --- Result rendering ---
+function extractedFilename(ext) {
+  const d = new Date();
+  const ts = d.getFullYear().toString()
+    + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0')
+    + '_' + String(d.getHours()).padStart(2, '0') + String(d.getMinutes()).padStart(2, '0')
+    + String(d.getSeconds()).padStart(2, '0');
+  return 'extracted_' + ts + '.' + ext;
+}
+
+function triggerDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function flattenRecords(records) {
+  const flatRecords = [], allKeys = [], keySet = new Set();
+  for (const rec of records) {
+    const flat = {};
+    let nestedItems = null;
+    for (const [k, v] of Object.entries(rec)) {
+      if (Array.isArray(v) && v.length && typeof v[0] === 'object') { nestedItems = v; }
+      else { flat[k] = v; if (!keySet.has(k)) { keySet.add(k); allKeys.push(k); } }
+    }
+    if (nestedItems && nestedItems.length) {
+      for (const item of nestedItems) {
+        const row = { ...flat };
+        for (const [k, v] of Object.entries(item)) { row[k] = v; if (!keySet.has(k)) { keySet.add(k); allKeys.push(k); } }
+        flatRecords.push(row);
+      }
+    } else { flatRecords.push(flat); }
+  }
+  return { flatRecords, allKeys };
+}
+
+function autoDownloadCsv(records) {
+  const { flatRecords, allKeys } = flattenRecords(records);
+  const csvRows = [allKeys.join(',')];
+  for (const row of flatRecords) {
+    csvRows.push(allKeys.map(k => {
+      const s = row[k] != null ? String(row[k]) : '';
+      return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s.replace(/"/g, '""') + '"' : s;
+    }).join(','));
+  }
+  triggerDownload(new Blob([csvRows.join('\n')], { type: 'text/csv' }), extractedFilename('csv'));
+}
+
+function autoDownloadJson(data) {
+  triggerDownload(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }), extractedFilename('json'));
+}
+
+function renderSingleResult(data, container) {
+  const keys = Object.keys(data).filter(k => !k.startsWith('_'));
+  let html = '<div class="table-wrap"><table class="results"><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>';
+  for (const k of keys) {
+    const v = data[k];
+    const display = v != null ? String(v).replace(/</g, '&lt;') : '';
+    html += '<tr><td style="font-weight:500; white-space:nowrap;">' + k + '</td><td>' + display + '</td></tr>';
+  }
+  html += '</tbody></table></div>';
+  const jsonBlob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const jsonUrl = URL.createObjectURL(jsonBlob);
+  html += '<a class="download-btn" href="' + jsonUrl + '" download="' + extractedFilename('json') + '">Download JSON</a>';
+  container.innerHTML = html;
+}
+
+function renderTable(records, container) {
+  if (!records.length) { container.textContent = 'No records found.'; return; }
+  const { flatRecords, allKeys } = flattenRecords(records);
+  let sortCol = null, sortAsc = true;
+
+  function buildTableHtml() {
+    const sorted = [...flatRecords];
+    if (sortCol !== null) {
+      sorted.sort((a, b) => {
+        const va = a[sortCol], vb = b[sortCol];
+        if (va == null && vb == null) return 0;
+        if (va == null) return 1; if (vb == null) return -1;
+        const na = Number(va), nb = Number(vb);
+        if (!isNaN(na) && !isNaN(nb)) return sortAsc ? na - nb : nb - na;
+        return sortAsc ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
+      });
+    }
+    let html = '<div class="table-wrap"><table class="results"><thead><tr>';
+    for (const k of allKeys) {
+      const arrow = sortCol === k ? (sortAsc ? ' ▲' : ' ▼') : '';
+      html += '<th style="cursor:pointer; user-select:none;" data-col="' + k + '">' + k + arrow + '</th>';
+    }
+    html += '</tr></thead><tbody>';
+    for (const row of sorted) {
+      html += '<tr>';
+      for (const k of allKeys) { const v = row[k]; html += '<td>' + (v != null ? String(v).replace(/</g,'&lt;') : '') + '</td>'; }
+      html += '</tr>';
+    }
+    html += '</tbody></table></div>';
+    return html;
+  }
+
+  function render() {
+    let html = buildTableHtml();
+    const csvRows = [allKeys.join(',')];
+    for (const row of flatRecords) {
+      csvRows.push(allKeys.map(k => {
+        const s = row[k] != null ? String(row[k]) : '';
+        return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s.replace(/"/g, '""') + '"' : s;
+      }).join(','));
+    }
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    html += '<a class="download-btn" href="' + url + '" download="' + extractedFilename('csv') + '">Download CSV</a>';
+    const jsonBlob = new Blob([JSON.stringify(records, null, 2)], { type: 'application/json' });
+    const jsonUrl = URL.createObjectURL(jsonBlob);
+    html += '<a class="download-btn" href="' + jsonUrl + '" download="' + extractedFilename('json') + '">Download JSON</a>';
+    container.innerHTML = html;
+    container.querySelectorAll('th[data-col]').forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.dataset.col;
+        if (sortCol === col) { sortAsc = !sortAsc; } else { sortCol = col; sortAsc = true; }
+        render();
+      });
+    });
+  }
+  render();
+}
+
+// Init with one empty table field
+W.tableFields = [{ name: '', type: 'string', description: '', values: '' }];
+</script>
+</body>
+</html>
