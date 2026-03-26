@@ -293,8 +293,8 @@ async function showDetail(runId) {
   html += '<div class="detail-item"><label>Spice</label><span>' + (run.spice_mode || '—') + '</span></div>';
   html += '<div class="detail-item"><label>Model</label><span>' + (run.model || '—') + '</span></div>';
   html += '<div class="detail-item"><label>Parser</label><span>' + (run.parser || '—') + '</span></div>';
-  html += '<div class="detail-item"><label>Record Type</label><span>' + (run.record_type || '—') + '</span></div>';
-  if (run.record_type === 'array') {
+  html += '<div class="detail-item"><label>Mode</label><span>' + (run.mode || '—') + '</span></div>';
+  if (run.mode === 'table') {
     html += '<div class="detail-item"><label>Pages Parsed</label><span>' + run.pages_parsed + ' / ' + (run.total_pages || '?') + '</span></div>';
     html += '<div class="detail-item"><label>Pages Extracted</label><span>' + run.pages_extracted + ' / ' + (run.total_pages || '?') + '</span></div>';
   }

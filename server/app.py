@@ -157,8 +157,8 @@ async def extract_endpoint(
         tmp.write(await file.read())
         tmp_path = tmp.name
     try:
-        is_array = spec.get("record_type") == "array"
-        if is_array:
+        is_table = spec.get("mode") == "table" or spec.get("record_type") == "array"
+        if is_table:
             records = await async_extract_pages(
                 tmp_path, response_model,
                 uid=uid, instructions=instructions,

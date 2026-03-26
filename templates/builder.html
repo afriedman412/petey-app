@@ -534,7 +534,7 @@ async function startRun(filename, spec, instructions, totalPages) {
         model: settings.model || '',
         parser: spec.parser || document.getElementById('parserSelect')?.value || 'pymupdf',
         ocr_backend: document.getElementById('ocrSelect')?.value || 'none',
-        record_type: spec.record_type || 'single',
+        mode: spec.mode || 'query',
         concurrency: settings.concurrency || 10,
         total_pages: totalPages || 0,
       }),
@@ -578,7 +578,7 @@ async function finishRun(runId, status, pagesParsed, pagesExtracted) {
 
 // --- App logic ---
 let selectedFiles = [];
-let recordType = 'single';
+let recordType = 'query';
 let fields = [];
 let spiceMode = localStorage.getItem('petey_spice') || 'mild';
 
@@ -640,7 +640,7 @@ document.getElementById('logoReset').addEventListener('click', e => {
   e.preventDefault();
   selectedFiles = [];
   fields = [{ name: '', type: 'string', description: '', values: '', enabled: true }];
-  recordType = 'single';
+  recordType = 'query';
   dzEl.reset();
   document.getElementById('schemaName').value = '';
   document.getElementById('instructions').value = '';
@@ -811,7 +811,7 @@ document.getElementById('yamlFile').addEventListener('change', e => {
     }).then(r => r.json()).then(spec => {
       document.getElementById('schemaName').value = spec.name || '';
       document.getElementById('instructions').value = spec.instructions || '';
-      recordType = spec.record_type === 'array' ? 'table' : 'single';
+      recordType = spec.mode === 'table' ? 'table' : 'query';
       document.getElementById('headerPages').value = spec.header_pages || 0;
       document.getElementById('pageRange').value = spec.pages || '';
       updateModeToggle();
@@ -831,7 +831,7 @@ function buildSpec() {
   const name = document.getElementById('schemaName').value.trim();
   if (name) spec.name = name;
   if (recordType === 'table') {
-    spec.record_type = 'array';
+    spec.mode = 'table';
   }
   const hp = parseInt(document.getElementById('headerPages').value) || 0;
   if (hp > 0) spec.header_pages = hp;
@@ -968,7 +968,7 @@ async function mildExtract() {
 
   // Populate the schema card (hidden in mild mode, but available if user switches)
   document.getElementById('schemaName').value = spec.name || '';
-  if (spec.record_type === 'array') { recordType = 'table'; updateModeToggle(); }
+  if (spec.mode === 'table') { recordType = 'table'; updateModeToggle(); }
   fields = Object.entries(spec.fields || {}).map(([name, cfg]) => ({
     name, type: cfg.type || 'string', description: cfg.description || '',
     values: (cfg.values || []).join(', '), enabled: true,
@@ -976,7 +976,7 @@ async function mildExtract() {
   renderFields();
 
   // Step 2: Extract with inferred schema
-  const isTable = spec.record_type === 'array';
+  const isTable = spec.mode === 'table';
   const runId = await startRun(selectedFiles[0].name, spec, instr);
   if (isTable) {
     st.textContent = 'Connecting...';
@@ -1449,7 +1449,7 @@ function specToYaml(spec) {
     const cleanName = spec.name.replace(/\.ya?ml$/i, '');
     y += 'name: ' + yamlStr(cleanName) + '\n';
   }
-  if (spec.record_type) y += 'record_type: ' + spec.record_type + '\n';
+  if (spec.mode) y += 'mode: ' + spec.mode + '\n';
   if (spec.instructions) y += 'instructions: ' + yamlStr(spec.instructions) + '\n';
   y += '\nfields:\n';
   for (const [name, cfg] of Object.entries(spec.fields)) {
@@ -1521,7 +1521,7 @@ updateSpiceMode();
     try {
       const spec = JSON.parse(params.get('schema'));
       document.getElementById('schemaName').value = spec.name || '';
-      if (spec.record_type === 'array') { recordType = 'table'; updateModeToggle(); }
+      if (spec.mode === 'table') { recordType = 'table'; updateModeToggle(); }
       if (spec.header_pages) document.getElementById('headerPages').value = spec.header_pages;
       if (spec.pages) document.getElementById('pageRange').value = spec.pages;
       fields = Object.entries(spec.fields || {}).map(([name, cfg]) => ({

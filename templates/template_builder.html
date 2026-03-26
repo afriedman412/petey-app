@@ -334,7 +334,7 @@ pre {
 </main>
 
 <script>
-let recordType = 'single';
+let recordType = 'query';
 let fields = [];
 
 // --- Mode toggle ---
@@ -368,7 +368,7 @@ document.getElementById('loadYaml').addEventListener('change', e => {
         document.getElementById('schemaName').value = spec.name || '';
         document.getElementById('schemaDesc').value = spec.description || '';
         document.getElementById('instructions').value = spec.instructions || '';
-        recordType = spec.record_type === 'array' ? 'array' : 'single';
+        recordType = spec.mode === 'table' ? 'table' : 'query';
         document.querySelectorAll('#modeToggle button').forEach(b => {
           b.classList.toggle('active', b.dataset.mode === recordType);
         });
@@ -543,11 +543,11 @@ function buildYaml() {
   const cleanName = name.replace(/\.ya?ml$/i, '');
   if (cleanName) yaml += 'name: ' + yamlStr(cleanName) + '\n';
   if (desc) yaml += 'description: ' + yamlStr(desc) + '\n';
-  if (recordType === 'array') yaml += 'record_type: array\n';
+  if (recordType === 'table') yaml += 'mode: table\n';
   const headerPages = parseInt(document.getElementById('headerPages').value) || 0;
-  if (recordType === 'array' && headerPages > 0) yaml += 'header_pages: ' + headerPages + '\n';
+  if (recordType === 'table' && headerPages > 0) yaml += 'header_pages: ' + headerPages + '\n';
   const pageRange = document.getElementById('pageRange').value.trim();
-  if (recordType === 'array' && pageRange) yaml += 'pages: ' + yamlStr(pageRange) + '\n';
+  if (recordType === 'table' && pageRange) yaml += 'pages: ' + yamlStr(pageRange) + '\n';
   if (instr) yaml += 'instructions: ' + yamlStr(instr) + '\n';
   if (name || desc || recordType === 'array' || instr) yaml += '\n';
 

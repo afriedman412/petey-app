@@ -76,7 +76,17 @@ class TestBuildModel:
         assert "status_enum" not in str(schema)
         assert "infer" in str(schema).lower()
 
-    def test_array_record_type(self):
+    def test_table_mode(self):
+        spec = {
+            "mode": "table",
+            "fields": {"address": {"type": "string", "description": "Addr"}},
+        }
+        model = build_model(spec)
+        schema = model.model_json_schema()
+        assert "items" in schema.get("properties", {}) or "items" in schema.get("required", [])
+
+    def test_record_type_array_backwards_compat(self):
+        """Old record_type: array still works through build_model."""
         spec = {
             "record_type": "array",
             "fields": {"address": {"type": "string", "description": "Addr"}},
@@ -102,7 +112,7 @@ class TestBuildModel:
     def test_mci_schema_builds(self):
         spec = {
             "name": "MCI Cases",
-            "record_type": "array",
+            "mode": "table",
             "fields": {
                 "county": {"type": "string", "description": "County name"},
                 "address": {"type": "string", "description": "Building address"},
@@ -284,7 +294,7 @@ class TestSchemaEdgeCases:
         pattern = re.compile(r"^[a-zA-Z0-9_-]+$")
         spec = {
             "name": "cg_officers.yaml",
-            "record_type": "array",
+            "mode": "table",
             "fields": {"x": {"type": "string", "description": ""}},
         }
         model = build_model(spec)
@@ -296,7 +306,7 @@ class TestSchemaEdgeCases:
         """Field names with spaces should build without error."""
         spec = {
             "name": "cg_officers",
-            "record_type": "array",
+            "mode": "table",
             "fields": {
                 "Signal Number": {"type": "number", "description": ""},
                 "Date of Rank": {"type": "date", "description": ""},

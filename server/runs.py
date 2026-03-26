@@ -61,7 +61,7 @@ def create_run(uid: str, data: dict) -> dict:
         "model": data.get("model", ""),
         "parser": data.get("parser", "pymupdf"),
         "ocr_backend": data.get("ocr_backend", "none"),
-        "record_type": data.get("record_type", "single"),
+        "mode": data.get("mode", "query"),
         "concurrency": data.get("concurrency", 10),
         "total_pages": data.get("total_pages", 0),
         "pages_parsed": 0,
