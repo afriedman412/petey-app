@@ -262,7 +262,7 @@ function renderTable() {
     html += '<tr data-id="' + run.id + '">';
     html += '<td style="font-weight:500; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + (run.filename || '—') + '</td>';
     html += '<td><span class="status-badge ' + run.status + '">' + run.status + '</span></td>';
-    html += '<td>' + (run.spice_mode || '—') + '</td>';
+    html += '<td>' + (run.mode || '—') + '</td>';
     html += '<td style="font-size:0.75rem;">' + (run.model || '—') + '</td>';
     html += '<td>' + fileCount + '</td>';
     html += '<td>' + pages + '</td>';
@@ -290,7 +290,6 @@ async function showDetail(runId) {
   let html = '<div class="detail-grid">';
   html += '<div class="detail-item"><label>File</label><span>' + (run.filename || '—') + '</span></div>';
   html += '<div class="detail-item"><label>Status</label><span class="status-badge ' + run.status + '">' + run.status + '</span></div>';
-  html += '<div class="detail-item"><label>Spice</label><span>' + (run.spice_mode || '—') + '</span></div>';
   html += '<div class="detail-item"><label>Model</label><span>' + (run.model || '—') + '</span></div>';
   html += '<div class="detail-item"><label>Parser</label><span>' + (run.parser || '—') + '</span></div>';
   html += '<div class="detail-item"><label>Mode</label><span>' + (run.mode || '—') + '</span></div>';
@@ -327,7 +326,6 @@ async function showDetail(runId) {
     params.set('run', run.id);
     if (run.schema_spec) params.set('schema', JSON.stringify(run.schema_spec));
     if (run.instructions) params.set('instructions', run.instructions);
-    if (run.spice_mode) params.set('spice', run.spice_mode);
     if (run.model) params.set('model', run.model);
     if (run.parser) params.set('parser', run.parser);
     window.location.href = '/?' + params.toString();
