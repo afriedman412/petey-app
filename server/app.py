@@ -3,6 +3,7 @@ Web interface for PDF field extraction.
 """
 import asyncio
 import json
+import os
 import tempfile
 from datetime import datetime
 from pathlib import Path
@@ -39,6 +40,22 @@ OUTPUT_DIR = BASE_DIR / "output"
 app = FastAPI()
 app.add_middleware(FirebaseAuthMiddleware)
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+# Set MAX_PAGES=0 or unset to disable the limit (e.g. for standalone/Docker)
+MAX_PAGES = int(os.environ.get("MAX_PAGES", "10"))
+
+
+def _check_page_limit(pdf_path: str) -> str | None:
+    """Return an error message if the PDF exceeds MAX_PAGES, else None."""
+    if not MAX_PAGES:
+        return None
+    import fitz
+    doc = fitz.open(pdf_path)
+    n = len(doc)
+    doc.close()
+    if n > MAX_PAGES:
+        return f"PDF has {n} pages (limit is {MAX_PAGES})."
+    return None
 
 _schema_cache: dict[str, type] = {}
 
@@ -126,6 +143,7 @@ async def extract_endpoint(
     ocr_fallback: bool = Form(False),
     ocr_backend: str = Form("none"),
     model: str = Form(None),
+    mode: str = Form("query"),
     uid: str = Depends(get_uid),
 ):
     # Check that the user has the required API key before processing
@@ -133,16 +151,57 @@ async def extract_endpoint(
     if model:
         settings["model"] = model
     provider = get_provider(settings["model"])
-    if provider == "anthropic" and not settings.get("anthropic_api_key"):
-        return JSONResponse(
-            {"error": "No Anthropic API key configured. Add one in Settings before extracting."},
-            status_code=400,
-        )
-    if provider == "openai" and not settings.get("openai_api_key"):
-        return JSONResponse(
-            {"error": "No OpenAI API key configured. Add one in Settings before extracting."},
-            status_code=400,
-        )
+    text_only = mode == "text" or settings["model"] == "none"
+
+    if not text_only:
+        if provider == "anthropic" and not settings.get("anthropic_api_key"):
+            return JSONResponse(
+                {"error": "No Anthropic API key configured. Add one in Settings before extracting."},
+                status_code=400,
+            )
+        if provider == "openai" and not settings.get("openai_api_key"):
+            return JSONResponse(
+                {"error": "No OpenAI API key configured. Add one in Settings before extracting."},
+                status_code=400,
+            )
+
+    with tempfile.NamedTemporaryFile(
+        suffix=".pdf", delete=False
+    ) as tmp:
+        tmp.write(await file.read())
+        tmp_path = tmp.name
+    page_err = _check_page_limit(tmp_path)
+    if page_err:
+        Path(tmp_path).unlink(missing_ok=True)
+        return JSONResponse({"error": page_err}, 400)
+
+    # Text mode: parse PDF, optionally clean up with LLM
+    if text_only:
+        try:
+            text, info = await extract_text(tmp_path)
+            if settings["model"] != "none" and provider != "none":
+                from pydantic import BaseModel as _BM, Field as _F
+                class _TextOut(_BM):
+                    text: str = _F(description="The cleaned up, structured text")
+                result = await async_extract(
+                    tmp_path, _TextOut,
+                    uid=uid,
+                    instructions="Clean up and structure this text. Fix any OCR errors. Return as readable prose.",
+                    parser=parser,
+                    text=text,
+                )
+                text = result.text if hasattr(result, 'text') else result.model_dump().get('text', text)
+            data = {
+                "_source_file": file.filename,
+                "text": text,
+            }
+            if info:
+                data["_info"] = info
+        except Exception as e:
+            data = {"_source_file": file.filename, "_error": str(e)}
+        finally:
+            Path(tmp_path).unlink(missing_ok=True)
+        return data
 
     if schema_spec:
         spec = json.loads(schema_spec)
@@ -154,11 +213,6 @@ async def extract_endpoint(
     else:
         return JSONResponse({"error": "No schema provided"}, 400)
 
-    with tempfile.NamedTemporaryFile(
-        suffix=".pdf", delete=False
-    ) as tmp:
-        tmp.write(await file.read())
-        tmp_path = tmp.name
     try:
         is_table = spec.get("mode") == "table" or spec.get("record_type") == "array"
         if is_table:
@@ -234,6 +288,11 @@ async def extract_stream_endpoint(
     with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
         tmp.write(await file.read())
         tmp_path = tmp.name
+
+    page_err = _check_page_limit(tmp_path)
+    if page_err:
+        Path(tmp_path).unlink(missing_ok=True)
+        return JSONResponse({"error": page_err}, 400)
 
     filename = file.filename
 
@@ -444,6 +503,7 @@ async def results_append(request: Request):
 @app.post("/infer-schema")
 async def infer_schema_endpoint(
     file: UploadFile,
+    model: str = Form(None),
     ocr_fallback: bool = Form(False),
     uid: str = Depends(get_uid),
 ):
@@ -457,6 +517,7 @@ async def infer_schema_endpoint(
         spec = await async_infer_schema(
             tmp_path, uid=uid,
             ocr_fallback=ocr_fallback,
+            model_override=model,
         )
         return spec
     except Exception as e:

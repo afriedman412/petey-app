@@ -220,9 +220,12 @@ async def async_infer_schema(
     uid: str,
     ocr_fallback: bool = False,
     max_pages: int = 2,
+    model_override: str | None = None,
 ) -> dict:
     """Infer a schema from a sample PDF using the user's settings."""
     model_id, api_key = _get_api_key(uid)
+    if model_override:
+        model_id = model_override
     return await _infer_schema_async(
         pdf_path,
         model=model_id,
