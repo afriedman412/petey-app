@@ -126,3 +126,53 @@ async def test_parse_tables_parser(transport, pdf_bytes):
         )
         assert resp.status_code == 200
         assert len(resp.json()["text"]) > 0
+
+
+@pytest.mark.asyncio
+async def test_ocr_full(transport, pdf_bytes):
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.post(
+            "/ocr",
+            files={"file": ("test.pdf", pdf_bytes, "application/pdf")},
+            data={"ocr_backend": "tesseract"},
+        )
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["page_count"] >= 1
+        assert len(body["text"]) > 0
+
+
+@pytest.mark.asyncio
+async def test_ocr_single_page(transport, pdf_bytes):
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.post(
+            "/ocr/page",
+            files={"file": ("test.pdf", pdf_bytes, "application/pdf")},
+            data={"page_index": 0, "ocr_backend": "tesseract"},
+        )
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["page_index"] == 0
+        assert len(body["text"]) > 0
+
+
+@pytest.mark.asyncio
+async def test_ocr_page_out_of_range(transport, pdf_bytes):
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.post(
+            "/ocr/page",
+            files={"file": ("test.pdf", pdf_bytes, "application/pdf")},
+            data={"page_index": 9999, "ocr_backend": "tesseract"},
+        )
+        assert resp.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_ocr_unknown_backend(transport, pdf_bytes):
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.post(
+            "/ocr",
+            files={"file": ("test.pdf", pdf_bytes, "application/pdf")},
+            data={"ocr_backend": "nonexistent"},
+        )
+        assert resp.status_code == 400

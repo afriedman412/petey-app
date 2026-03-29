@@ -1544,8 +1544,22 @@ renderFields();
 
 // Save on schema name / parser / ocr changes
 document.getElementById('schemaName').addEventListener('input', saveState);
-document.getElementById('parserSelect').addEventListener('change', saveState);
+document.getElementById('parserSelect').addEventListener('change', () => {
+  updateOcrDropdown();
+  saveState();
+});
 document.getElementById('ocrSelect').addEventListener('change', saveState);
+
+function updateOcrDropdown() {
+  const parser = document.getElementById('parserSelect').value;
+  const ocrSelect = document.getElementById('ocrSelect');
+  const ocrLabel = ocrSelect.closest('label');
+  const needsOcr = ['pymupdf', 'pdfplumber'].includes(parser);
+  ocrSelect.disabled = !needsOcr;
+  ocrLabel.style.opacity = needsOcr ? '1' : '0.4';
+  if (!needsOcr) ocrSelect.value = 'none';
+}
+updateOcrDropdown();
 
 // Load settings from URL params (e.g. from Runs page "Load settings")
 (function loadFromUrl() {
