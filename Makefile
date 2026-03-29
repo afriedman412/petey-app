@@ -52,7 +52,8 @@ docker-run:
 
 
 
-include .env
+-include .env
+-include ../.env
 export
 
 FIREBASE_AUTH_DOMAIN ?= petey-dev.firebaseapp.com

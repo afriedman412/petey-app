@@ -332,6 +332,7 @@ table.results tr:hover td { background: var(--surface-2); }
     <div class="toggle-group" id="modeToggle">
       <button class="active" data-mode="query" data-tip="Extract one record per document">Query</button>
       <button data-mode="table" data-tip="Extract rows from tables across pages">Table</button>
+      <button data-mode="text" data-tip="Extract text only — no schema needed">Text</button>
     </div>
   </div>
 
@@ -371,7 +372,7 @@ table.results tr:hover td { background: var(--surface-2); }
     </label>
   </div>
 
-  <div class="card">
+  <div class="card" id="schemaCard">
     <div class="card-header">
       <span class="card-label">Schema</span>
       <input type="text" class="schema-name-input" id="schemaName" placeholder="Untitled schema">
@@ -385,6 +386,7 @@ table.results tr:hover td { background: var(--surface-2); }
       <input type="file" id="yamlFile" accept=".yaml,.yml" style="display:none;">
       <button class="schema-btn" id="previewSchema">Preview</button>
       <button class="schema-btn" id="saveBtn">Download</button>
+      <button class="schema-btn" id="resetSchema" style="color:var(--text-dim);">Reset</button>
     </div>
   </div>
 
@@ -471,6 +473,11 @@ function getSelectedProvider() {
 
 function checkModelKeyMatch() {
   const provider = getSelectedProvider();
+  if (provider === 'none') {
+    hasApiKey = true;
+    updateKeyGate();
+    return;
+  }
   const hasKey = provider === 'anthropic' ? _hasAnthropicKey : _hasOpenaiKey;
   const dz = document.getElementById('dropzone');
   if (!hasKey && hasApiKey) {
@@ -509,7 +516,8 @@ async function checkApiKeys() {
 
 function updateKeyGate() {
   const dz = document.getElementById('dropzone');
-  if (!hasApiKey) {
+  const provider = getSelectedProvider();
+  if (!hasApiKey && provider !== 'none') {
     dz.setGateMessage('<span style="font-size:1.3rem; font-weight:600; color:#fff;">Set your OpenAI or Anthropic API key in <a href="/settings/page" style="color:var(--accent); text-decoration:underline;">Settings</a> to get started</span>');
   } else {
     dz.clearGate();
@@ -627,19 +635,67 @@ const results = document.getElementById('results');
 const fieldRows = document.getElementById('fieldRows');
 const extractBtn = document.getElementById('extractBtn');
 
-document.getElementById('instructions').addEventListener('input', () => updateExtractBtn());
+// --- State persistence ---
+const STATE_KEY = 'petey_builder_state';
+
+function saveState() {
+  const state = {
+    schemaName: document.getElementById('schemaName').value,
+    fields: fields,
+    recordType: recordType,
+    instructions: document.getElementById('instructions').value,
+    parser: document.getElementById('parserSelect').value,
+    ocr: document.getElementById('ocrSelect').value,
+  };
+  try { localStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch (_) {}
+}
+
+function restoreState() {
+  try {
+    const raw = localStorage.getItem(STATE_KEY);
+    if (!raw) return false;
+    const state = JSON.parse(raw);
+    if (state.schemaName) document.getElementById('schemaName').value = state.schemaName;
+    if (state.fields && state.fields.length > 0) fields = state.fields;
+    if (state.recordType) { recordType = state.recordType; updateModeToggle(); }
+    if (state.instructions) document.getElementById('instructions').value = state.instructions;
+    if (state.parser) document.getElementById('parserSelect').value = state.parser;
+    if (state.ocr) document.getElementById('ocrSelect').value = state.ocr;
+    return true;
+  } catch (_) { return false; }
+}
+
+function resetState() {
+  localStorage.removeItem(STATE_KEY);
+  document.getElementById('schemaName').value = '';
+  document.getElementById('instructions').value = '';
+  fields = [{ name: '', type: 'string', description: '', values: '', enabled: true }];
+  recordType = 'query';
+  updateModeToggle();
+  renderFields();
+  updateExtractBtn();
+}
+
+document.getElementById('resetSchema').addEventListener('click', resetState);
+
+document.getElementById('instructions').addEventListener('input', () => { updateExtractBtn(); saveState(); });
 
 // Mode toggle
 document.getElementById('modeToggle').addEventListener('click', e => {
   if (e.target.tagName !== 'BUTTON') return;
   recordType = e.target.dataset.mode;
   updateModeToggle();
+  saveState();
 });
 
 function updateModeToggle() {
   document.querySelectorAll('#modeToggle button').forEach(b => {
     b.classList.toggle('active', b.dataset.mode === recordType);
   });
+  // Hide schema card in text mode
+  const schemaCard = document.getElementById('schemaCard');
+  if (schemaCard) schemaCard.style.display = recordType === 'text' ? 'none' : '';
+  updateExtractBtn();
 }
 
 // Logo reset
@@ -694,7 +750,11 @@ function fileLabel(name) {
 }
 
 function updateExtractBtn() {
-  extractBtn.disabled = !(selectedFiles.length && fields.some(f => f.name.trim() && f.enabled));
+  if (recordType === 'text') {
+    extractBtn.disabled = !selectedFiles.length;
+  } else {
+    extractBtn.disabled = !(selectedFiles.length && fields.some(f => f.name.trim() && f.enabled));
+  }
 }
 
 // Field builder
@@ -778,6 +838,7 @@ function renderFields() {
         if (e.target.dataset.key === 'type') renderFields();
       }
       updateExtractBtn();
+      saveState();
     };
     el.addEventListener('input', handler);
     el.addEventListener('change', handler);
@@ -835,12 +896,21 @@ document.getElementById('yamlFile').addEventListener('change', e => {
 
 // Suggest fields from a sample PDF
 document.getElementById('suggestFields').addEventListener('click', () => {
-  document.getElementById('suggestFile').click();
+  // Use already-loaded file if available, otherwise open picker
+  if (selectedFiles.length > 0) {
+    _runSuggest(selectedFiles[Math.floor(Math.random() * selectedFiles.length)]);
+  } else {
+    document.getElementById('suggestFile').click();
+  }
 });
 
 document.getElementById('suggestFile').addEventListener('change', async e => {
   const file = e.target.files[0];
   if (!file) return;
+  _runSuggest(file);
+});
+
+async function _runSuggest(file) {
   const btn = document.getElementById('suggestFields');
   const origText = btn.textContent;
   btn.textContent = 'Analyzing...';
@@ -848,6 +918,8 @@ document.getElementById('suggestFile').addEventListener('change', async e => {
   try {
     const form = new FormData();
     form.append('file', file);
+    const model = document.getElementById('modelSelect').value;
+    if (model && model !== 'none') form.append('model', model);
     const resp = await authFetch('/infer-schema', { method: 'POST', body: form });
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));
@@ -869,9 +941,8 @@ document.getElementById('suggestFile').addEventListener('change', async e => {
   } finally {
     btn.textContent = origText;
     btn.disabled = false;
-    e.target.value = '';
   }
-});
+}
 
 // Build schema spec from fields (only enabled ones)
 function buildSpec() {
@@ -925,7 +996,8 @@ class ApiKeyError extends Error {
 async function extractFile(file, spec, instr) {
   const form = new FormData();
   form.append('file', file);
-  form.append('schema_spec', JSON.stringify(spec));
+  form.append('mode', recordType);
+  if (recordType !== 'text') form.append('schema_spec', JSON.stringify(spec));
   if (instr) form.append('instructions', instr);
   form.append('parser', document.getElementById('parserSelect').value);
   const ocrVal = document.getElementById('ocrSelect').value;
@@ -1002,8 +1074,9 @@ document.getElementById('cancelRunBtn').addEventListener('click', () => {
 extractBtn.addEventListener('click', async () => {
   if (!selectedFiles.length) return;
 
-  const spec = buildSpec();
-  if (!Object.keys(spec.fields).length) return;
+  const isTextMode = recordType === 'text';
+  const spec = isTextMode ? {} : buildSpec();
+  if (!isTextMode && !Object.keys(spec.fields).length) return;
 
   results.innerHTML = '';
   extractBtn.disabled = true;
@@ -1113,6 +1186,8 @@ extractBtn.addEventListener('click', async () => {
               if (spicyExtracted % 10 === 0) updateRunProgress(runId, { pages_parsed: spicyParsed, pages_extracted: spicyExtracted });
             }
           });
+        } else if (isTextMode) {
+          data = await extractFile(file, {}, '');
         } else {
           data = await extractFile(file, spec, instr);
         }
@@ -1191,7 +1266,12 @@ extractBtn.addEventListener('click', async () => {
 
   const AUTO_FILE_THRESHOLD = 200;
 
-  if (allRecords.length) {
+  // Check if text-only mode (results have 'text' field)
+  const isTextOnly = allResults.length > 0 && allResults[0].text !== undefined;
+
+  if (isTextOnly) {
+    renderTextResults(allResults);
+  } else if (allRecords.length) {
     if (allRecords.length > AUTO_FILE_THRESHOLD) {
       autoDownloadCsv(allRecords);
       results.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem;">Large result set (' + allRecords.length + ' records) — downloaded as CSV.</p>';
@@ -1279,6 +1359,23 @@ function flattenRecords(records) {
   return { flatRecords, allKeys };
 }
 
+function renderTextResults(textData) {
+  const combined = textData.map(r => {
+    const header = textData.length > 1 ? '=== ' + (r._source_file || 'document') + ' ===\n\n' : '';
+    return header + (r.text || '');
+  }).join('\n\n');
+
+  let html = '<pre style="background:var(--surface-2); border:1px solid var(--border); border-radius:6px; ' +
+    'padding:1rem; font-size:0.82rem; color:var(--text); max-height:500px; overflow:auto; white-space:pre-wrap; ' +
+    'word-wrap:break-word;">' + combined.replace(/</g, '&lt;') + '</pre>';
+
+  const txtBlob = new Blob([combined], { type: 'text/plain' });
+  const txtUrl = URL.createObjectURL(txtBlob);
+  html += '<a class="download-btn" href="' + txtUrl + '" download="' + extractedFilename('txt') + '">Download Text</a>';
+
+  results.innerHTML = html;
+}
+
 function renderSingleResult(data) {
   const keys = Object.keys(data).filter(k => !k.startsWith('_'));
   let html = '<div class="table-wrap"><table class="results"><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>';
@@ -1352,6 +1449,13 @@ function renderTable(records) {
     const jsonBlob = new Blob([JSON.stringify(records, null, 2)], { type: 'application/json' });
     const jsonUrl = URL.createObjectURL(jsonBlob);
     html += '<a class="download-btn" href="' + jsonUrl + '" download="' + extractedFilename('json') + '">Download JSON</a>';
+
+    const schemaSpec = buildSpec();
+    const schemaYaml = specToYaml(schemaSpec);
+    const schemaBlob = new Blob([schemaYaml], { type: 'text/yaml' });
+    const schemaUrl = URL.createObjectURL(schemaBlob);
+    const schemaFilename = (schemaSpec.name || 'schema').toLowerCase().replace(/\s+/g, '_') + '.yaml';
+    html += '<a class="download-btn" href="' + schemaUrl + '" download="' + schemaFilename + '">Download Schema</a>';
 
     results.innerHTML = html;
 
@@ -1432,9 +1536,16 @@ document.getElementById('previewSchema').addEventListener('click', () => {
   document.getElementById('previewSchema').closest('.card').appendChild(div);
 });
 
-// Start with one empty field
-fields.push({ name: '', type: 'string', description: '', values: '', enabled: true });
+// Restore saved state, or start with one empty field
+if (!restoreState()) {
+  fields.push({ name: '', type: 'string', description: '', values: '', enabled: true });
+}
 renderFields();
+
+// Save on schema name / parser / ocr changes
+document.getElementById('schemaName').addEventListener('input', saveState);
+document.getElementById('parserSelect').addEventListener('change', saveState);
+document.getElementById('ocrSelect').addEventListener('change', saveState);
 
 // Load settings from URL params (e.g. from Runs page "Load settings")
 (function loadFromUrl() {
