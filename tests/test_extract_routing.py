@@ -19,7 +19,6 @@ from server.extract import (  # noqa: E402
     extract_text,
     _remote_parse_fn,
     _remote_page_parse_fn,
-    _set_ocr_env,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -53,7 +52,7 @@ class TestAsyncExtractRouting:
                 "server.extract._extract_async",
                 new_callable=AsyncMock,
             ) as mock_ext,
-            patch("server.extract._set_ocr_env"),
+
         ):
             mock_ext.return_value = MagicMock()
             await async_extract(
@@ -79,7 +78,7 @@ class TestAsyncExtractRouting:
                 "server.extract._extract_async",
                 new_callable=AsyncMock,
             ) as mock_ext,
-            patch("server.extract._set_ocr_env"),
+
         ):
             mock_ext.return_value = MagicMock()
             await async_extract(
@@ -106,7 +105,7 @@ class TestAsyncExtractRouting:
                 "server.extract.get_provider",
                 return_value="anthropic",
             ),
-            patch("server.extract._set_ocr_env"),
+
         ):
             with pytest.raises(ValueError, match="Anthropic"):
                 await async_extract(
@@ -129,7 +128,7 @@ class TestAsyncExtractRouting:
                 "server.extract.get_provider",
                 return_value="openai",
             ),
-            patch("server.extract._set_ocr_env"),
+
         ):
             with pytest.raises(ValueError, match="OpenAI"):
                 await async_extract(
@@ -157,7 +156,7 @@ class TestAsyncExtractPagesRouting:
                 "server.extract._extract_pages_async",
                 new_callable=AsyncMock,
             ) as mock_ext,
-            patch("server.extract._set_ocr_env"),
+
         ):
             mock_ext.return_value = []
             await async_extract_pages(
@@ -183,7 +182,7 @@ class TestAsyncExtractPagesRouting:
                 "server.extract._extract_pages_async",
                 new_callable=AsyncMock,
             ) as mock_ext,
-            patch("server.extract._set_ocr_env"),
+
         ):
             mock_ext.return_value = []
             await async_extract_pages(
@@ -209,7 +208,7 @@ class TestAsyncExtractPagesRouting:
                 "server.extract._extract_pages_async",
                 new_callable=AsyncMock,
             ) as mock_ext,
-            patch("server.extract._set_ocr_env"),
+
             patch(
                 "server.extract.configure_concurrency",
             ) as mock_cfg,
@@ -223,51 +222,6 @@ class TestAsyncExtractPagesRouting:
         assert kw["concurrency"] == 5
         assert "parse_multiplier" not in kw
         mock_cfg.assert_called_with(api_limit=5)
-
-
-# -------------------------------------------------------------------
-# _set_ocr_env
-# -------------------------------------------------------------------
-
-class TestSetOcrEnv:
-    def test_sets_datalab_key(self):
-        settings = {
-            **MOCK_SETTINGS,
-            "datalab_api_key": "dl-test-key",
-        }
-        with patch(
-            "server.extract.get_settings",
-            return_value=settings,
-        ):
-            _set_ocr_env("test")
-        assert os.environ.get("DATALAB_API_KEY") == "dl-test-key"
-        os.environ.pop("DATALAB_API_KEY", None)
-
-    def test_sets_mistral_key(self):
-        settings = {
-            **MOCK_SETTINGS,
-            "mistral_api_key": "ms-test-key",
-        }
-        with patch(
-            "server.extract.get_settings",
-            return_value=settings,
-        ):
-            _set_ocr_env("test")
-        assert os.environ.get("MISTRAL_API_KEY") == "ms-test-key"
-        os.environ.pop("MISTRAL_API_KEY", None)
-
-    def test_skips_empty_keys(self):
-        os.environ.pop("DATALAB_API_KEY", None)
-        settings = {
-            **MOCK_SETTINGS,
-            "datalab_api_key": "",
-        }
-        with patch(
-            "server.extract.get_settings",
-            return_value=settings,
-        ):
-            _set_ocr_env("test")
-        assert "DATALAB_API_KEY" not in os.environ
 
 
 # -------------------------------------------------------------------

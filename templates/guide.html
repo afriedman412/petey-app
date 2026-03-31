@@ -312,12 +312,33 @@ table.results tr:hover td { background: var(--surface-2); }
 }
 .settings-link a { color: var(--accent); text-decoration: none; }
 .settings-link a:hover { text-decoration: underline; }
+
+/* MOBILE */
+@media (max-width: 640px) {
+  .main { padding: 1.5rem 1rem 3rem; }
+  .auth-overlay h2 { font-size: 2rem; }
+  .mode-grid { grid-template-columns: 1fr; }
+  .parser-grid { grid-template-columns: 1fr; }
+  .field-row {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+  .field-row .drag-handle { display: none; }
+  .field-row .remove-btn { justify-self: end; }
+  .step-label { font-size: 0.55rem; }
+  .step-dot { width: 24px; height: 24px; font-size: 0.6rem; }
+  .card { padding: 1rem 1rem; }
+  .mode-card { padding: 1rem; }
+  .parser-card { padding: 0.85rem 1rem; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .btn-next, .btn-back, .btn-add, .btn-suggest { min-height: 44px; }
+}
 </style>
 </head>
 <body>
 
 <div class="auth-overlay" id="authOverlay" style="display:none">
-  <h2>Petey<span style="color:var(--accent)">.</span></h2>
+  <h2 style="font-family:'DM Serif Display',Georgia,serif; font-weight:400;">Petey<span style="color:var(--accent)">.</span></h2>
   <p>Sign in to get started</p>
   <button id="overlaySignIn" class="overlay-btn">Sign in with Google</button>
   <p style="color:var(--text-dim); font-size:0.75rem; max-width:280px; text-align:center; line-height:1.5;">Sign-in is only used to protect your API keys.</p>

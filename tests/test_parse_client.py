@@ -30,7 +30,7 @@ class TestParseFn:
             mock_client = AsyncMock()
             mock_client.post.return_value = mock_resp
             mock_gc.return_value = mock_client
-            result = await parse_fn(MCI_PDF, "pymupdf", "none")
+            result = await parse_fn(MCI_PDF, "pymupdf")
 
         assert result == "hello world"
 
@@ -44,7 +44,7 @@ class TestParseFn:
             mock_client = AsyncMock()
             mock_client.post.return_value = mock_resp
             mock_gc.return_value = mock_client
-            await parse_fn(MCI_PDF, "tables", "none")
+            await parse_fn(MCI_PDF, "tables")
 
         call_kwargs = mock_client.post.call_args
         assert call_kwargs.kwargs["data"]["parser"] == "tables"
@@ -93,7 +93,7 @@ class TestPageParseFn:
             mock_client = AsyncMock()
             mock_client.post.return_value = mock_resp
             mock_gc.return_value = mock_client
-            result = await page_parse_fn(MCI_PDF, 0, "pymupdf", "none")
+            result = await page_parse_fn(MCI_PDF, 0, "pymupdf")
 
         assert result == "page 0 text"
 
@@ -107,7 +107,7 @@ class TestPageParseFn:
             mock_client = AsyncMock()
             mock_client.post.return_value = mock_resp
             mock_gc.return_value = mock_client
-            await page_parse_fn(MCI_PDF, 3, "pymupdf", "none")
+            await page_parse_fn(MCI_PDF, 3, "pymupdf")
 
         call_kwargs = mock_client.post.call_args
         assert call_kwargs.kwargs["data"]["page_index"] == 3

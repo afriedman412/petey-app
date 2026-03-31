@@ -45,6 +45,27 @@ if (!document.getElementById(NAV_STYLE_ID)) {
     .page-top-link.active { color: var(--text, #f2ece4); font-weight: 600; }
     .page-top-link.nav-accent { color: #b8e986; font-weight: 600; }
     .page-top-link.nav-accent:hover { color: #d4f5a8; }
+    .nav-hamburger {
+      display: none; background: none; border: none; color: var(--text, #f2ece4);
+      font-size: 1.5rem; cursor: pointer; padding: 0.2rem; line-height: 1;
+    }
+    @media (max-width: 640px) {
+      .nav-hero h1 { font-size: 1.8rem; }
+      .nav-hamburger { display: block; align-self: flex-end; padding-bottom: 0.2rem; }
+      .nav-links {
+        display: none !important; position: absolute; top: 100%; right: 0;
+        background: var(--surface, #1c1c1c); border: 1px solid var(--border, #333);
+        border-radius: 8px; padding: 0.5rem 0; min-width: 150px; z-index: 50;
+        flex-direction: column;
+      }
+      .nav-links.open { display: flex !important; }
+      .nav-links .page-top-link {
+        padding: 0.55rem 1.1rem; align-self: stretch; text-align: left;
+      }
+      .nav-links .page-top-link:hover {
+        background: var(--surface-2, #262626);
+      }
+    }
   `;
   document.head.appendChild(style);
 }
@@ -66,15 +87,25 @@ class NavBar extends HTMLElement {
 
     this.innerHTML = `
       <div class="nav-hero">
-        <div class="nav-hero-top">
+        <div class="nav-hero-top" style="position:relative;">
           <h1><a href="/" style="color:inherit; text-decoration:none;" ${active === 'extractor' ? 'id="logoReset"' : ''}>Petey<span class="dot">.</span></a></h1>
-          <nav style="display:flex; gap:1.25rem; align-items:flex-end; padding-bottom:0.2rem;">
+          <button class="nav-hamburger" aria-label="Menu">&#9776;</button>
+          <nav class="nav-links" style="display:flex; gap:1.25rem; align-items:flex-end; padding-bottom:0.2rem;">
             ${linksHtml}
           </nav>
         </div>
         ${subtitle ? `<p class="hero-sub">${subtitle}</p>` : ''}
       </div>
     `;
+
+    this.querySelector('.nav-hamburger').addEventListener('click', () => {
+      this.querySelector('.nav-links').classList.toggle('open');
+    });
+    document.addEventListener('click', (e) => {
+      if (!this.contains(e.target)) {
+        this.querySelector('.nav-links')?.classList.remove('open');
+      }
+    });
   }
 }
 

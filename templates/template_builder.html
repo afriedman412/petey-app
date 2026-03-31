@@ -241,6 +241,44 @@ pre {
   background: var(--surface-2); padding: 0.12rem 0.4rem; border-radius: 3px;
   color: var(--amber); font-size: 0.76rem;
 }
+
+.tb-hamburger {
+  display: none; background: none; border: none; color: var(--text);
+  font-size: 1.5rem; cursor: pointer; padding: 0.2rem; line-height: 1;
+}
+
+/* MOBILE */
+@media (max-width: 640px) {
+  .main { padding: 1.5rem 1rem 3rem; }
+  .hero h1 { font-size: 2rem; }
+  .tb-hamburger { display: block; align-self: flex-end; padding-bottom: 0.2rem; }
+  .tb-nav {
+    display: none !important; position: absolute; top: 100%; right: 0;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.5rem 0; min-width: 150px; z-index: 50;
+    flex-direction: column;
+  }
+  .tb-nav.open { display: flex !important; }
+  .tb-nav .page-top-link {
+    padding: 0.55rem 1.1rem; align-self: stretch; text-align: left;
+  }
+  .tb-nav .page-top-link:hover { background: var(--surface-2); }
+  .card { padding: 1rem 1rem; }
+  .field-row {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+  .field-row .remove-btn { justify-self: end; }
+  .nested-section .field-row { grid-template-columns: 1fr; }
+  .controls-row { gap: 0.6rem; }
+  .toggle-group button { padding: 0.4rem 0.7rem; min-height: 44px; }
+  #headerPagesWrap input[type=number] { width: 3.5rem; }
+  #headerPagesWrap input[type=text] { width: 7rem; }
+  .action-row { flex-wrap: wrap; }
+  .download-btn-primary, .copy-btn, .btn-add, .btn-ghost { min-height: 44px; display: inline-flex; align-items: center; }
+  .cli-hint { padding: 1rem; }
+  .cli-hint code { word-break: break-all; }
+}
 </style>
 </head>
 <body>
@@ -248,9 +286,10 @@ pre {
 <main class="main">
 
   <div class="hero">
-    <div class="hero-top">
+    <div class="hero-top" style="position:relative;">
       <h1>Schema Designer<span class="dot">.</span></h1>
-      <div style="display:flex; gap:1.25rem; align-items:flex-end; padding-bottom:0.2rem;">
+      <button class="tb-hamburger" aria-label="Menu" onclick="document.querySelector('.tb-nav').classList.toggle('open')">&#9776;</button>
+      <div class="tb-nav" style="display:flex; gap:1.25rem; align-items:flex-end; padding-bottom:0.2rem;">
         <a href="/" class="page-top-link">Extractor</a>
         <a href="/about" class="page-top-link">About</a>
         <a href="/settings/page" class="page-top-link">Settings</a>

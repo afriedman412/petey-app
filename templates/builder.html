@@ -90,6 +90,12 @@ body {
   font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em;
   text-transform: uppercase; color: var(--text-muted);
 }
+.options-grid {
+  display: flex; align-items: center; gap: 0.4rem;
+}
+.options-grid label {
+  display: flex; align-items: center; gap: 0.4rem;
+}
 
 /* TOGGLE */
 .toggle-group {
@@ -310,12 +316,55 @@ table.results tr:hover td { background: var(--surface-2); }
   z-index: 10;
 }
 [data-tip]:hover::after { opacity: 1; }
+
+/* MOBILE */
+@media (max-width: 640px) {
+  .main { padding: 1.5rem 1rem 3rem; }
+  .hero h1 { font-size: 2rem; }
+  .auth-overlay h2 { font-size: 2rem; }
+  .card { padding: 1rem 1rem; }
+  .field-row {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+  .field-row .drag-handle,
+  .field-row input[type=checkbox] { display: none; }
+  .field-row .remove-btn { justify-self: end; }
+  .controls-row {
+    flex-direction: column; align-items: flex-start; gap: 0.4rem;
+  }
+  .controls-row .controls-label { margin-bottom: 0.1rem; }
+  .controls-row label { margin-left: 0 !important; }
+  .controls-row .options-grid {
+    display: grid; grid-template-columns: auto 1fr; gap: 0.4rem 0.6rem;
+    align-items: center; width: 100%;
+  }
+  .controls-row .options-grid label {
+    display: contents;
+  }
+  .controls-row .options-grid select { width: 100%; }
+  #headerPagesControl { flex-wrap: wrap; gap: 0.4rem 0.6rem; }
+  #headerPagesControl input[type=number] { width: 3.5rem; }
+  #headerPagesControl input[type=text] { width: 7rem; }
+  .toggle-group button { padding: 0.4rem 0.7rem; min-height: 44px; }
+  .action-row { flex-wrap: wrap; }
+  .extract-btn, .save-btn { min-height: 44px; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .btn-row {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.4rem; justify-items: center;
+  }
+  .btn-add, .btn-ghost, .schema-btn {
+    min-height: 44px; display: inline-flex; align-items: center;
+    justify-content: center; font-size: 0.72rem; padding: 0.3rem 0.6rem; width: 100%;
+  }
+}
 </style>
 </head>
 <body>
 
 <div class="auth-overlay" id="authOverlay" style="display:none">
-  <h2>Petey<span style="color:var(--accent)">.</span></h2>
+  <h2 style="font-family:'DM Serif Display',Georgia,serif; font-weight:400;">Petey<span style="color:var(--accent)">.</span></h2>
   <p>Sign in to get started</p>
   <button id="overlaySignIn" class="overlay-btn">Sign in with Google</button>
   <p style="color:var(--text-dim); font-size:0.75rem; max-width:280px; text-align:center; line-height:1.5;">Sign-in is only used to protect your API keys. We don't store any other personal data.</p>
@@ -350,20 +399,22 @@ table.results tr:hover td { background: var(--surface-2); }
 
   <div class="controls-row">
     <span class="controls-label">Options</span>
-    <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.8rem; color:var(--text-muted); cursor:pointer;">
-      Parser
-      <select id="parserSelect" style="background:var(--surface-2); border:1px solid var(--border); border-radius:4px; color:var(--text); padding:0.2rem 0.4rem; font-size:0.78rem; font-family:inherit;">
-        <option value="pymupdf">PyMuPDF</option>
-        <option value="pdfplumber">pdfplumber</option>
-        <option value="datalab">Datalab (Marker)</option>
-        <option value="unstructured">Unstructured</option>
-      </select>
-    </label>
-    <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.8rem; color:var(--text-muted); margin-left:0.5rem;">
-      Model
-      <select id="modelSelect" style="background:var(--surface-2); border:1px solid var(--border); border-radius:4px; color:var(--text); padding:0.2rem 0.4rem; font-size:0.78rem; font-family:inherit;">
-      </select>
-    </label>
+    <div class="options-grid">
+      <label style="font-size:0.8rem; color:var(--text-muted); cursor:pointer;">
+        Parser
+        <select id="parserSelect" style="background:var(--surface-2); border:1px solid var(--border); border-radius:4px; color:var(--text); padding:0.2rem 0.4rem; font-size:0.78rem; font-family:inherit;">
+          <option value="pymupdf">PyMuPDF</option>
+          <option value="pdfplumber">pdfplumber</option>
+          <option value="datalab">Datalab (Marker)</option>
+          <option value="unstructured">Unstructured</option>
+        </select>
+      </label>
+      <label style="font-size:0.8rem; color:var(--text-muted);">
+        Model
+        <select id="modelSelect" style="background:var(--surface-2); border:1px solid var(--border); border-radius:4px; color:var(--text); padding:0.2rem 0.4rem; font-size:0.78rem; font-family:inherit;">
+        </select>
+      </label>
+    </div>
   </div>
 
   <div class="card" id="schemaCard">

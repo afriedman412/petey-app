@@ -105,12 +105,20 @@ input:focus { outline: none; border-color: var(--accent); }
 .status { margin-top: 0.75rem; font-size: 0.82rem; }
 .status.ok { color: var(--green); }
 .status.err { color: var(--danger); }
+
+/* MOBILE */
+@media (max-width: 640px) {
+  .main { padding: 1.5rem 1rem 3rem; }
+  .auth-overlay h2 { font-size: 2rem; }
+  .card { padding: 1rem 1rem; }
+  .save-btn { min-height: 44px; width: 100%; }
+}
 </style>
 </head>
 <body>
 
 <div class="auth-overlay" id="authOverlay" style="display:none">
-  <h2>Petey<span style="color:var(--accent)">.</span></h2>
+  <h2 style="font-family:'DM Serif Display',Georgia,serif; font-weight:400;">Petey<span style="color:var(--accent)">.</span></h2>
   <p>Sign in to manage settings</p>
   <button id="overlaySignIn" class="overlay-btn">Sign in with Google</button>
 </div>

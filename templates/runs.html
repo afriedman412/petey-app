@@ -127,12 +127,27 @@ body {
 .detail-btn.primary:hover { background: var(--accent-h); }
 .detail-btn.danger { color: var(--danger); border-color: var(--danger); }
 .detail-btn.danger:hover { background: var(--danger); color: #000; }
+
+/* MOBILE */
+@media (max-width: 640px) {
+  .main { padding: 1.5rem 1rem 3rem; }
+  .auth-overlay h2 { font-size: 2rem; }
+  .runs-table { font-size: 0.72rem; }
+  .runs-table th, .runs-table td { padding: 0.5rem 0.4rem; }
+  .runs-table th:nth-child(n+3),
+  .runs-table td:nth-child(n+3) { display: none; }
+  .run-detail { padding: 1rem; }
+  .detail-grid { grid-template-columns: 1fr 1fr; }
+  .detail-actions { flex-direction: column; }
+  .detail-btn { width: 100%; text-align: center; min-height: 44px; }
+  .detail-btn.danger { margin-left: 0; }
+}
 </style>
 </head>
 <body>
 
 <div class="auth-overlay" id="authOverlay" style="display:none">
-  <h2>Petey<span style="color:var(--accent)">.</span></h2>
+  <h2 style="font-family:'DM Serif Display',Georgia,serif; font-weight:400;">Petey<span style="color:var(--accent)">.</span></h2>
   <p>Sign in to view run history</p>
   <button id="overlaySignIn" class="overlay-btn">Sign in with Google</button>
 </div>
