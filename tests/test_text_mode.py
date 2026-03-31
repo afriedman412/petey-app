@@ -138,16 +138,11 @@ class TestTextModeExtract:
         assert resp.status_code == 200
 
     @pytest.mark.asyncio
-    async def test_text_mode_with_llm_calls_extract(self):
-        """Text mode with an LLM selected should clean up text."""
+    async def test_text_mode_with_llm_returns_raw_text(self):
+        """Text mode always returns raw parsed text, even with an LLM selected."""
         from httpx import ASGITransport, AsyncClient
 
-        mock_result = MagicMock()
-        mock_result.text = "Cleaned up text here"
-
         with (
-            patch("server.app.async_extract",
-                  new_callable=AsyncMock, return_value=mock_result),
             patch("server.app.extract_text", new_callable=AsyncMock,
                   return_value=("Raw text", [])),
             patch("server.app.get_settings", return_value={
@@ -172,7 +167,7 @@ class TestTextModeExtract:
 
         assert resp.status_code == 200
         data = resp.json()
-        assert data["text"] == "Cleaned up text here"
+        assert data["text"] == "Raw text"
 
     @pytest.mark.asyncio
     async def test_query_mode_requires_schema(self):

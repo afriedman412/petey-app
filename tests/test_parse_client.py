@@ -1,7 +1,8 @@
 """
-Tests for the parser service client (server/parse_client.py).
+Tests for the remote parser service client (server/parse_client.py).
 
 All tests mock httpx to avoid needing a running parser service.
+Tests the _remote_* functions directly (local parsing is tested in test_local_parsing.py).
 """
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -9,7 +10,11 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import httpx
 import pytest
 
-from server.parse_client import parse_fn, page_parse_fn, get_page_count
+from server.parse_client import (
+    _remote_parse as parse_fn,
+    _remote_page_parse as page_parse_fn,
+    _remote_page_count as get_page_count,
+)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 MCI_PDF = str(FIXTURES / "mci_page1.pdf")
