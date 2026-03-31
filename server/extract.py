@@ -2,6 +2,7 @@
 Web server extraction layer. Thin wrapper around the petey package.
 """
 import asyncio
+import os
 from pathlib import Path
 
 import yaml
@@ -21,7 +22,7 @@ from petey.concurrency import configure as configure_concurrency
 from server.settings import get_settings, get_provider
 from server.parse_client import parse_fn as _remote_parse_fn, page_parse_fn as _remote_page_parse_fn
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(os.environ.get("PETEY_WEB_BASE", Path(__file__).resolve().parent.parent))
 SCHEMAS_DIR = BASE_DIR / "schemas"
 
 # Re-export for backwards compatibility

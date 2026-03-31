@@ -32,7 +32,7 @@ from server.runs import (
     create_run, update_run, finish_run, list_runs, get_run, delete_run,
 )
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(os.environ.get("PETEY_WEB_BASE", Path(__file__).resolve().parent.parent))
 TEMPLATES_DIR = BASE_DIR / "templates"
 STATIC_DIR = BASE_DIR / "static"
 OUTPUT_DIR = BASE_DIR / "output"

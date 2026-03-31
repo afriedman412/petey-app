@@ -13,7 +13,10 @@ import json
 import os
 from pathlib import Path
 
-from google.cloud import firestore
+try:
+    from google.cloud import firestore
+except ImportError:
+    firestore = None
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SETTINGS_PATH = BASE_DIR / "settings.json"
@@ -50,7 +53,7 @@ def _use_local() -> bool:
 _db = None
 
 
-def _get_db() -> firestore.Client:
+def _get_db():
     global _db
     if _db is None:
         _db = firestore.Client(database="petey-fb-db")

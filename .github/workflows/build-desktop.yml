@@ -1,0 +1,75 @@
+name: Build Desktop App
+
+on:
+  push:
+    tags:
+      - 'desktop-v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            name: macOS
+            artifact: Petey-macOS
+          - os: windows-latest
+            name: Windows
+            artifact: Petey-Windows
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      # macOS: install tesseract + ghostscript via Homebrew
+      - name: Install system deps (macOS)
+        if: runner.os == 'macOS'
+        run: brew install tesseract ghostscript
+
+      # Windows: install tesseract + ghostscript via Chocolatey
+      - name: Install system deps (Windows)
+        if: runner.os == 'Windows'
+        run: choco install tesseract ghostscript -y
+
+      - name: Install Python deps
+        run: |
+          pip install -e ".[dev]" pyinstaller
+
+      - name: Build with PyInstaller
+        run: pyinstaller desktop/petey.spec --noconfirm
+
+      - name: Zip artifact (macOS)
+        if: runner.os == 'macOS'
+        run: cd dist && zip -r ../Petey-macOS.zip Petey/
+
+      - name: Zip artifact (Windows)
+        if: runner.os == 'Windows'
+        run: Compress-Archive -Path dist\Petey -DestinationPath Petey-Windows.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            Petey-macOS/Petey-macOS.zip
+            Petey-Windows/Petey-Windows.zip
+          generate_release_notes: true

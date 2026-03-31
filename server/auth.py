@@ -8,8 +8,6 @@ Set FIREBASE_AUTH_DISABLED=1 to skip verification (local dev only).
 """
 import os
 
-import firebase_admin
-from firebase_admin import auth as firebase_auth
 from fastapi import Request, HTTPException
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -21,8 +19,16 @@ PUBLIC_POST_PATHS = {"/parse-yaml", "/par/debug-text"}
 # Initialize Firebase Admin SDK once (skip when auth is disabled for local dev).
 # On Cloud Run, calling initialize_app() with no args uses the
 # default service account automatically (ADC).
-if not firebase_admin._apps and os.getenv("FIREBASE_AUTH_DISABLED", "").strip() not in ("1", "true"):
-    firebase_admin.initialize_app()
+# Import is conditional so the desktop app can run without firebase_admin.
+firebase_admin = None
+firebase_auth = None
+if os.getenv("FIREBASE_AUTH_DISABLED", "").strip() not in ("1", "true"):
+    import firebase_admin as _fa
+    from firebase_admin import auth as _fa_auth
+    firebase_admin = _fa
+    firebase_auth = _fa_auth
+    if not firebase_admin._apps:
+        firebase_admin.initialize_app()
 
 
 def _is_public(request: Request) -> bool:
