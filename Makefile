@@ -1,4 +1,5 @@
 VENV = venv
+SYSTEM_PYTHON ?= /Library/Frameworks/Python.framework/Versions/3.13/bin/python3
 PYTHON = $(VENV)/bin/python
 PIP = $(VENV)/bin/pip
 PARSER_URL ?= https://petey-parser-425941924538.us-east1.run.app
@@ -9,7 +10,7 @@ WEB_IMAGE = us-east1-docker.pkg.dev/petey-dev/petey/web:latest
 .PHONY: venv install run deploy deploy-web deploy-parser build-base clean
 
 venv:
-	@if [ ! -d "$(VENV)" ]; then python3 -m venv $(VENV) && $(PIP) install -e .; fi
+	@if [ ! -d "$(VENV)" ]; then $(SYSTEM_PYTHON) -m venv $(VENV) && $(PIP) install -e .; fi
 
 install: venv
 
@@ -24,12 +25,7 @@ endif
 ifdef GIT
 	$(PIP) install git+https://github.com/afriedman412/petey.git
 endif
-	FIREBASE_AUTH_DISABLED=1 PARSER_URL=http://localhost:8081 $(VENV)/bin/uvicorn parser.app:app --port 8081 & \
-	FIREBASE_AUTH_DISABLED=1 PARSER_URL=http://localhost:8081 $(VENV)/bin/uvicorn server.app:app --reload; \
-	pkill -f "uvicorn parser.app:app --port 8081" 2>/dev/null || true
-
-stop:
-	@-pkill -f "uvicorn parser.app:app --port 8081" 2>/dev/null || true
+	FIREBASE_AUTH_DISABLED=1 $(VENV)/bin/uvicorn server.app:app --reload
 
 build-base:
 	gcloud config set project petey-dev
