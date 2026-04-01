@@ -20,10 +20,10 @@ COPY schemas/ schemas/
 
 RUN pip install --no-cache-dir .
 
-# Default to self-hosted mode: no auth, no page limit
+# Default to self-hosted mode: no auth, no page limit, local parsing
 ENV FIREBASE_AUTH_DISABLED=1
 ENV MAX_PAGES=0
-ENV PARSER_URL=http://parser:8081
+ENV PARSER_URL=
 
 EXPOSE 8080
 CMD ["uvicorn", "server.app:app", "--host", "0.0.0.0", "--port", "8080"]
