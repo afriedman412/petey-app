@@ -43,7 +43,7 @@ MODELS = [
 
 
 def _use_local() -> bool:
-    return os.getenv("FIREBASE_AUTH_DISABLED", "").strip() in ("1", "true")
+    return os.getenv("FIREBASE_AUTH_DISABLED", "1").strip() in ("1", "true")
 
 
 # ---------------------------------------------------------------------------

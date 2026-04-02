@@ -59,7 +59,7 @@ deploy-web:
 	docker buildx build --platform linux/amd64 -t $(WEB_IMAGE) --push \
 		$(if $(PETEY),--build-arg PETEY_BUST_CACHE=$$(date +%s),) .
 	gcloud run deploy petey --image=$(WEB_IMAGE) --region=us-east1 --allow-unauthenticated --memory=4Gi --cpu=4 --timeout=3600 \
-		--set-env-vars=PARSER_URL=$(PARSER_URL),FIREBASE_API_KEY=$(FIREBASE_API_KEY),FIREBASE_AUTH_DOMAIN=$(FIREBASE_AUTH_DOMAIN),FIREBASE_PROJECT_ID=$(FIREBASE_PROJECT_ID)
+		--set-env-vars=FIREBASE_AUTH_DISABLED=0,PARSER_URL=$(PARSER_URL),FIREBASE_API_KEY=$(FIREBASE_API_KEY),FIREBASE_AUTH_DOMAIN=$(FIREBASE_AUTH_DOMAIN),FIREBASE_PROJECT_ID=$(FIREBASE_PROJECT_ID)
 
 deploy-parser:
 	gcloud config set project petey-dev

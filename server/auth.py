@@ -22,7 +22,7 @@ PUBLIC_POST_PATHS = {"/parse-yaml", "/par/debug-text"}
 # Import is conditional so the desktop app can run without firebase_admin.
 firebase_admin = None
 firebase_auth = None
-if os.getenv("FIREBASE_AUTH_DISABLED", "").strip() not in ("1", "true"):
+if os.getenv("FIREBASE_AUTH_DISABLED", "1").strip() not in ("1", "true"):
     import firebase_admin as _fa
     from firebase_admin import auth as _fa_auth
     firebase_admin = _fa
@@ -43,7 +43,7 @@ def _is_public(request: Request) -> bool:
 
 
 def _auth_disabled() -> bool:
-    return os.getenv("FIREBASE_AUTH_DISABLED", "").strip() in ("1", "true")
+    return os.getenv("FIREBASE_AUTH_DISABLED", "1").strip() in ("1", "true")
 
 
 class FirebaseAuthMiddleware(BaseHTTPMiddleware):

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demos — Petey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:          #111111;
+  --surface:     #1c1c1c;
+  --surface-2:   #262626;
+  --border:      #333333;
+  --accent:      #d8572a;
+  --accent-h:    #e06b3e;
+  --accent-dim:  rgba(216,87,42,0.12);
+  --text:        #f2ece4;
+  --text-muted:  #db7c26;
+  --text-dim:    #999999;
+  --r:           8px;
+  --r-lg:        12px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--bg); }
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.main { max-width: 940px; margin: 0 auto; padding: 2.75rem 2rem 5rem; }
+
+.intro { margin-bottom: 2rem; font-size: 0.92rem; line-height: 1.65; color: var(--text-dim); }
+
+.demo-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem; margin-bottom: 2.5rem;
+}
+
+.demo-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+  overflow: hidden; transition: border-color 0.15s; cursor: pointer; text-decoration: none; color: inherit; display: block;
+}
+.demo-card:hover { border-color: var(--accent); }
+
+.demo-card img {
+  width: 100%; height: 160px; object-fit: cover; object-position: top;
+  border-bottom: 1px solid var(--border);
+}
+
+.demo-card-body { padding: 1rem; }
+.demo-card-body h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.35rem; }
+.demo-card-body p { font-size: 0.78rem; color: var(--text-dim); line-height: 1.5; margin-bottom: 0.75rem; }
+.demo-card-body .badge {
+  display: inline-block; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.05em;
+  text-transform: uppercase; padding: 0.15rem 0.5rem; border-radius: 3px;
+  background: var(--accent-dim); color: var(--accent); margin-bottom: 0.75rem;
+}
+
+.demo-card-body a {
+  display: inline-block; font-size: 0.78rem; color: var(--accent); text-decoration: none;
+  font-weight: 600; transition: color 0.15s;
+}
+.demo-card-body a:hover { color: var(--accent-h); }
+
+.keys-section {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
+  padding: 1.25rem; margin-top: 1rem;
+}
+.keys-section h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.35rem; }
+.keys-section p { font-size: 0.82rem; color: var(--text-dim); line-height: 1.5; }
+.keys-section a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.keys-section a:hover { color: var(--accent-h); }
+</style>
+</head>
+<body>
+<main class="main">
+
+  <script src="/static/navbar.js"></script>
+  <nav-bar active="demos" subtitle="Interactive Walkthroughs"></nav-bar>
+
+  <p class="intro">
+    Each demo walks you through Petey's extraction workflow with a real document. No API key needed — results are pre-computed so you can see exactly what Petey produces. Download the PDF and schema to try it yourself.
+  </p>
+
+  <div class="demo-grid">
+
+    <a class="demo-card" href="/guide?demo=clinical">
+      <img src="/static/demo/clinical_screenshot.png" alt="Clinical note">
+      <div class="demo-card-body">
+        <span class="badge">Query</span>
+        <h3>Getting Started</h3>
+        <p>Extract patient data from a clinical note. A gentle introduction to schemas, modes, and the extraction workflow.</p>
+      </div>
+    </a>
+
+    <a class="demo-card" href="/guide?demo=budget">
+      <img src="/static/demo/des_moines_screenshot.png" alt="City budget tables">
+      <div class="demo-card-body">
+        <span class="badge">Table</span>
+        <h3>Table Extraction</h3>
+        <p>Extract budget line items from a city operating budget. Subtables, categories, and mixed data types across multiple pages.</p>
+      </div>
+    </a>
+
+    <a class="demo-card" href="/guide?demo=ptr">
+      <img src="/static/demo/ptr_screenshot.png" alt="Congressional financial disclosure">
+      <div class="demo-card-body">
+        <span class="badge">Table + Header Pages</span>
+        <h3>Header Pages</h3>
+        <p>Extract stock transactions from a Congressional disclosure. Uses header pages to propagate filer info across all rows.</p>
+      </div>
+    </a>
+
+    <a class="demo-card" href="/guide?demo=taxroll">
+      <img src="/static/demo/tax_roll_screenshot.png" alt="Tax assessment roll">
+      <div class="demo-card-body">
+        <span class="badge">Table + Suggest Fields</span>
+        <h3>Suggest Fields</h3>
+        <p>Extract property records from a non-traditional layout. Let Suggest Fields figure out the structure automatically.</p>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="keys-section">
+    <h3>Need API keys?</h3>
+    <p>The demos use pre-computed results, but to run your own extractions you'll need at least one API key. <a href="/keys">See the setup guide &rarr;</a></p>
+  </div>
+
+</main>
+</body>
+</html>

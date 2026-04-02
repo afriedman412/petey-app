@@ -41,8 +41,9 @@ app = FastAPI()
 app.add_middleware(FirebaseAuthMiddleware)
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-# Set MAX_PAGES=0 or unset to disable the limit (e.g. for standalone/Docker)
-MAX_PAGES = int(os.environ.get("MAX_PAGES", "10"))
+# Enforce a page limit only on Cloud Run (K_SERVICE is set automatically).
+_default_max = "10" if os.environ.get("K_SERVICE") else "0"
+MAX_PAGES = int(os.environ.get("MAX_PAGES", _default_max))
 
 
 def _check_page_limit(
@@ -739,7 +740,7 @@ async def delete_run_endpoint(
 async def firebase_config():
     """Serve Firebase client config from environment variables."""
     import os
-    disabled = os.getenv("FIREBASE_AUTH_DISABLED", "").strip() in ("1", "true")
+    disabled = os.getenv("FIREBASE_AUTH_DISABLED", "1").strip() in ("1", "true")
     return {
         "apiKey": os.environ.get("FIREBASE_API_KEY", ""),
         "authDomain": os.environ.get(
@@ -784,15 +785,28 @@ async def guide_page():
 @app.get("/demo/{filename}")
 async def demo_file(filename: str):
     from fastapi.responses import FileResponse
-    # Look in benchmarks/claude_med first, then demo_docs
+    ALLOWED = {".pdf": "application/pdf", ".yaml": "text/yaml", ".yml": "text/yaml", ".png": "image/png", ".csv": "text/csv"}
+    suffix = Path(filename).suffix.lower()
+    if suffix not in ALLOWED:
+        return JSONResponse({"error": "Invalid file type"}, 400)
     for base in [
         Path(__file__).resolve().parent.parent.parent / "benchmarks" / "claude_med",
         Path(__file__).resolve().parent.parent.parent / "demo_docs",
     ]:
         path = base / filename
-        if path.exists() and path.suffix == ".pdf":
-            return FileResponse(path, media_type="application/pdf", filename=filename)
+        if path.exists():
+            return FileResponse(path, media_type=ALLOWED[suffix], filename=filename)
     return JSONResponse({"error": "Demo file not found"}, 404)
+
+
+@app.get("/demos", response_class=HTMLResponse)
+async def demos_page():
+    return _load_template("demos.html")
+
+
+@app.get("/keys", response_class=HTMLResponse)
+async def keys_page():
+    return _load_template("keys.html")
 
 
 @app.get("/about", response_class=HTMLResponse)

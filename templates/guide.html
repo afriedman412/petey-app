@@ -291,6 +291,17 @@ table.results tr:hover td { background: var(--surface-2); }
 .btn-suggest:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 .btn-suggest:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-suggest.analyzing { color: var(--accent); border-color: var(--accent); animation: pulse-fade 1.5s ease-in-out infinite; }
+.btn-suggest.demo-hint {
+  color: #b8e986; border-color: #b8e986;
+  animation: suggest-pulse 1.5s ease-in-out infinite;
+}
+@keyframes suggest-pulse {
+  0%, 100% { background: var(--surface-2); color: #b8e986; border-color: #b8e986; box-shadow: 0 0 0 0 rgba(184,233,134,0.5); }
+  50% { background: #b8e986; color: #111; border-color: #b8e986; box-shadow: 0 0 12px 4px rgba(184,233,134,0.3); }
+}
+.extract-hint {
+  font-size: 0.72rem; color: var(--text-dim); margin-top: 0.35rem; text-align: right;
+}
 
 /* STATUS */
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
@@ -336,6 +347,15 @@ table.results tr:hover td { background: var(--surface-2); }
 </style>
 </head>
 <body>
+<script>
+// Hide default step-0 immediately if loading a demo (prevents flash)
+if (new URLSearchParams(window.location.search).get('demo')) {
+  document.documentElement.style.visibility = 'hidden';
+  document.addEventListener('DOMContentLoaded', () => {
+    // Visibility restored after loadDemo runs
+  });
+}
+</script>
 
 <div class="auth-overlay" id="authOverlay" style="display:none">
   <h2 style="font-family:'DM Serif Display',Georgia,serif; font-weight:400;">Petey<span style="color:var(--accent)">.</span></h2>
@@ -355,24 +375,27 @@ table.results tr:hover td { background: var(--surface-2); }
   <!-- ============================================================ -->
   <!-- DEMO OVERVIEW (shown before entering the walkthrough) -->
   <div class="wizard-step" id="demo-overview">
-    <div class="step-title">Demo: Extract data from a clinical note</div>
-    <div class="step-subtitle">Walk through the entire extraction process with a sample document.</div>
+    <div class="step-title" id="demoOverviewTitle">Demo: Extract data from a clinical note</div>
+    <div class="step-subtitle" id="demoOverviewSubtitle">Walk through the entire extraction process with a sample document.</div>
 
     <div class="demo-explainer visible" style="display:block;">
       <div class="demo-label">About this demo</div>
-      We'll extract structured data from a <strong>synthetic emergency department clinical note</strong>.
-      The document is a one-page PDF containing a patient's name, age, complaints, and visit outcome written in clinical prose.
-      <br><br>
-      You'll walk through each step: uploading, choosing a mode, picking tools, defining a schema, and extracting. Each step includes an explanation of <strong>why</strong> we're making each choice.
-      <div class="demo-disclaimer">This document was generated entirely by AI for demonstration purposes. It does not represent a real patient, provider, or medical event. Any resemblance to real persons or events is coincidental.</div>
+      <div id="demoOverviewAbout">
+        We'll extract structured data from a <strong>synthetic emergency department clinical note</strong>.
+        The document is a one-page PDF containing a patient's name, age, complaints, and visit outcome written in clinical prose.
+        <br><br>
+        You'll walk through each step: uploading, choosing a mode, picking tools, defining a schema, and extracting. Each step includes an explanation of <strong>why</strong> we're making each choice.
+      </div>
+      <div class="demo-disclaimer" id="demoOverviewDisclaimer">This document was generated entirely by AI for demonstration purposes. It does not represent a real patient, provider, or medical event. Any resemblance to real persons or events is coincidental.</div>
+      <div class="demo-disclaimer" style="margin-top:0.5rem;">This demo uses pre-computed results to show you the full workflow without needing an API key. To run real extractions, <a href="/settings/page" style="color:var(--accent);">add an API key in Settings</a>.</div>
     </div>
 
     <div style="margin-top:1.25rem;">
-      <div class="field-group-label">The document</div>
+      <div class="field-group-label">Sample from the document <span style="font-weight:400; color:var(--text-dim);">(click to expand)</span></div>
       <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--r-lg); padding:0.75rem; margin-top:0.5rem; text-align:center;">
-        <img src="/static/demo_screenshot.png" alt="Demo clinical note" class="demo-thumb" onclick="openLightbox(this.src)" style="max-width:100%; border-radius:var(--r);">
-        <div style="margin-top:0.5rem;">
-          <a href="/demo/patient_01.pdf" download="patient_01.pdf" style="font-size:0.75rem; color:var(--accent); text-decoration:none;">Download PDF</a>
+        <img id="demoOverviewImg" src="/static/demo/clinical_screenshot.png" alt="Demo document" class="demo-thumb" onclick="openLightbox(this.src)" style="max-width:100%; border-radius:var(--r); cursor:pointer;">
+        <div style="margin-top:0.5rem;" id="demoOverviewDownloads">
+          <a href="/static/demo/clinical_demo.pdf" download="clinical_demo.pdf" style="font-size:0.75rem; color:var(--accent); text-decoration:none;">Download full PDF</a>
         </div>
       </div>
     </div>
@@ -402,12 +425,12 @@ table.results tr:hover td { background: var(--surface-2); }
         <div class="config-hint">Only process specific pages. Leave blank to process all pages.</div>
       </div>
     </div>
-    <div style="text-align:center; margin-top:1rem;">
+    <div id="tryDemoWrap" style="text-align:center; margin-top:1rem;">
       <span style="font-size:0.78rem; color:var(--text-dim);">or </span>
       <button id="tryDemoBtn" style="font-size:0.78rem; color:var(--accent); background:none; border:none; cursor:pointer; font-family:inherit; text-decoration:underline;">try a demo</button>
     </div>
     <div class="wizard-nav">
-      <span></span>
+      <button class="btn-back" id="uploadBack" style="display:none;" onclick="goToDemoOverview()">Back</button>
       <button class="btn-next" id="uploadNext" disabled>Next</button>
     </div>
   </div>
@@ -516,12 +539,18 @@ table.results tr:hover td { background: var(--surface-2); }
         <label>Schema name</label>
         <input type="text" class="schema-name-input" id="schemaName" placeholder="my_extraction_schema" style="display:block; margin-top:0.3rem; border-bottom:1px solid var(--border); padding-bottom:0.3rem;">
       </div>
+      <div class="config-group" id="headerPagesGroup" style="display:none;">
+        <label>Header pages</label>
+        <input type="number" id="cfgHeaderPages" value="0" min="0" max="10" style="width:4rem;">
+        <div class="config-hint">Send these pages with every other page for shared context (e.g. a cover page with filer info that applies to all entries).</div>
+      </div>
     </div>
 
     <div class="wizard-nav">
       <button class="btn-back" onclick="goToStep(2)">Back</button>
       <button class="btn-next" id="extractBtn">Extract</button>
     </div>
+    <div class="extract-hint" id="extractHint" style="display:none;">Click <strong>Suggest fields</strong> above to generate a schema first.</div>
   </div>
 
   <!-- ============================================================ -->
@@ -554,6 +583,7 @@ table.results tr:hover td { background: var(--surface-2); }
 
     <div class="wizard-nav" id="resultsNav" style="display:none;">
       <button class="btn-back" onclick="startOver()">Start over</button>
+      <button class="btn-next" onclick="window.location.href='/demos'">More demos</button>
       <button class="btn-next" onclick="window.location.href='/'">Go to Extractor</button>
     </div>
   </div>
@@ -611,6 +641,7 @@ const W = {
   fields: [],
   instructions: '',
   pageRange: '',
+  headerPages: 0,
   schemaName: '',
   files: [],
 };
@@ -682,8 +713,15 @@ window.goToStep = function(n) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
+window.goToDemoOverview = function() {
+  document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('visible'));
+  document.getElementById('demo-overview').classList.add('visible');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
 window.startOver = function() {
   _demoMode = false;
+  _activeDemo = null;
   showDemoExplainers(false);
   W.mode = null;
   W.fields = [{ name: '', type: 'string', description: '', values: '' }];
@@ -691,6 +729,7 @@ window.startOver = function() {
   W.parser = 'pymupdf';
   W.instructions = '';
   W.pageRange = '';
+  W.headerPages = 0;
   W.schemaName = '';
   document.getElementById('dropzone').reset();
   document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
@@ -704,9 +743,15 @@ window.startOver = function() {
   document.getElementById('resultsTitle').textContent = 'Extracting...';
   document.getElementById('resultsSubtitle').textContent = 'Working on your files.';
   document.getElementById('cfgPageRange').value = '';
+  document.getElementById('cfgHeaderPages').value = '0';
+  document.getElementById('headerPagesGroup').style.display = 'none';
   document.getElementById('schemaName').value = '';
   document.getElementById('uploadNext').disabled = true;
   document.getElementById('modeNext').disabled = true;
+  document.getElementById('tryDemoWrap').style.display = '';
+  document.getElementById('uploadBack').style.display = 'none';
+  document.getElementById('suggestFieldsBtn').classList.remove('demo-hint');
+  document.getElementById('extractHint').style.display = 'none';
   goToStep(0);
 };
 
@@ -714,6 +759,156 @@ renderProgress();
 
 // --- Demo mode ---
 let _demoMode = false;
+let _activeDemo = null;
+
+const DEMOS = {
+  clinical: {
+    title: 'Demo: Getting Started',
+    subtitle: 'Walk through the entire extraction process with a sample document.',
+    about: 'We\'ll extract structured data from a <strong>synthetic emergency department clinical note</strong>. The document is a one-page PDF containing a patient\'s name, age, complaints, and visit outcome written in clinical prose.<br><br>You\'ll walk through each step: uploading, choosing a mode, picking tools, defining a schema, and extracting. Each step includes an explanation of <strong>why</strong> we\'re making each choice.',
+    disclaimer: 'This document was generated entirely by AI for demonstration purposes. It does not represent a real patient, provider, or medical event. Any resemblance to real persons or events is coincidental.',
+    doc: { pdf: '/static/demo/clinical_demo.pdf', screenshot: '/static/demo/clinical_screenshot.png', filename: 'clinical_demo.pdf' },
+    schema: { yaml: '/static/demo/clinical_schema.yaml', name: 'ed_clinical_note' },
+    resultCsv: '',
+    demoPages: 1,
+    mode: 'query',
+    parser: 'pymupdf',
+    model: 'gpt-4.1-mini',
+    pageRange: '',
+    headerPages: '',
+    fields: [
+      { name: 'name', type: 'string', description: 'Patient name', values: '' },
+      { name: 'age', type: 'string', description: 'Patient age', values: '' },
+      { name: 'gender', type: 'enum', description: 'Infer from pronouns if not obvious', values: 'Male, Female, Non-binary' },
+      { name: 'presenting_complaint_1', type: 'string', description: 'Primary complaint', values: '' },
+      { name: 'presenting_complaint_2', type: 'string', description: 'Secondary complaint (can be null)', values: '' },
+      { name: 'visit_outcome', type: 'string', description: 'Outcome of the visit', values: '' },
+    ],
+    steps: {
+      upload: 'We\'ve loaded the demo document for you. In a real workflow, you\'d drop your own PDFs here. You can also set a <strong>page range</strong> below if you only need specific pages from a larger document.',
+      mode: 'This clinical note contains <strong>one set of data points per document</strong> — a single patient\'s info. There\'s no table or list of rows to extract. That makes this a <strong>Query</strong> — we want one row of results per file. If we had a batch of 100 notes, we\'d get 100 rows.',
+      tools: 'The <strong>parser</strong> reads text from the PDF. Since this is a clean, digital document, <strong>PyMuPDF</strong> is fast and free. For scanned or handwritten documents, use Marker instead.<br><br>The <strong>model</strong> does the actual extraction. This document is simple enough that any model works — even the cheapest ones score 97%+ on documents like this.',
+      schema: 'The schema tells Petey <strong>what to look for</strong>. Each field is a data point you want extracted. A few things to notice:<br><br><strong>Gender</strong> is a Category field — we give it a fixed set of values (Male, Female, Non-binary) so the model picks from a controlled list instead of making up its own labels.<br><br><strong>Descriptions matter.</strong> For gender, we say "infer from pronouns if not obvious" — this guides the model when the document doesn\'t state gender explicitly. For the second complaint, we note it "can be null" so the model knows it\'s OK to leave it blank.<br><br>You can also click <strong>Suggest fields</strong> to have Petey analyze the document and propose a schema automatically.',
+      results: 'That\'s it! Petey parsed the PDF, sent the text to the model with your schema, and returned structured data. You can <strong>download the results</strong> as CSV or JSON, and <strong>download the schema</strong> to reuse it on the main Extractor page with a whole batch of files.',
+    },
+    result: {
+      name: 'Margaret Ellison', age: '34', gender: 'Female',
+      presenting_complaint_1: 'shortness of breath', presenting_complaint_2: 'chest tightness',
+      visit_outcome: 'discharged with salbutamol inhaler',
+    },
+    suggestFields: false,
+  },
+
+  budget: {
+    title: 'Demo: Table Extraction',
+    subtitle: 'Handle subtables, categories, and mixed data types across multiple pages.',
+    about: 'We\'ll extract tabular data from the <strong>Des Moines, Iowa adopted operating budget</strong> for fiscal year 2022. The document has four consecutive pages of financial tables with titles, interspersed copy, and variable values in the first column.<br><br>This demo shows how Petey handles <strong>subtables</strong>, <strong>category/subcategory labels</strong>, and why you sometimes want to use <strong>Text instead of Number</strong> for certain fields.',
+    disclaimer: '',
+    doc: { pdf: '/static/demo/des_moines_demo.pdf', screenshot: '/static/demo/des_moines_screenshot.png', filename: 'des_moines_demo.pdf' },
+    schema: { yaml: '/static/demo/des_moines_schema.yaml', name: 'city_budget_summary' },
+    mode: 'table',
+    parser: 'marker',
+    model: 'gpt-4.1-mini',
+    pageRange: '6-9',
+    headerPages: '',
+    fields: [
+      { name: 'section', type: 'enum', description: 'The main section of the budget (e.g., All City Funds, General Fund, Enterprise Funds, Special Revenue, Road Use Tax Allocations)', values: 'all_city_funds, general_fund, enterprise_funds, special_revenue, road_use_tax_allocations' },
+      { name: 'subcategory', type: 'string', description: 'The specific fund, department, or revenue source (e.g., Capital Projects, Police, Sanitary Sewer, TIF, Street Maintenance)', values: '' },
+      { name: 'fy_2019_20_actual', type: 'number', description: 'Actual value for fiscal year 2019-20', values: '' },
+      { name: 'fy_2020_21_adopted', type: 'number', description: 'Adopted value for fiscal year 2020-21', values: '' },
+      { name: 'fy_2020_21_amended', type: 'number', description: 'Amended value for fiscal year 2020-21', values: '' },
+      { name: 'fy_2021_22_adopted', type: 'number', description: 'Adopted value for fiscal year 2021-22', values: '' },
+      { name: 'fy_2021_22_percent_total', type: 'string', description: 'Percent of total for fiscal year 2021-22', values: '' },
+      { name: 'fy_2022_23_projected', type: 'number', description: 'Projected value for fiscal year 2022-23', values: '' },
+    ],
+    steps: {
+      upload: 'We\'ve loaded the Des Moines budget PDF. The tables we want are on <strong>pages 6 through 9</strong>, so we\'ve set the page range to skip the rest of the document.',
+      mode: 'Each page has <strong>multiple rows of budget data</strong> — line items with dollar amounts across fiscal years. That makes this a <strong>Table</strong> extraction. Petey will return multiple rows per page.',
+      tools: 'We\'re using <strong>Marker</strong> here. While PyMuPDF is free and fast, tabular data benefits from Marker\'s AI-powered parsing — it better preserves the structure of complex tables with subtables and interspersed text.',
+      schema: 'We used <strong>Suggest fields</strong> to generate most of this schema automatically. One key decision: <strong>fy_2021_22_percent_total</strong> is set to Text instead of Number. That\'s because the original data includes percentage signs and "&lt;1%" values that won\'t parse as numbers.<br><br>The <strong>section</strong> field is a Category with fixed values — this helps the model correctly label which budget section each row belongs to, even when the section header is several rows above.',
+      results: 'Petey extracted all the budget line items across four pages, complete with the correct category and subcategory labels. You can download the results as CSV and work with them in a spreadsheet.',
+    },
+    resultCsv: '/static/demo/des_moines_sample_output.csv',
+    demoPages: 4,
+    suggestFields: false,
+  },
+
+  ptr: {
+    title: 'Demo: Header Pages',
+    subtitle: 'Use header pages to propagate filer info across a multi-page report.',
+    about: 'We\'ll extract transaction data from a <strong>Congressional Periodic Transaction Report (PTR)</strong>. The filer\'s name, status, and district appear only on the first page, but need to be attached to every transaction row.<br><br>This demo shows how <strong>header pages</strong> solve the problem of data that appears once but applies to the entire document.',
+    disclaimer: '',
+    doc: { pdf: '/static/demo/ptr_demo.pdf', screenshot: '/static/demo/ptr_screenshot.png', filename: 'ptr_demo.pdf' },
+    schema: { yaml: '/static/demo/ptr_schema.yaml', name: 'periodic_transaction_report' },
+    mode: 'table',
+    parser: 'marker',
+    model: 'gpt-4.1-mini',
+    pageRange: '',
+    headerPages: '1',
+    fields: [
+      { name: 'filer_name', type: 'string', description: 'Name of the filer from the header', values: '' },
+      { name: 'state_district', type: 'string', description: 'State and district code (e.g. "LA05")', values: '' },
+      { name: 'asset', type: 'string', description: 'Full asset name as listed', values: '' },
+      { name: 'ticker', type: 'string', description: 'Ticker symbol in parentheses (e.g. "AAPL")', values: '' },
+      { name: 'asset_type', type: 'enum', description: 'Asset type code in brackets', values: 'ST, CS, GS, OT' },
+      { name: 'transaction_type', type: 'enum', description: 'Transaction type', values: 'P, S, S (partial)' },
+      { name: 'transaction_date', type: 'string', description: 'Transaction date in MM/DD/YYYY format', values: '' },
+      { name: 'notification_date', type: 'string', description: 'Notification date in MM/DD/YYYY format', values: '' },
+      { name: 'amount', type: 'enum', description: 'Amount range as reported', values: '$1,001 - $15,000, $15,001 - $50,000, $50,001 - $100,000, $100,001 - $250,000' },
+      { name: 'filing_status', type: 'string', description: 'Filing Status line below the transaction (e.g. "New")', values: '' },
+      { name: 'subholding_of', type: 'string', description: 'Subholding Of line below the transaction', values: '' },
+    ],
+    steps: {
+      upload: 'We\'ve loaded a Congressional Periodic Transaction Report. This is the full document — no page range needed.',
+      mode: 'Each page has a <strong>table of stock transactions</strong> with multiple rows. That makes this a <strong>Table</strong> extraction.',
+      tools: 'We\'re using <strong>Marker</strong> for parsing. The PTR has a structured table layout with metadata rows below each entry — Marker does a better job preserving that structure than a basic text extractor.',
+      schema: 'Two things to notice here:<br><br>The <strong>filer_name</strong> and <strong>state_district</strong> fields come from the header on page 1, not from the transactions table. We added these manually — Suggest fields picked up the transaction columns but missed the filer info at the top.<br><br>We set <strong>Header pages</strong> to 1. This tells Petey to send page 1 along with every other page, so the model always has access to the filer information when extracting transactions from later pages.',
+      results: 'Every transaction row now includes the filer\'s name and district, even though that information only appeared on the first page. The header pages feature made that possible without any post-processing.',
+    },
+    resultCsv: '/static/demo/ptr_sample_output.csv',
+    demoPages: 2,
+    suggestFields: false,
+  },
+
+  taxroll: {
+    title: 'Demo: Suggest Fields',
+    subtitle: 'Let Petey figure out non-traditional formatting with Suggest Fields.',
+    about: 'We\'ll extract property data from a <strong>municipal tax assessment roll</strong> for the town of Greenburgh, New York. The layout is non-traditional — the only labels are a data map at the top of each page, and the data is arranged in blocks rather than clean rows.<br><br>This demo shows how <strong>Suggest Fields</strong> can handle documents that most people wouldn\'t know how to schema by hand.',
+    disclaimer: '',
+    doc: { pdf: '/static/demo/tax_roll_sample_demo.pdf', screenshot: '/static/demo/tax_roll_screenshot.png', filename: 'tax_roll_demo.pdf' },
+    schema: { yaml: '/static/demo/tax_roll_schema.yaml', name: 'property_tax_roll' },
+    mode: 'table',
+    parser: 'marker',
+    model: 'gpt-4.1-mini',
+    pageRange: '',
+    headerPages: '',
+    suggestFields: true,
+    suggestedFields: [
+      { name: 'parcel_id', type: 'string', description: 'Tax map parcel ID (e.g. 6.10-1-11)', values: '' },
+      { name: 'property_address', type: 'string', description: 'Street address of the property', values: '' },
+      { name: 'property_class', type: 'string', description: 'Property classification code and description', values: '' },
+      { name: 'owner_name', type: 'string', description: 'Current property owner name(s)', values: '' },
+      { name: 'owner_address', type: 'string', description: 'Mailing address of the property owner', values: '' },
+      { name: 'school_district', type: 'string', description: 'School district name (e.g. ARDSLEY)', values: '' },
+      { name: 'acreage', type: 'number', description: 'Property size in acres', values: '' },
+      { name: 'deed_book', type: 'string', description: 'Deed book number', values: '' },
+      { name: 'deed_page', type: 'string', description: 'Deed page number', values: '' },
+      { name: 'land_assessment', type: 'number', description: 'Assessed value of land only', values: '' },
+      { name: 'total_assessment', type: 'number', description: 'Total assessed value of property', values: '' },
+      { name: 'full_market_value', type: 'number', description: 'Full market value of property', values: '' },
+    ],
+    fields: [], // starts empty — suggest fields populates
+    steps: {
+      upload: 'We\'ve loaded a two-page sample from the Greenburgh, NY tax assessment roll. The full document is hundreds of pages, but the format repeats.',
+      mode: 'Each page has <strong>multiple property entries</strong> in a repeating block format. That makes this a <strong>Table</strong> extraction.',
+      tools: 'We\'re using <strong>Marker</strong> here. The tax roll has a non-traditional block layout that\'s hard for basic text extractors — Marker\'s AI parsing does a much better job preserving the spatial relationships in the data.',
+      schema: 'This is where it gets interesting. The tax roll doesn\'t have obvious column headers — just a data map at the top of each page. Most people wouldn\'t know where to start with a schema.<br><br>Click <strong>Suggest fields</strong> and Petey will analyze the document and figure out the structure. Most LLMs know what a tax assessment roll is, so the schema it generates is surprisingly accurate.',
+      results: 'Petey extracted structured property records from a document that has no traditional table format. Each block became a clean row with parcel ID, owner, address, and assessment values.',
+    },
+    resultCsv: '/static/demo/tax_roll_sample_output.csv',
+    demoPages: 3,
+  },
+};
 
 function showDemoExplainers(show) {
   document.querySelectorAll('.demo-explainer').forEach(el => {
@@ -721,47 +916,109 @@ function showDemoExplainers(show) {
   });
 }
 
+async function loadDemo(demoId) {
+  const demo = DEMOS[demoId];
+  if (!demo) { alert('Unknown demo: ' + demoId); return; }
+  _activeDemo = demo;
+
+  // Update overview page
+  document.getElementById('demoOverviewTitle').innerHTML = demo.title;
+  document.getElementById('demoOverviewSubtitle').textContent = demo.subtitle;
+  document.getElementById('demoOverviewAbout').innerHTML = demo.about;
+  const disclaimerEl = document.getElementById('demoOverviewDisclaimer');
+  if (demo.disclaimer) { disclaimerEl.textContent = demo.disclaimer; disclaimerEl.style.display = ''; }
+  else { disclaimerEl.style.display = 'none'; }
+  document.getElementById('demoOverviewImg').src = demo.doc.screenshot;
+  document.getElementById('demoOverviewDownloads').innerHTML =
+    '<div style="font-size:0.72rem; color:var(--text-dim); margin-bottom:0.35rem;">Try it yourself:</div>' +
+    '<a href="' + demo.doc.pdf + '" download="' + demo.doc.filename + '" style="font-size:0.75rem; color:var(--accent); text-decoration:none;">Download PDF</a>' +
+    (demo.schema.yaml ? ' &nbsp;|&nbsp; <a href="' + demo.schema.yaml + '" download style="font-size:0.75rem; color:var(--accent); text-decoration:none;">Download Schema</a>' : '');
+
+  // Inject step-specific explainer copy
+  const stepIds = ['demo-step0', 'demo-step1', 'demo-step2', 'demo-step3', 'demo-step4'];
+  const stepKeys = ['upload', 'mode', 'tools', 'schema', 'results'];
+  stepIds.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el && demo.steps[stepKeys[i]]) {
+      el.innerHTML = '<div class="demo-label">Demo walkthrough</div>' + demo.steps[stepKeys[i]];
+    }
+  });
+
+  // Load the PDF
+  const resp = await fetch(demo.doc.pdf);
+  const blob = await resp.blob();
+  const file = new File([blob], demo.doc.filename, { type: 'application/pdf' });
+  W.files = [file];
+  document.getElementById('dropzone')._setFiles([file]);
+
+  // Set wizard state
+  W.mode = demo.mode;
+  W.parser = demo.parser;
+  W.model = demo.model;
+  W.schemaName = demo.schema.name;
+  W.pageRange = demo.pageRange || '';
+  W.fields = demo.fields.length ? JSON.parse(JSON.stringify(demo.fields)) : [];
+
+  // Update UI selections
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector('[data-mode="' + demo.mode + '"]')?.classList.add('selected');
+  document.querySelectorAll('.parser-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector('[data-parser="' + demo.parser + '"]')?.classList.add('selected');
+  document.getElementById('schemaName').value = W.schemaName;
+  document.getElementById('cfgPageRange').value = W.pageRange;
+  const modelSel = document.getElementById('modelSelect');
+  if (modelSel) { modelSel.value = demo.model; }
+  document.getElementById('uploadNext').disabled = false;
+  document.getElementById('modeNext').disabled = false;
+
+  // Header pages
+  const hpGroup = document.getElementById('headerPagesGroup');
+  const hpInput = document.getElementById('cfgHeaderPages');
+  if (demo.headerPages) {
+    hpInput.value = demo.headerPages;
+    hpGroup.style.display = '';
+  } else {
+    hpInput.value = '0';
+    hpGroup.style.display = demo.mode === 'table' ? '' : 'none';
+  }
+
+  // Render fields (empty for suggestFields demos)
+  const suggestBtn = document.getElementById('suggestFieldsBtn');
+  const extractHint = document.getElementById('extractHint');
+  if (demo.suggestFields && demo.suggestedFields) {
+    W.fields = [{ name: '', type: 'string', description: '', values: '' }];
+    renderFields();
+    suggestBtn.classList.add('demo-hint');
+    extractHint.style.display = 'block';
+  } else if (W.fields.length) {
+    renderFields();
+    suggestBtn.classList.remove('demo-hint');
+    extractHint.style.display = 'none';
+  } else {
+    W.fields = [{ name: '', type: 'string', description: '', values: '' }];
+    renderFields();
+  }
+
+  _demoMode = true;
+  showDemoExplainers(true);
+
+  // Hide "try a demo" link, show upload back button
+  document.getElementById('tryDemoWrap').style.display = 'none';
+  document.getElementById('uploadBack').style.display = '';
+
+  // Show overview
+  document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('visible'));
+  document.getElementById('demo-overview').classList.add('visible');
+  document.documentElement.style.visibility = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 document.getElementById('tryDemoBtn').addEventListener('click', async () => {
   const btn = document.getElementById('tryDemoBtn');
   btn.textContent = 'Loading demo...';
   btn.disabled = true;
   try {
-    const resp = await fetch('/demo/patient_01.pdf');
-    const blob = await resp.blob();
-    const file = new File([blob], 'patient_01.pdf', { type: 'application/pdf' });
-    W.files = [file];
-    // Update dropzone to show the file
-    const dz = document.getElementById('dropzone');
-    dz._setFiles([file]);
-    W.mode = 'query';
-    W.parser = 'pymupdf';
-    W.model = 'gpt-4.1-mini';
-    W.schemaName = 'ed_clinical_note';
-    W.fields = [
-      { name: 'name', type: 'string', description: 'Patient name', values: '' },
-      { name: 'age', type: 'string', description: 'Patient age', values: '' },
-      { name: 'gender', type: 'enum', description: 'Infer from pronouns if not obvious', values: 'Male, Female, Non-binary' },
-      { name: 'presenting_complaint_1', type: 'string', description: 'Primary complaint', values: '' },
-      { name: 'presenting_complaint_2', type: 'string', description: 'Secondary complaint (can be null)', values: '' },
-      { name: 'visit_outcome', type: 'string', description: 'Outcome of the visit', values: '' },
-    ];
-    // Update UI to reflect selections
-    document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
-    document.querySelector('[data-mode="query"]')?.classList.add('selected');
-    document.querySelectorAll('.parser-card').forEach(c => c.classList.remove('selected'));
-    document.querySelector('[data-parser="pymupdf"]')?.classList.add('selected');
-    document.getElementById('schemaName').value = W.schemaName;
-    const modelSel = document.getElementById('modelSelect');
-    if (modelSel) { modelSel.value = 'gpt-4.1-mini'; }
-    document.getElementById('uploadNext').disabled = false;
-    document.getElementById('modeNext').disabled = false;
-    renderFields();
-    _demoMode = true;
-    showDemoExplainers(true);
-    // Show overview
-    document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('visible'));
-    document.getElementById('demo-overview').classList.add('visible');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    await loadDemo('clinical');
   } catch (e) {
     alert('Failed to load demo: ' + e.message);
   } finally {
@@ -774,9 +1031,13 @@ document.getElementById('startDemoBtn').addEventListener('click', () => {
   goToStep(0);
 });
 
-// Auto-launch demo if ?demo=1 in URL
-if (new URLSearchParams(window.location.search).get('demo') === '1') {
-  setTimeout(() => document.getElementById('tryDemoBtn').click(), 500);
+// Auto-launch demo from URL: ?demo=1 (backwards compat) or ?demo=budget etc.
+{
+  const demoParam = new URLSearchParams(window.location.search).get('demo');
+  if (demoParam) {
+    const demoId = demoParam === '1' ? 'clinical' : demoParam;
+    setTimeout(() => loadDemo(demoId).catch(e => alert('Failed to load demo: ' + e.message)), 500);
+  }
 }
 
 // --- Step 1: Upload ---
@@ -802,6 +1063,9 @@ document.querySelectorAll('.mode-card').forEach(card => {
     } else if (W.mode === 'table') {
       document.getElementById('schemaSubtitle').textContent = 'Add the columns you want to extract from each table.';
     }
+
+    // Show/hide header pages for table mode
+    document.getElementById('headerPagesGroup').style.display = W.mode === 'table' ? '' : 'none';
 
     document.getElementById('modeNext').disabled = false;
   });
@@ -943,6 +1207,25 @@ document.getElementById('addFieldBtn').addEventListener('click', () => {
 
 // --- Suggest fields ---
 document.getElementById('suggestFieldsBtn').addEventListener('click', async () => {
+  // Demo mode: simulate suggest fields
+  if (_demoMode && _activeDemo && _activeDemo.suggestFields && _activeDemo.suggestedFields) {
+    const btn = document.getElementById('suggestFieldsBtn');
+    btn.textContent = 'Analyzing...';
+    btn.classList.add('analyzing');
+    btn.disabled = true;
+    await _sleep(2000);
+    W.fields = JSON.parse(JSON.stringify(_activeDemo.suggestedFields));
+    W.schemaName = _activeDemo.schema.name;
+    document.getElementById('schemaName').value = W.schemaName;
+    renderFields();
+    btn.textContent = 'Suggest fields';
+    btn.classList.remove('analyzing');
+    btn.classList.remove('demo-hint');
+    btn.disabled = false;
+    document.getElementById('extractHint').style.display = 'none';
+    return;
+  }
+
   if (!W.files.length) return;
   const btn = document.getElementById('suggestFieldsBtn');
   const origText = btn.textContent;
@@ -985,6 +1268,7 @@ document.getElementById('extractBtn').addEventListener('click', () => {
   if (document.getElementById('extractBtn').disabled) return;
   W.pageRange = document.getElementById('cfgPageRange').value.trim();
   W.schemaName = document.getElementById('schemaName').value.trim();
+  W.headerPages = parseInt(document.getElementById('cfgHeaderPages').value) || 0;
   runExtraction();
 });
 
@@ -995,6 +1279,7 @@ function buildSpec() {
   spec.name = name;
   if (W.mode === 'table') spec.mode = 'table';
   if (W.pageRange) spec.pages = W.pageRange;
+  if (W.headerPages > 0) spec.header_pages = W.headerPages;
   spec.fields = {};
   const validFields = W.fields.filter(f => f.name.trim());
   for (const f of validFields) {
@@ -1098,18 +1383,47 @@ async function getConcurrency() {
   return 10;
 }
 
-const DEMO_RESULT = {
-  name: 'Margaret Ellison',
-  age: '34',
-  gender: 'Female',
-  presenting_complaint_1: 'shortness of breath',
-  presenting_complaint_2: 'chest tightness',
-  visit_outcome: 'discharged with salbutamol inhaler',
-};
-
 async function _sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+// Parse CSV text into array of objects (handles quoted fields with commas)
+function parseCsv(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = parseCsvLine(lines[0]);
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const vals = parseCsvLine(lines[i]);
+    if (vals.length === 0) continue;
+    const row = {};
+    headers.forEach((h, j) => { row[h] = vals[j] || ''; });
+    rows.push(row);
+  }
+  return rows;
+}
+
+function parseCsvLine(line) {
+  const result = [];
+  let i = 0, field = '', inQuotes = false;
+  while (i < line.length) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"' && line[i + 1] === '"') { field += '"'; i += 2; }
+      else if (ch === '"') { inQuotes = false; i++; }
+      else { field += ch; i++; }
+    } else {
+      if (ch === '"') { inQuotes = true; i++; }
+      else if (ch === ',') { result.push(field); field = ''; i++; }
+      else { field += ch; i++; }
+    }
+  }
+  result.push(field);
+  return result;
+}
+
 async function runDemoExtraction() {
+  const demo = _activeDemo;
+  if (!demo) return;
+
   goToStep(4);
   document.getElementById('demo-step4').classList.remove('visible');
 
@@ -1117,77 +1431,129 @@ async function runDemoExtraction() {
   const resultsEl = document.getElementById('results');
   const sp = document.getElementById('streamProgress');
   resultsEl.innerHTML = '';
-  st.textContent = 'patient_01.pdf — parsing...';
+  st.textContent = demo.doc.filename + ' — parsing...';
   sp.style.display = '';
 
-  // Simulate parsing
-  document.getElementById('parsePct').textContent = '0 / 1';
+  const isTable = !!demo.resultCsv;
+  const pages = demo.demoPages || 1;
+
+  // Simulate progress
+  document.getElementById('parsePct').textContent = '0 / ' + pages;
   document.getElementById('parseBar').style.width = '0%';
-  document.getElementById('extractPct').textContent = '0 / 1';
+  document.getElementById('extractPct').textContent = '0 / ' + pages;
   document.getElementById('extractBar').style.width = '0%';
 
-  await _sleep(1200);
-  document.getElementById('parsePct').textContent = '1 / 1';
-  document.getElementById('parseBar').style.width = '100%';
-  st.textContent = 'patient_01.pdf — extracting p1...';
+  // Fetch CSV in parallel with simulated progress if needed
+  let csvPromise = null;
+  if (demo.resultCsv) {
+    csvPromise = fetch(demo.resultCsv).then(r => r.text()).then(parseCsv);
+  }
 
-  // Simulate extraction
-  await _sleep(2500);
-  document.getElementById('extractPct').textContent = '1 / 1';
-  document.getElementById('extractBar').style.width = '100%';
-  st.textContent = 'patient_01.pdf — done';
+  // Simulate per-page parsing
+  for (let p = 1; p <= pages; p++) {
+    await _sleep(800 + Math.random() * 400);
+    document.getElementById('parsePct').textContent = p + ' / ' + pages;
+    document.getElementById('parseBar').style.width = (p / pages * 100) + '%';
+    st.textContent = demo.doc.filename + ' — parsing p' + p + '...';
+  }
 
+  // Simulate per-page extraction
+  for (let p = 1; p <= pages; p++) {
+    await _sleep(1200 + Math.random() * 600);
+    document.getElementById('extractPct').textContent = p + ' / ' + pages;
+    document.getElementById('extractBar').style.width = (p / pages * 100) + '%';
+    st.textContent = demo.doc.filename + ' — extracting p' + p + '...';
+  }
+  st.textContent = demo.doc.filename + ' — done';
   await _sleep(500);
   sp.style.display = 'none';
 
-  // Show results
+  // Get result data
+  let tableRows = csvPromise ? await csvPromise : null;
+  // Filter out _source_file column if present
+  if (tableRows && tableRows.length) {
+    tableRows = tableRows.map(row => {
+      const clean = { ...row };
+      delete clean._source_file;
+      return clean;
+    });
+  }
+
   document.getElementById('resultsTitle').textContent = 'Results';
   document.getElementById('resultsSubtitle').textContent = 'Done — 1 file processed.';
-  if (_demoMode) document.getElementById('demo-step4').classList.add('visible');
+  document.getElementById('demo-step4').classList.add('visible');
 
-  // Show doc + result side by side
-  let html = '<div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; align-items:start; margin-bottom:1.25rem;">';
-  html += '<div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--r-lg); padding:0.75rem;">';
-  html += '<div style="font-size:0.67rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.5rem;">Document</div>';
-  html += '<img src="/static/demo_screenshot.png" alt="Demo document" class="demo-thumb" onclick="openLightbox(this.src)" style="max-width:100%; border-radius:var(--r);">';
-  html += '</div>';
-  html += '<div>';
+  let html = '';
 
-  // Render result as vertical key-value table
-  const keys = Object.keys(DEMO_RESULT);
-  html += '<div style="font-size:0.67rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.5rem;">Extracted data</div>';
-  html += '<table style="width:100%; font-size:0.82rem; border-collapse:collapse;">';
-  for (const k of keys) {
-    html += '<tr>';
-    html += '<td style="padding:0.4rem 0.6rem; border-bottom:1px solid var(--border); color:var(--text-muted); font-weight:500; white-space:nowrap; width:1%;">' + k + '</td>';
-    html += '<td style="padding:0.4rem 0.6rem; border-bottom:1px solid var(--border);">' + (DEMO_RESULT[k] || '<span style="color:var(--text-dim);">null</span>') + '</td>';
-    html += '</tr>';
+  if (!isTable) {
+    // Query mode: screenshot + key-value side by side
+    const result = demo.result;
+    html += '<div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; align-items:start; margin-bottom:1.25rem;">';
+    html += '<div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--r-lg); padding:0.75rem;">';
+    html += '<div style="font-size:0.67rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.5rem;">Document</div>';
+    html += '<img src="' + demo.doc.screenshot + '" alt="Demo document" class="demo-thumb" onclick="openLightbox(this.src)" style="max-width:100%; border-radius:var(--r); cursor:pointer;">';
+    html += '</div><div>';
+    const keys = Object.keys(result);
+    html += '<div style="font-size:0.67rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.5rem;">Extracted data</div>';
+    html += '<table style="width:100%; font-size:0.82rem; border-collapse:collapse;">';
+    for (const k of keys) {
+      html += '<tr><td style="padding:0.4rem 0.6rem; border-bottom:1px solid var(--border); color:var(--text-muted); font-weight:500; white-space:nowrap; width:1%;">' + k + '</td>';
+      html += '<td style="padding:0.4rem 0.6rem; border-bottom:1px solid var(--border);">' + (result[k] != null ? String(result[k]).replace(/</g,'&lt;') : '<span style="color:var(--text-dim);">null</span>') + '</td></tr>';
+    }
+    html += '</table>';
+  } else {
+    // Table mode: screenshot on top, scrollable table below
+    html += '<div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--r-lg); padding:0.75rem; margin-bottom:1.25rem; text-align:center;">';
+    html += '<div style="font-size:0.67rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.5rem;">Sample from document <span style="font-weight:400;">(click to expand)</span></div>';
+    html += '<img src="' + demo.doc.screenshot + '" alt="Demo document" class="demo-thumb" onclick="openLightbox(this.src)" style="max-width:100%; border-radius:var(--r); cursor:pointer;">';
+    html += '</div>';
+
+    if (!tableRows || !tableRows.length) {
+      html += '<p style="color:var(--text-dim); font-size:0.85rem;">No results found.</p>';
+    } else {
+      const allKeys = Object.keys(tableRows[0]);
+      html += '<div style="font-size:0.67rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.5rem;">Extracted data (' + tableRows.length + ' rows)</div>';
+      html += '<div class="table-wrap"><table class="results"><thead><tr>';
+      for (const k of allKeys) html += '<th>' + k + '</th>';
+      html += '</tr></thead><tbody>';
+      for (const row of tableRows) {
+        html += '<tr>';
+        for (const k of allKeys) html += '<td>' + (row[k] != null ? String(row[k]).replace(/</g,'&lt;') : '') + '</td>';
+        html += '</tr>';
+      }
+      html += '</tbody></table></div>';
+    }
   }
-  html += '</table>';
 
-  // Download buttons
-  const csvRows = [keys.join(','), keys.map(k => DEMO_RESULT[k]).join(',')];
-  const csvBlob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
-  const csvUrl = URL.createObjectURL(csvBlob);
-  html += '<div style="display:flex; gap:0.75rem; margin-top:0.75rem;">';
-  html += '<a class="btn-add" href="' + csvUrl + '" download="demo_results.csv" style="text-decoration:none; text-align:center; font-size:0.75rem;">Download CSV</a>';
+  // Download results
+  html += '<div style="display:flex; gap:0.75rem; margin-top:0.75rem; flex-wrap:wrap; align-items:center;">';
+  html += '<span style="font-size:0.72rem; color:var(--text-dim);">Download results:</span>';
 
-  const jsonBlob = new Blob([JSON.stringify(DEMO_RESULT, null, 2)], { type: 'application/json' });
-  const jsonUrl = URL.createObjectURL(jsonBlob);
-  html += '<a class="btn-add" href="' + jsonUrl + '" download="demo_results.json" style="text-decoration:none; text-align:center; font-size:0.75rem;">Download JSON</a>';
-
-  const schemaYaml = 'name: ' + W.schemaName + '\n\nfields:\n' + W.fields.map(f => {
-    let s = '  ' + f.name + ':\n    type: ' + f.type;
-    if (f.description) s += '\n    description: ' + f.description;
-    if (f.type === 'enum' && f.values) s += '\n    values: [' + f.values + ']';
-    return s;
-  }).join('\n');
-  const schemaBlob = new Blob([schemaYaml], { type: 'text/yaml' });
-  const schemaUrl = URL.createObjectURL(schemaBlob);
-  html += '<a class="btn-add" href="' + schemaUrl + '" download="' + (W.schemaName || 'schema') + '.yaml" style="text-decoration:none; text-align:center; font-size:0.75rem;">Download Schema</a>';
+  if (isTable && tableRows && tableRows.length) {
+    html += '<a class="btn-add" href="' + demo.resultCsv + '" download style="text-decoration:none; text-align:center; font-size:0.75rem;">Download CSV</a>';
+    const jsonBlob = new Blob([JSON.stringify(tableRows, null, 2)], { type: 'application/json' });
+    html += '<a class="btn-add" href="' + URL.createObjectURL(jsonBlob) + '" download="demo_results.json" style="text-decoration:none; text-align:center; font-size:0.75rem;">Download JSON</a>';
+  } else if (!isTable) {
+    const result = demo.result;
+    const keys = Object.keys(result);
+    const csvRows = [keys.join(','), keys.map(k => result[k]).join(',')];
+    const csvBlob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    html += '<a class="btn-add" href="' + URL.createObjectURL(csvBlob) + '" download="demo_results.csv" style="text-decoration:none; text-align:center; font-size:0.75rem;">Download CSV</a>';
+    const jsonBlob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
+    html += '<a class="btn-add" href="' + URL.createObjectURL(jsonBlob) + '" download="demo_results.json" style="text-decoration:none; text-align:center; font-size:0.75rem;">Download JSON</a>';
+  }
 
   html += '</div>';
-  html += '</div></div>'; // close right column + grid
+  if (!isTable) html += '</div></div>'; // close right column + grid for query mode
+
+  // Try it yourself
+  html += '<div style="display:flex; gap:0.75rem; margin-top:1rem; flex-wrap:wrap; align-items:center; padding-top:0.75rem; border-top:1px solid var(--border);">';
+  html += '<span style="font-size:0.72rem; color:var(--text-dim);">Try it yourself:</span>';
+  html += '<a class="btn-add" href="' + demo.doc.pdf + '" download="' + demo.doc.filename + '" style="text-decoration:none; text-align:center; font-size:0.75rem;">Download PDF</a>';
+  if (demo.schema.yaml) {
+    html += '<a class="btn-add" href="' + demo.schema.yaml + '" download style="text-decoration:none; text-align:center; font-size:0.75rem;">Download Schema</a>';
+  }
+  html += '</div>';
 
   resultsEl.innerHTML = html;
   document.getElementById('resultsNav').style.display = '';
