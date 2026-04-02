@@ -357,7 +357,7 @@ class TestDemoEndpoint:
                 base_url="http://test",
             ) as client:
                 resp = await client.get("/demo/malicious.txt")
-                assert resp.status_code == 404
+                assert resp.status_code == 400
 
         asyncio.run(_test())
 

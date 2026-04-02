@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Petey Logo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  /* Transparent background for easy export */
+  html, body { margin: 0; padding: 0; background: transparent; }
+
+  .logo {
+    display: inline-block;
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-weight: 400;
+    font-size: 72px;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    padding: 16px 20px;
+    color: #f2ece4;          /* --text */
+  }
+  .logo .dot {
+    color: #d8572a;          /* --accent */
+  }
+
+  /* Preview helpers — not part of the logo itself */
+  .preview { padding: 40px; }
+  .preview.dark  { background: #111111; }
+  .preview.light { background: #ffffff; }
+  .preview.light .logo { color: #1a1a1a; }
+</style>
+</head>
+<body>
+
+<!-- Dark background preview -->
+<div class="preview dark">
+  <span class="logo">Petey<span class="dot">.</span></span>
+</div>
+
+<!-- Light background preview -->
+<div class="preview light">
+  <span class="logo">Petey<span class="dot">.</span></span>
+</div>
+
+<!--
+  Export instructions:
+  1. Open this file in a browser
+  2. Screenshot or use browser dev tools to capture just the .logo element
+  3. Or use a tool like `pageres` / `puppeteer` to export as PNG:
+       npx pageres logo.html 400x120 --transparent --filename=logo-dark
+  4. For SVG: use Inkscape or Figma to convert the text to outlines
+-->
+
+</body>
+</html>
