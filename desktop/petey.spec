@@ -137,8 +137,8 @@ exe = EXE(
     [],
     exclude_binaries=True,
     name="Petey",
-    console=True,
-    icon=None,
+    console=False,
+    icon=str(ROOT / "desktop" / "Petey.icns") if IS_MAC else None,
 )
 
 coll = COLLECT(
@@ -147,3 +147,19 @@ coll = COLLECT(
     a.datas,
     name="Petey",
 )
+
+# macOS: wrap in a .app bundle
+if IS_MAC:
+    app = BUNDLE(
+        coll,
+        name="Petey.app",
+        icon=str(ROOT / "desktop" / "Petey.icns"),
+        bundle_identifier="com.afriedman412.petey",
+        info_plist={
+            "CFBundleShortVersionString": "0.2.0",
+            "CFBundleName": "Petey",
+            "NSHighResolutionCapable": True,
+            "LSBackgroundOnly": False,
+            "LSUIElement": False,
+        },
+    )

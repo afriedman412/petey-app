@@ -804,9 +804,10 @@ async def demos_page():
     return _load_template("demos.html")
 
 
-@app.get("/keys", response_class=HTMLResponse)
+@app.get("/keys")
 async def keys_page():
-    return _load_template("keys.html")
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse("/about#keys")
 
 
 @app.get("/about", response_class=HTMLResponse)

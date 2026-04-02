@@ -7,17 +7,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        include:
-          - os: macos-latest
-            name: macOS
-            artifact: Petey-macOS
-          - os: windows-latest
-            name: Windows
-            artifact: Petey-Windows
-    runs-on: ${{ matrix.os }}
+  build-mac:
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -25,39 +16,105 @@ jobs:
         with:
           python-version: '3.13'
 
-      # macOS: install tesseract + ghostscript via Homebrew
-      - name: Install system deps (macOS)
-        if: runner.os == 'macOS'
+      - name: Install system deps
         run: brew install tesseract ghostscript
 
-      # Windows: install tesseract + ghostscript via Chocolatey
-      - name: Install system deps (Windows)
-        if: runner.os == 'Windows'
-        run: choco install tesseract ghostscript -y
-
       - name: Install Python deps
-        run: |
-          pip install -e ".[dev]" pyinstaller
+        run: pip install -e ".[dev]" pyinstaller
 
       - name: Build with PyInstaller
         run: pyinstaller desktop/petey.spec --noconfirm
 
-      - name: Zip artifact (macOS)
-        if: runner.os == 'macOS'
-        run: cd dist && zip -r ../Petey-macOS.zip Petey/
+      # --- Code signing ---
+      - name: Import signing certificate
+        env:
+          APPLE_CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+          echo "$APPLE_CERTIFICATE_P12" | base64 --decode > cert.p12
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security import cert.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+          # Install Apple intermediate certificate
+          curl -sO https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer
+          security add-certificates DeveloperIDG2CA.cer
+          rm cert.p12 DeveloperIDG2CA.cer
 
-      - name: Zip artifact (Windows)
-        if: runner.os == 'Windows'
+      - name: Sign all binaries
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          IDENTITY="Developer ID Application: ANDREW LYMAN FRIEDMAN ($APPLE_TEAM_ID)"
+          # Sign all .so, .dylib, and executable files inside the app bundle
+          find dist/Petey.app -type f \( -name "*.so" -o -name "*.dylib" \) \
+            -exec codesign --force --options runtime --sign "$IDENTITY" {} \;
+          # Sign the main executable
+          codesign --force --options runtime --sign "$IDENTITY" dist/Petey.app/Contents/MacOS/Petey
+          # Sign the app bundle itself
+          codesign --force --deep --options runtime --sign "$IDENTITY" dist/Petey.app
+
+      - name: Create DMG
+        run: hdiutil create -volname "Petey" -srcfolder dist/Petey.app -ov -format UDZO dist/Petey-macOS.dmg
+
+      - name: Sign DMG
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          codesign --force --sign "Developer ID Application: ANDREW LYMAN FRIEDMAN ($APPLE_TEAM_ID)" dist/Petey-macOS.dmg
+
+      # --- Notarization ---
+      - name: Notarize DMG
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        run: |
+          xcrun notarytool submit dist/Petey-macOS.dmg \
+            --apple-id "$APPLE_ID" \
+            --team-id "$APPLE_TEAM_ID" \
+            --password "$APPLE_APP_PASSWORD" \
+            --wait
+
+      - name: Staple notarization ticket
+        run: xcrun stapler staple dist/Petey-macOS.dmg
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Petey-macOS
+          path: dist/Petey-macOS.dmg
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install system deps
+        run: choco install tesseract ghostscript -y
+
+      - name: Install Python deps
+        run: pip install -e ".[dev]" pyinstaller
+
+      - name: Build with PyInstaller
+        run: pyinstaller desktop/petey.spec --noconfirm
+
+      - name: Zip artifact
         run: Compress-Archive -Path dist\Petey -DestinationPath Petey-Windows.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact }}
-          path: ${{ matrix.artifact }}.zip
+          name: Petey-Windows
+          path: Petey-Windows.zip
 
   release:
-    needs: build
+    needs: [build-mac, build-windows]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
@@ -70,6 +127,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            Petey-macOS/Petey-macOS.zip
+            Petey-macOS/Petey-macOS.dmg
             Petey-Windows/Petey-Windows.zip
           generate_release_notes: true
