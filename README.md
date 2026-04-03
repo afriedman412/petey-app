@@ -1,4 +1,4 @@
-<img src="static/logo.png">
+<img src="static/logo-dark.png">
 
 **Petey: A framework for PDF data extraction.**
 
@@ -14,7 +14,7 @@ The secret to their flexibility is that they have almost no rules internally. A 
 
 This makes PDFs a nightmare to work with.
 
-But people have been working on PDF extraction for a long time. Open-source tools like [pdfplumber](https://github.com/jsvine/pdfplumber) and (PyMuPDF)[https://github.com/pymupdf/PyMuPDF] can do almost everything, and the commercial options are even better. AI can finish the job, and it's cheap and fast enough for everyone to use. The only thing standing between you and the data in your PDF is something to bring it all together.
+But people have been working on PDF extraction for a long time. Open-source tools like [pdfplumber](https://github.com/jsvine/pdfplumber) and [PyMuPDF](https://github.com/pymupdf/PyMuPDF) can do almost everything, and the commercial options are even better. AI can finish the job, and it's cheap and fast enough for everyone to use. The only thing standing between you and the data in your PDF is something to bring it all together.
 
 ## What is Petey?
 
