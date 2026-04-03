@@ -182,6 +182,7 @@ body {
       <li><a href="#setup">Setup — provider instructions</a></li>
       <li><a href="#costs">Costs — what to expect</a></li>
       <li><a href="#faq">FAQ — common questions</a></li>
+      <li><a href="#legal">Legal</a></li>
     </ul>
   </div>
 
@@ -343,7 +344,28 @@ body {
     <div class="faq-answer">No. The API keys used by Petey are from the provider's developer platform, which is separate from their consumer chat products (ChatGPT, Claude). The accounts and billing are separate too — an API key won't charge your ChatGPT subscription, and vice versa.</div>
   </details>
 
+  <!-- ============================================================ -->
+  <!-- LEGAL -->
+  <!-- ============================================================ -->
+  <h2 class="section-heading" id="legal">Legal</h2>
+
+  <div style="font-size:0.85rem; line-height:1.75; color:var(--text-dim);">
+    <p style="margin-bottom:1rem;"><strong style="color:var(--text);">Cost estimates.</strong> Any cost estimates shown by Petey are approximations based on published provider pricing and typical document characteristics. Actual charges depend on document length, complexity, and current provider rates. Petey does not guarantee the accuracy of cost estimates.</p>
+
+    <p style="margin-bottom:1rem;"><strong style="color:var(--text);">Third-party charges.</strong> Petey connects to external services (OpenAI, Anthropic, Datalab, Unstructured) using API keys you provide. You are responsible for all charges incurred through these services. Petey does not control pricing, billing, or account management for any third-party provider.</p>
+
+    <p style="margin-bottom:1rem;"><strong style="color:var(--text);">Data handling.</strong> When you run an extraction, your document text is sent to the external parser and/or AI model you selected. Petey transmits data securely, but does not control how third-party providers store, process, or retain data after receipt. Review each provider's privacy policy and terms of service for details.</p>
+
+    <p style="margin-bottom:1rem;"><strong style="color:var(--text);">No personal data collection.</strong> Petey does not collect, store, or transmit personal information beyond the API keys and run history needed to operate. When running locally (desktop app or Docker), all data stays on your machine.</p>
+
+    <p style="margin-bottom:1rem;"><strong style="color:var(--text);">Accuracy.</strong> Petey makes no guarantees about the accuracy or completeness of extracted data. AI-powered extraction is probabilistic — results should be reviewed before use in any critical application.</p>
+
+    <p><strong style="color:var(--text);">Open source.</strong> Petey is open source software provided as-is, without warranty of any kind. See the <a href="https://github.com/afriedman412/petey/blob/main/LICENSE" target="_blank" rel="noopener" style="color:var(--accent); text-decoration:none;">license</a> for full terms.</p>
+  </div>
+
 </main>
 
+<script src="/static/footer.js"></script>
+<site-footer></site-footer>
 </body>
 </html>

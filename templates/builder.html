@@ -440,6 +440,11 @@ table.results tr:hover td { background: var(--surface-2); }
     </div>
   </div>
 
+  <div id="costEstimateRow" style="display:none; margin-bottom:0.75rem;">
+    <span class="controls-label">Estimated Cost</span>
+    <span id="costEstimate" style="font-size:0.85rem; color:var(--text);"></span>
+  </div>
+
   <div class="action-row">
     <button class="extract-btn" id="extractBtn" disabled>Extract</button>
   </div>
@@ -776,10 +781,63 @@ dzEl.addEventListener('files-selected', e => {
         _cachedPageCount = data.total_pages || 0;
         _perFilePages = data.per_file || {};
         _maxPages = data.max_pages || 0;
+        updateCostEstimate();
       })
       .catch(() => {});
+  } else {
+    updateCostEstimate();
   }
 });
+
+// --- Cost estimate ---
+const COST_PER_PAGE = {
+  'gpt-4.1-mini': 0.01,
+  'gpt-4o-mini': 0.01,
+  'gpt-4.1-nano': 0.005,
+  'gpt-4.1': 0.03,
+  'gpt-4o': 0.05,
+  'claude-haiku-4-5-20251001': 0.01,
+  'claude-sonnet-4-20250514': 0.04,
+  'none': 0,
+};
+const PARSER_COST_PER_PAGE = {
+  'pymupdf': 0,
+  'pdfplumber': 0,
+  'marker': 0.005,
+  'unstructured': 0.005,
+};
+
+function updateCostEstimate() {
+  const row = document.getElementById('costEstimateRow');
+  const el = document.getElementById('costEstimate');
+  if (!_cachedPageCount || !selectedFiles.length) {
+    row.style.display = 'none';
+    return;
+  }
+  const model = document.getElementById('modelSelect')?.value || '';
+  const parser = document.getElementById('parserSelect')?.value || 'pymupdf';
+  const modelCost = COST_PER_PAGE[model] || 0;
+  const parserCost = PARSER_COST_PER_PAGE[parser] || 0;
+  const totalCost = _cachedPageCount * (modelCost + parserCost);
+
+  if (totalCost === 0 && model === 'none') {
+    row.style.display = 'none';
+    return;
+  }
+
+  const modelName = document.getElementById('modelSelect')?.selectedOptions[0]?.textContent || model;
+  let label = '~$' + totalCost.toFixed(2) + ' (' + _cachedPageCount + ' pg';
+  if (modelCost > 0) label += ' \u00d7 ' + modelName;
+  if (parserCost > 0) label += ' + ' + parser.charAt(0).toUpperCase() + parser.slice(1);
+  label += ')';
+
+  el.textContent = label;
+  row.style.display = '';
+}
+
+// Update estimate on model/parser change
+document.getElementById('modelSelect')?.addEventListener('change', updateCostEstimate);
+document.getElementById('parserSelect')?.addEventListener('change', updateCostEstimate);
 
 function fileLabel(name) {
   const pages = _perFilePages[name];
@@ -1678,5 +1736,7 @@ document.getElementById('parserSelect').addEventListener('change', saveState);
   window.history.replaceState({}, '', '/');
 })();
 </script>
+<script src="/static/footer.js"></script>
+<site-footer></site-footer>
 </body>
 </html>
