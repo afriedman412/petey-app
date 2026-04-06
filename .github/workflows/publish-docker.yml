@@ -45,6 +45,6 @@ jobs:
         uses: peter-evans/dockerhub-description@v4
         with:
           username: afriedman412
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
           repository: afriedman412/petey
           readme-filepath: ./README.md

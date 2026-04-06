@@ -56,7 +56,20 @@ jobs:
           codesign --force --deep --options runtime --sign "$IDENTITY" dist/Petey.app
 
       - name: Create DMG
-        run: hdiutil create -volname "Petey" -srcfolder dist/Petey.app -ov -format UDZO dist/Petey-macOS.dmg
+        run: |
+          brew install create-dmg
+          create-dmg \
+            --volname "Petey" \
+            --volicon "desktop/Petey.icns" \
+            --background "desktop/dmg-background.png" \
+            --window-size 660 400 \
+            --icon "Petey.app" 150 185 \
+            --app-drop-link 510 185 \
+            --icon-size 100 \
+            --hide-extension "Petey.app" \
+            --no-internet-enable \
+            "dist/Petey-macOS.dmg" \
+            "dist/Petey.app"
 
       - name: Sign DMG
         env:
