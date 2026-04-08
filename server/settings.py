@@ -41,6 +41,9 @@ DEFAULTS = {
 
 MODELS = [
     {"id": "none", "name": "Text only (no LLM)", "provider": "none"},
+    {"id": "gpt-5", "name": "GPT-5", "provider": "openai"},
+    {"id": "gpt-5-mini", "name": "GPT-5 Mini", "provider": "openai"},
+    {"id": "gpt-5-nano", "name": "GPT-5 Nano", "provider": "openai"},
     {"id": "gpt-4.1-mini", "name": "GPT-4.1 Mini", "provider": "openai"},
     {"id": "gpt-4.1", "name": "GPT-4.1", "provider": "openai"},
     {"id": "gpt-4.1-nano", "name": "GPT-4.1 Nano", "provider": "openai"},
