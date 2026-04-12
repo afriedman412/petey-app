@@ -20,6 +20,7 @@ from server.extract import (
     extract_text, check_text_length, async_infer_schema,
     async_infer_schema_vision, PARSERS,
 )
+from petey.schema import normalize_dates
 from server.par_extract import async_process_file as par_process_file, extract_text as par_extract_text
 from server.settings import (
     get_settings, update_settings, mask_key, get_provider, MODELS,
@@ -233,6 +234,8 @@ async def extract_endpoint(
             rows = []
             for chunk in records:
                 if not chunk.get("_error") and "items" in chunk:
+                    for item in chunk["items"]:
+                        normalize_dates(item, spec)
                     rows.extend(chunk["items"])
             data = {"_source_file": file.filename, "records": rows}
         else:
@@ -250,6 +253,7 @@ async def extract_endpoint(
                 text=text if info else None,
             )
             data = result.model_dump(by_alias=True)
+            normalize_dates(data, spec)
             data["_source_file"] = file.filename
             if warning:
                 data["_warning"] = warning
@@ -340,6 +344,8 @@ async def extract_stream_endpoint(
                 rows = []
                 for chunk in records:
                     if not chunk.get("_error") and "items" in chunk:
+                        for item in chunk["items"]:
+                            normalize_dates(item, spec)
                         rows.extend(chunk["items"])
                 result = {"_source_file": filename, "records": rows}
             except Exception as e:
@@ -807,6 +813,11 @@ async def demos_page():
 @app.get("/schema-tutorial", response_class=HTMLResponse)
 async def schema_tutorial_page():
     return _load_template("schema_tutorial.html")
+
+
+@app.get("/download", response_class=HTMLResponse)
+async def download_page():
+    return _load_template("download.html")
 
 
 @app.get("/keys")

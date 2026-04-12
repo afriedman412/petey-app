@@ -56,8 +56,7 @@ class SiteFooter extends HTMLElement {
         <div class="footer-grid">
           <div class="footer-col">
             <div class="footer-col-title">Download</div>
-            <a href="https://github.com/afriedman412/petey-app/releases/latest" target="_blank" rel="noopener">Desktop App (Mac)</a>
-            <a href="https://github.com/afriedman412/petey-app/releases/latest" target="_blank" rel="noopener">Desktop App (Windows)</a>
+            <a href="/download">Desktop App</a>
             <a href="https://hub.docker.com/r/afriedman412/petey" target="_blank" rel="noopener">Docker</a>
             <a href="https://pypi.org/project/petey/" target="_blank" rel="noopener">PyPI (CLI)</a>
           </div>

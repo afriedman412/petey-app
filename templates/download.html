@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Download — Petey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:         #111111;
+  --surface:    #1c1c1c;
+  --surface-2:  #262626;
+  --border:     #333333;
+  --accent:     #d8572a;
+  --accent-h:   #e06b3e;
+  --text:       #f2ece4;
+  --text-muted: #db7c26;
+  --text-dim:   #999999;
+  --r:          8px;
+  --r-lg:       12px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--bg); }
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.main { max-width: 600px; margin: 0 auto; padding: 2.75rem 2rem 5rem; }
+
+.download-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;
+  margin-top: 2rem;
+}
+
+.download-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 2rem 1.5rem; text-align: center;
+  text-decoration: none; color: var(--text); transition: border-color 0.15s;
+  display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+}
+.download-card:hover { border-color: var(--accent); }
+
+.download-card .icon { font-size: 2.5rem; }
+.download-card .platform { font-size: 1.1rem; font-weight: 600; }
+.download-card .file { font-size: 0.75rem; color: var(--text-dim); }
+
+.download-btn {
+  display: inline-block; padding: 0.5rem 1.5rem; font-size: 0.82rem;
+  font-weight: 600; background: var(--accent); color: #000;
+  border-radius: 6px; text-decoration: none; transition: background 0.15s;
+}
+.download-btn:hover { background: var(--accent-h); }
+
+.note {
+  margin-top: 2rem; font-size: 0.78rem; color: var(--text-dim);
+  line-height: 1.6; text-align: center;
+}
+.note a { color: var(--accent); text-decoration: none; }
+.note a:hover { color: var(--accent-h); }
+
+.docker-section {
+  margin-top: 2rem; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 1.25rem 1.5rem;
+}
+.docker-section h3 {
+  font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;
+}
+.docker-section code {
+  display: block; background: var(--surface-2); border-radius: var(--r);
+  padding: 0.6rem 0.8rem; font-size: 0.78rem; color: var(--text-dim);
+  font-family: 'SF Mono', 'Fira Code', monospace; margin-top: 0.5rem;
+  overflow-x: auto;
+}
+.docker-section p {
+  font-size: 0.78rem; color: var(--text-dim); line-height: 1.5;
+}
+
+@media (max-width: 640px) {
+  .main { padding: 1.5rem 1rem 3rem; }
+  .download-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<main class="main">
+
+  <script src="/static/navbar.js"></script>
+  <nav-bar active=""></nav-bar>
+
+  <div style="text-align:center; margin-bottom:0.5rem;">
+    <p style="font-size:0.88rem; color:var(--text-dim); line-height:1.6;">
+      Download Petey as a desktop app.<br>Just <a href="/about#keys" style="color:var(--accent); text-decoration:none;">add your credentials</a> and start extracting.
+    </p>
+  </div>
+
+  <div class="download-grid">
+    <a class="download-card" id="macDownload" href="#">
+      <div class="icon">&#63743;</div>
+      <div class="platform">macOS</div>
+      <div class="file">Petey-macOS.dmg</div>
+      <span class="download-btn">Download</span>
+    </a>
+    <a class="download-card" id="winDownload" href="#">
+      <div class="icon">&#8862;</div>
+      <div class="platform">Windows</div>
+      <div class="file">Petey-Windows.zip</div>
+      <span class="download-btn">Download</span>
+    </a>
+  </div>
+
+  <div class="docker-section">
+    <h3>Docker</h3>
+    <p>Self-host Petey with Docker:</p>
+    <code>docker run -p 8080:8080 afriedman412/petey:latest</code>
+  </div>
+
+  <div class="note">
+    All releases available on <a href="https://github.com/afriedman412/petey-app/releases" target="_blank" rel="noopener">GitHub</a>.
+  </div>
+
+</main>
+
+<script>
+// Fetch latest release from GitHub API and set download links
+fetch('https://api.github.com/repos/afriedman412/petey-app/releases/latest')
+  .then(r => r.json())
+  .then(release => {
+    const assets = release.assets || [];
+    const mac = assets.find(a => a.name.endsWith('.dmg'));
+    const win = assets.find(a => a.name.endsWith('.zip'));
+    if (mac) {
+      document.getElementById('macDownload').href = mac.browser_download_url;
+      document.getElementById('macDownload').querySelector('.file').textContent = mac.name;
+    }
+    if (win) {
+      document.getElementById('winDownload').href = win.browser_download_url;
+      document.getElementById('winDownload').querySelector('.file').textContent = win.name;
+    }
+  })
+  .catch(() => {
+    // Fallback to releases page
+    document.getElementById('macDownload').href = 'https://github.com/afriedman412/petey-app/releases/latest';
+    document.getElementById('winDownload').href = 'https://github.com/afriedman412/petey-app/releases/latest';
+  });
+</script>
+<script src="/static/footer.js"></script>
+<site-footer></site-footer>
+</body>
+</html>

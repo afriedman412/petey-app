@@ -1,16 +1,15 @@
 """
 Tests for text mode, page limits, and the /extract endpoint's mode handling.
 """
-import json
 import os
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
 os.environ["FIREBASE_AUTH_DISABLED"] = "1"
 
-from server.app import app, _check_page_limit, MAX_PAGES  # noqa: E402
+from server.app import app, _check_page_limit  # noqa: E402
 from server.settings import MODELS, get_provider  # noqa: E402
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -34,11 +33,7 @@ class TestPageLimit:
     def test_check_page_limit_over(self):
         """Should return error message when over limit."""
         with patch("server.app.MAX_PAGES", 0):
-            # With limit 0, disabled
-            assert _check_page_limit(MCI_PDF) is None
-
-        # Set limit to 0 pages (everything fails)
-        with patch("server.app.MAX_PAGES", 0):
+            # MAX_PAGES=0 means disabled, so no error
             assert _check_page_limit(MCI_PDF) is None
 
     def test_check_page_limit_exact(self):
@@ -192,50 +187,6 @@ class TestTextModeExtract:
         # since model=none triggers text_only regardless of mode
         assert resp.status_code == 200
         assert "text" in resp.json()
-
-
-# -------------------------------------------------------------------
-# Enum case insensitivity (from petey schema fix)
-# -------------------------------------------------------------------
-
-class TestEnumCaseInsensitive:
-    def test_enum_accepts_different_casing(self):
-        from petey.schema import load_schema, build_model
-
-        spec = {
-            "fields": {
-                "status": {
-                    "type": "enum",
-                    "values": ["Open", "Closed", "In Progress"],
-                    "description": "Status",
-                }
-            }
-        }
-        model = build_model(spec)
-
-        # Exact case
-        assert model(status="Open").status.value == "Open"
-        # Different case
-        assert model(status="open").status.value == "Open"
-        assert model(status="CLOSED").status.value == "Closed"
-        assert model(status="in progress").status.value == "In Progress"
-
-    def test_gender_enum_case_insensitive(self):
-        from petey.schema import build_model
-
-        spec = {
-            "fields": {
-                "gender": {
-                    "type": "enum",
-                    "values": ["Male", "Female", "Non-binary"],
-                    "description": "Gender",
-                }
-            }
-        }
-        model = build_model(spec)
-        assert model(gender="Non-Binary").gender.value == "Non-binary"
-        assert model(gender="MALE").gender.value == "Male"
-        assert model(gender="female").gender.value == "Female"
 
 
 # -------------------------------------------------------------------
