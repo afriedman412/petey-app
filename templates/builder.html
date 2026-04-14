@@ -409,7 +409,7 @@ table.results tr:hover td { background: var(--surface-2); }
   </div>
 
   <div class="controls-row">
-    <span class="controls-label">Options</span>
+    <span class="controls-label">Tools</span>
     <div class="options-grid">
       <label style="font-size:0.8rem; color:var(--text-muted); cursor:pointer;">
         Parser
@@ -740,6 +740,7 @@ document.getElementById('modeToggle').addEventListener('click', e => {
   if (e.target.tagName !== 'BUTTON') return;
   recordType = e.target.dataset.mode;
   updateModeToggle();
+  updateCostEstimate();
   saveState();
 });
 
@@ -788,15 +789,19 @@ dzEl.addEventListener('files-selected', e => {
 });
 
 // --- Cost estimate ---
-const COST_PER_PAGE = {
-  'gpt-4.1-mini': 0.01,
-  'gpt-4o-mini': 0.01,
-  'gpt-4.1-nano': 0.005,
-  'gpt-4.1': 0.03,
-  'gpt-4o': 0.05,
-  'claude-haiku-4-5-20251001': 0.01,
-  'claude-sonnet-4-20250514': 0.04,
-  'none': 0,
+// Per-page $ cost, split by mode. Derived from published API pricing
+// (input + output $/M tokens) × assumed tokens per page:
+//   query mode: ~500 in / ~100 out per page (compact JSON output)
+//   table mode: ~800 in / ~500 out per page (padded for markdown + row output)
+// Text mode skips the LLM entirely, so model cost is zero regardless.
+const MODEL_COST_PER_PAGE = {
+  'gpt-4.1-nano':              { query: 0.00009,  table: 0.00028 },
+  'gpt-4.1-mini':              { query: 0.00036,  table: 0.00112 },
+  'gpt-4o-mini':               { query: 0.000135, table: 0.00042 },
+  'gpt-4.1':                   { query: 0.0018,   table: 0.0056  },
+  'gpt-4o':                    { query: 0.00225,  table: 0.007   },
+  'claude-haiku-4-5-20251001': { query: 0.0008,   table: 0.00264 },
+  'claude-sonnet-4-20250514':  { query: 0.003,    table: 0.0099  },
 };
 const PARSER_COST_PER_PAGE = {
   'pymupdf': 0,
@@ -805,6 +810,11 @@ const PARSER_COST_PER_PAGE = {
   'datalab': 0.005,
   'unstructured': 0.005,
 };
+
+function formatCost(v) {
+  if (v > 0 && v < 0.005) return '<$0.01';
+  return '~$' + v.toFixed(2);
+}
 
 function updateCostEstimate() {
   const row = document.getElementById('costEstimateRow');
@@ -815,17 +825,21 @@ function updateCostEstimate() {
   }
   const model = document.getElementById('modelSelect')?.value || '';
   const parser = document.getElementById('parserSelect')?.value || 'pymupdf';
-  const modelCost = COST_PER_PAGE[model] || 0;
+  const isText = recordType === 'text';
+  const costKey = recordType === 'table' ? 'table' : 'query';
+  const modelCost = (!isText && model !== 'none' && MODEL_COST_PER_PAGE[model])
+    ? MODEL_COST_PER_PAGE[model][costKey]
+    : 0;
   const parserCost = PARSER_COST_PER_PAGE[parser] || 0;
   const totalCost = _cachedPageCount * (modelCost + parserCost);
 
-  if (totalCost === 0 && model === 'none') {
+  if (totalCost === 0) {
     row.style.display = 'none';
     return;
   }
 
   const modelName = document.getElementById('modelSelect')?.selectedOptions[0]?.textContent || model;
-  let label = '~$' + totalCost.toFixed(2) + ' (' + _cachedPageCount + ' pg';
+  let label = formatCost(totalCost) + ' (' + _cachedPageCount + ' pg';
   if (modelCost > 0) label += ' \u00d7 ' + modelName;
   if (parserCost > 0) label += ' + ' + parser.charAt(0).toUpperCase() + parser.slice(1);
   label += ')';

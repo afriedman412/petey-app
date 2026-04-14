@@ -1,0 +1,58 @@
+name: Deploy Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  GCP_PROJECT: petey-dev
+  GCP_REGION: us-east1
+  WEB_IMAGE: us-east1-docker.pkg.dev/petey-dev/petey/web
+  PARSER_URL: https://petey-parser-425941924538.us-east1.run.app
+  FIREBASE_AUTH_DOMAIN: petey-dev.firebaseapp.com
+  FIREBASE_PROJECT_ID: petey-dev
+
+jobs:
+  deploy-web:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build and push web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.WEB_IMAGE }}:latest
+            ${{ env.WEB_IMAGE }}:main-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy petey \
+            --image=${{ env.WEB_IMAGE }}:main-${{ github.sha }} \
+            --project=${{ env.GCP_PROJECT }} \
+            --region=${{ env.GCP_REGION }} \
+            --allow-unauthenticated \
+            --memory=4Gi --cpu=4 --timeout=3600 \
+            --set-env-vars=FIREBASE_AUTH_DISABLED=0,PARSER_URL=${{ env.PARSER_URL }},FIREBASE_AUTH_DOMAIN=${{ env.FIREBASE_AUTH_DOMAIN }},FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID }},FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}

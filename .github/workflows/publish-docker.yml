@@ -2,6 +2,8 @@ name: Publish Docker Image
 
 on:
   push:
+    branches:
+      - main
     tags:
       - 'docker-v*'
   workflow_dispatch:
@@ -14,12 +16,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Extract version from tag
+      - name: Compute image tags
         id: meta
         run: |
+          SHORT_SHA="${GITHUB_SHA:0:7}"
           if [[ "$GITHUB_REF" == refs/tags/docker-v* ]]; then
             VERSION="${GITHUB_REF#refs/tags/docker-v}"
             echo "tags=afriedman412/petey:${VERSION},afriedman412/petey:latest" >> "$GITHUB_OUTPUT"
+          elif [[ "$GITHUB_REF" == refs/heads/main ]]; then
+            echo "tags=afriedman412/petey:main-${SHORT_SHA},afriedman412/petey:latest" >> "$GITHUB_OUTPUT"
           else
             echo "tags=afriedman412/petey:latest" >> "$GITHUB_OUTPUT"
           fi
