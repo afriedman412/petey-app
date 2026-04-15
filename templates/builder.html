@@ -851,6 +851,8 @@ function updateCostEstimate() {
 // Update estimate on model/parser change
 document.getElementById('modelSelect')?.addEventListener('change', updateCostEstimate);
 document.getElementById('parserSelect')?.addEventListener('change', updateCostEstimate);
+document.getElementById('pageRange')?.addEventListener('input', updateCostEstimate);
+document.getElementById('headerPages')?.addEventListener('input', updateCostEstimate);
 
 function fileLabel(name) {
   const pages = _perFilePages[name];
