@@ -32,41 +32,59 @@ _build_model = build_model
 async def extract_text(
     pdf_path: str,
     *,
+    parser: str = "pymupdf",
     page_range: str | None = None,
     header_pages: int = 0,
 ) -> tuple[str, list[str]]:
     """Extract text from PDF.
 
+    When ``page_range`` or ``header_pages`` is set, the PDF is
+    cropped to the needed pages first so the parser (including
+    API parsers like Datalab) only sees those pages.
+
     Returns (text, info_messages).
     info_messages contains human-readable status messages.
     """
-    info = []
+    info: list[str] = []
+
+    effective_path = pdf_path
+    cleanup_path: str | None = None
 
     if page_range or header_pages:
-        from petey.extract import _parse_page_range
+        from petey.extract import _parse_page_range, _subset_pdf
         from server.parse_client import get_page_count
 
         total = await get_page_count(pdf_path)
 
-        # Parse all pages via remote service
-        pages = []
-        for i in range(total):
-            pages.append(await _remote_page_parse_fn(
-                pdf_path, i, "pymupdf",
-            ))
-
-        parts = []
-        if header_pages > 0:
-            parts.extend(pages[:header_pages])
+        header_indices = list(range(min(header_pages, total)))
         if page_range:
-            indices = _parse_page_range(page_range, total)
-            indices = [i for i in indices if i >= header_pages]
-            parts.extend(pages[i] for i in indices if i < len(pages))
+            content_indices = [
+                i for i in _parse_page_range(page_range, total)
+                if i >= header_pages
+            ]
         else:
-            parts.extend(pages[header_pages:])
-        text = "\n\n".join(parts)
-    else:
-        text = await _remote_parse_fn(pdf_path, "pymupdf")
+            content_indices = list(range(header_pages, total))
+
+        needed = header_indices + content_indices
+        if needed:
+            effective_path = _subset_pdf(pdf_path, needed)
+            cleanup_path = effective_path
+
+    try:
+        parser_fn = PARSERS.get(parser)
+        if parser_fn and asyncio.iscoroutinefunction(parser_fn):
+            # API parser (Datalab, etc.) — call directly
+            pages = await parser_fn(effective_path)
+            text = "\n\n".join(pages) if isinstance(pages, list) else pages
+        else:
+            # Local parser — routed through remote service or in-process
+            text = await _remote_parse_fn(effective_path, parser)
+    finally:
+        if cleanup_path:
+            try:
+                os.unlink(cleanup_path)
+            except OSError:
+                pass
 
     return text, info
 

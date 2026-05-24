@@ -30,7 +30,7 @@ from server.validate_keys import (
     validate_datalab_key,
 )
 from server.runs import (
-    create_run, update_run, finish_run, list_runs, get_run, delete_run,
+    create_run, update_run, list_runs, get_run, delete_run,
 )
 
 BASE_DIR = Path(os.environ.get("PETEY_WEB_BASE", Path(__file__).resolve().parent.parent))
@@ -242,7 +242,8 @@ async def extract_endpoint(
             page_range = spec.get("pages") or None
             header_pages = spec.get("header_pages", 0)
             text, info = await extract_text(
-                tmp_path, page_range=page_range,
+                tmp_path, parser=parser,
+                page_range=page_range,
                 header_pages=header_pages,
             )
             warning = check_text_length(text)
@@ -250,7 +251,7 @@ async def extract_endpoint(
                 tmp_path, response_model,
                 uid=uid, instructions=instructions,
                 parser=parser,
-                text=text if info else None,
+                text=text or None,
             )
             data = result.model_dump(by_alias=True)
             normalize_dates(data, spec)
