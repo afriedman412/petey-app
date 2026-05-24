@@ -919,20 +919,25 @@ function renderFields() {
       _dragIdx = null;
     });
     row.addEventListener('dragover', e => {
+      if (_dragIdx === null) return;
       e.preventDefault();
+      e.stopPropagation();
       e.dataTransfer.dropEffect = 'move';
       row.classList.add('drag-over');
     });
     row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
     row.addEventListener('drop', e => {
+      if (_dragIdx === null) return;
       e.preventDefault();
+      e.stopPropagation();
       row.classList.remove('drag-over');
       const from = _dragIdx;
       const to = parseInt(row.dataset.idx);
-      if (from !== null && from !== to) {
+      if (from !== to) {
         const [moved] = fields.splice(from, 1);
         fields.splice(to, 0, moved);
         renderFields();
+        saveState();
       }
     });
 

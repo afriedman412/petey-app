@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "petey-web"
 version = "0.1.0"
 description = "Web interface for Petey PDF Extractor"
+license = "Apache-2.0"
 requires-python = ">=3.11"
 dependencies = [
     "petey",

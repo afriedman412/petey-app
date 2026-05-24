@@ -190,10 +190,18 @@ class TestExtractNoKeyErrors:
 
     def test_extract_no_schema(self, client):
         """Extract without schema returns clear error."""
-        with open(MCI_PDF, "rb") as f:
-            resp = client.post(
-                "/extract",
-                files=[("file", ("test.pdf", f, "application/pdf"))],
-            )
+        from unittest.mock import patch
+        mock_settings = {
+            "model": "gpt-4o",
+            "openai_api_key": "sk-test",
+            "anthropic_api_key": "",
+            "concurrency": 10,
+        }
+        with patch("server.app.get_settings", return_value=mock_settings):
+            with open(MCI_PDF, "rb") as f:
+                resp = client.post(
+                    "/extract",
+                    files=[("file", ("test.pdf", f, "application/pdf"))],
+                )
         assert resp.status_code == 400
         assert "schema" in resp.json().get("error", "").lower()
