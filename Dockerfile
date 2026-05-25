@@ -9,7 +9,6 @@ COPY pyproject.toml .
 COPY server/ server/
 COPY templates/ templates/
 COPY static/ static/
-COPY schemas/ schemas/
 
 RUN pip install --no-cache-dir .
 
