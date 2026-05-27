@@ -1,0 +1,391 @@
+name: irs_1099_r
+record_type: object
+description: Reports distributions from retirement plans, IRAs, pensions, and annuities.
+source:
+  owner: IRS
+  url: https://www.irs.gov/forms-pubs/about-form-1099-r
+fields:
+  Copy A — VOID:
+    type: bool
+  Copy A — CORRECTED:
+    type: bool
+  Copy A — Payer's name, address, and telephone number:
+    type: string
+  Copy A — Payer's TIN:
+    type: string
+  Copy A — Recipient's TIN:
+    type: string
+  Copy A — Recipient's name:
+    type: string
+  Copy A — Recipient's street address (including apt. no.):
+    type: string
+  Copy A — Recipient's city, state, country, ZIP:
+    type: string
+  Copy A — Account number:
+    type: string
+  Copy A — Box 1 Gross distribution:
+    type: string
+  Copy A — Box 2a Taxable amount:
+    type: string
+  Copy A — Box 2b Taxable amount not determined:
+    type: bool
+  Copy A — Box 2b Total distribution:
+    type: bool
+  Copy A — Box 3 Capital gain (included in box 2a):
+    type: string
+  Copy A — Box 4 Federal income tax withheld:
+    type: string
+  Copy A — Box 5 Employee contributions / Designated Roth contributions or insurance premiums:
+    type: string
+  Copy A — Box 6 Net unrealized appreciation in employer's securities:
+    type: string
+  Copy A — Box 7 Distribution code(s):
+    type: string
+  Copy A — Box 7 IRA/SEP/SIMPLE:
+    type: bool
+  Copy A — Box 8 Other (amount):
+    type: string
+  Copy A — Box 8 Other (percent):
+    type: string
+  Copy A — Box 9a Your percentage of total distribution:
+    type: string
+  Copy A — Box 9b Total employee contributions:
+    type: string
+  Copy A — Box 10 Amount allocable to IRR within 5 years:
+    type: string
+  Copy A — Box 11 1st year of designated Roth contribution:
+    type: string
+  Copy A — Box 12 FATCA filing requirement:
+    type: bool
+  Copy A — Box 13 Date of payment:
+    type: string
+  Copy A — Box 14 State tax withheld (line 1):
+    type: string
+  Copy A — Box 14 State tax withheld (line 2):
+    type: string
+  Copy A — Box 15 State/Payer's state no. (line 1):
+    type: string
+  Copy A — Box 15 State/Payer's state no. (line 2):
+    type: string
+  Copy A — Box 16 State distribution (line 1):
+    type: string
+  Copy A — Box 16 State distribution (line 2):
+    type: string
+  Copy A — Box 17 Local tax withheld (line 1):
+    type: string
+  Copy A — Box 17 Local tax withheld (line 2):
+    type: string
+  Copy A — Box 18 Name of locality (line 1):
+    type: string
+  Copy A — Box 18 Name of locality (line 2):
+    type: string
+  Copy A — Box 19 Local distribution (line 1):
+    type: string
+  Copy A — Box 19 Local distribution (line 2):
+    type: string
+  Copy 1 — VOID:
+    type: bool
+  Copy 1 — CORRECTED:
+    type: bool
+  Copy 1 — Payer's name, address, and telephone number:
+    type: string
+  Copy 1 — Payer's TIN:
+    type: string
+  Copy 1 — Recipient's TIN:
+    type: string
+  Copy 1 — Recipient's name:
+    type: string
+  Copy 1 — Recipient's street address (including apt. no.):
+    type: string
+  Copy 1 — Recipient's city, state, country, ZIP:
+    type: string
+  Copy 1 — Account number:
+    type: string
+  Copy 1 — Box 1 Gross distribution:
+    type: string
+  Copy 1 — Box 2a Taxable amount:
+    type: string
+  Copy 1 — Box 2b Taxable amount not determined:
+    type: bool
+  Copy 1 — Box 2b Total distribution:
+    type: bool
+  Copy 1 — Box 3 Capital gain (included in box 2a):
+    type: string
+  Copy 1 — Box 4 Federal income tax withheld:
+    type: string
+  Copy 1 — Box 5 Employee contributions / Designated Roth contributions or insurance premiums:
+    type: string
+  Copy 1 — Box 6 Net unrealized appreciation in employer's securities:
+    type: string
+  Copy 1 — Box 7 Distribution code(s):
+    type: string
+  Copy 1 — Box 7 IRA/SEP/SIMPLE:
+    type: bool
+  Copy 1 — Box 8 Other (amount):
+    type: string
+  Copy 1 — Box 8 Other (percent):
+    type: string
+  Copy 1 — Box 9a Your percentage of total distribution:
+    type: string
+  Copy 1 — Box 9b Total employee contributions:
+    type: string
+  Copy 1 — Box 10 Amount allocable to IRR within 5 years:
+    type: string
+  Copy 1 — Box 11 1st year of designated Roth contribution:
+    type: string
+  Copy 1 — Box 12 FATCA filing requirement:
+    type: bool
+  Copy 1 — Box 13 Date of payment:
+    type: string
+  Copy 1 — Box 14 State tax withheld (line 1):
+    type: string
+  Copy 1 — Box 14 State tax withheld (line 2):
+    type: string
+  Copy 1 — Box 15 State/Payer's state no. (line 1):
+    type: string
+  Copy 1 — Box 15 State/Payer's state no. (line 2):
+    type: string
+  Copy 1 — Box 16 State distribution (line 1):
+    type: string
+  Copy 1 — Box 16 State distribution (line 2):
+    type: string
+  Copy 1 — Box 17 Local tax withheld (line 1):
+    type: string
+  Copy 1 — Box 17 Local tax withheld (line 2):
+    type: string
+  Copy 1 — Box 18 Name of locality (line 1):
+    type: string
+  Copy 1 — Box 18 Name of locality (line 2):
+    type: string
+  Copy 1 — Box 19 Local distribution (line 1):
+    type: string
+  Copy 1 — Box 19 Local distribution (line 2):
+    type: string
+  Copy B — CORRECTED:
+    type: bool
+  Copy B — Payer's name, address, and telephone number:
+    type: string
+  Copy B — Payer's TIN:
+    type: string
+  Copy B — Recipient's TIN:
+    type: string
+  Copy B — Recipient's name:
+    type: string
+  Copy B — Recipient's street address (including apt. no.):
+    type: string
+  Copy B — Recipient's city, state, country, ZIP:
+    type: string
+  Copy B — Account number:
+    type: string
+  Copy B — Box 1 Gross distribution:
+    type: string
+  Copy B — Box 2a Taxable amount:
+    type: string
+  Copy B — Box 2b Taxable amount not determined:
+    type: bool
+  Copy B — Box 2b Total distribution:
+    type: bool
+  Copy B — Box 3 Capital gain (included in box 2a):
+    type: string
+  Copy B — Box 4 Federal income tax withheld:
+    type: string
+  Copy B — Box 5 Employee contributions / Designated Roth contributions or insurance premiums:
+    type: string
+  Copy B — Box 6 Net unrealized appreciation in employer's securities:
+    type: string
+  Copy B — Box 7 Distribution code(s):
+    type: string
+  Copy B — Box 7 IRA/SEP/SIMPLE:
+    type: bool
+  Copy B — Box 8 Other (amount):
+    type: string
+  Copy B — Box 8 Other (percent):
+    type: string
+  Copy B — Box 9a Your percentage of total distribution:
+    type: string
+  Copy B — Box 9b Total employee contributions:
+    type: string
+  Copy B — Box 10 Amount allocable to IRR within 5 years:
+    type: string
+  Copy B — Box 11 1st year of designated Roth contribution:
+    type: string
+  Copy B — Box 12 FATCA filing requirement:
+    type: bool
+  Copy B — Box 13 Date of payment:
+    type: string
+  Copy B — Box 14 State tax withheld (line 1):
+    type: string
+  Copy B — Box 14 State tax withheld (line 2):
+    type: string
+  Copy B — Box 15 State/Payer's state no. (line 1):
+    type: string
+  Copy B — Box 15 State/Payer's state no. (line 2):
+    type: string
+  Copy B — Box 16 State distribution (line 1):
+    type: string
+  Copy B — Box 16 State distribution (line 2):
+    type: string
+  Copy B — Box 17 Local tax withheld (line 1):
+    type: string
+  Copy B — Box 17 Local tax withheld (line 2):
+    type: string
+  Copy B — Box 18 Name of locality (line 1):
+    type: string
+  Copy B — Box 18 Name of locality (line 2):
+    type: string
+  Copy B — Box 19 Local distribution (line 1):
+    type: string
+  Copy B — Box 19 Local distribution (line 2):
+    type: string
+  Copy C — CORRECTED:
+    type: bool
+  Copy C — Payer's name, address, and telephone number:
+    type: string
+  Copy C — Payer's TIN:
+    type: string
+  Copy C — Recipient's TIN:
+    type: string
+  Copy C — Recipient's name:
+    type: string
+  Copy C — Recipient's street address (including apt. no.):
+    type: string
+  Copy C — Recipient's city, state, country, ZIP:
+    type: string
+  Copy C — Account number:
+    type: string
+  Copy C — Box 1 Gross distribution:
+    type: string
+  Copy C — Box 2a Taxable amount:
+    type: string
+  Copy C — Box 2b Taxable amount not determined:
+    type: bool
+  Copy C — Box 2b Total distribution:
+    type: bool
+  Copy C — Box 3 Capital gain (included in box 2a):
+    type: string
+  Copy C — Box 4 Federal income tax withheld:
+    type: string
+  Copy C — Box 5 Employee contributions / Designated Roth contributions or insurance premiums:
+    type: string
+  Copy C — Box 6 Net unrealized appreciation in employer's securities:
+    type: string
+  Copy C — Box 7 Distribution code(s):
+    type: string
+  Copy C — Box 7 IRA/SEP/SIMPLE:
+    type: bool
+  Copy C — Box 8 Other (amount):
+    type: string
+  Copy C — Box 8 Other (percent):
+    type: string
+  Copy C — Box 9a Your percentage of total distribution:
+    type: string
+  Copy C — Box 9b Total employee contributions:
+    type: string
+  Copy C — Box 10 Amount allocable to IRR within 5 years:
+    type: string
+  Copy C — Box 11 1st year of designated Roth contribution:
+    type: string
+  Copy C — Box 12 FATCA filing requirement:
+    type: bool
+  Copy C — Box 13 Date of payment:
+    type: string
+  Copy C — Box 14 State tax withheld (line 1):
+    type: string
+  Copy C — Box 14 State tax withheld (line 2):
+    type: string
+  Copy C — Box 15 State/Payer's state no. (line 1):
+    type: string
+  Copy C — Box 15 State/Payer's state no. (line 2):
+    type: string
+  Copy C — Box 16 State distribution (line 1):
+    type: string
+  Copy C — Box 16 State distribution (line 2):
+    type: string
+  Copy C — Box 17 Local tax withheld (line 1):
+    type: string
+  Copy C — Box 17 Local tax withheld (line 2):
+    type: string
+  Copy C — Box 18 Name of locality (line 1):
+    type: string
+  Copy C — Box 18 Name of locality (line 2):
+    type: string
+  Copy C — Box 19 Local distribution (line 1):
+    type: string
+  Copy C — Box 19 Local distribution (line 2):
+    type: string
+  Copy 2 — CORRECTED:
+    type: bool
+  Copy 2 — Payer's name, address, and telephone number:
+    type: string
+  Copy 2 — Payer's TIN:
+    type: string
+  Copy 2 — Recipient's TIN:
+    type: string
+  Copy 2 — Recipient's name:
+    type: string
+  Copy 2 — Recipient's street address (including apt. no.):
+    type: string
+  Copy 2 — Recipient's city, state, country, ZIP:
+    type: string
+  Copy 2 — Account number:
+    type: string
+  Copy 2 — Box 1 Gross distribution:
+    type: string
+  Copy 2 — Box 2a Taxable amount:
+    type: string
+  Copy 2 — Box 2b Taxable amount not determined:
+    type: bool
+  Copy 2 — Box 2b Total distribution:
+    type: bool
+  Copy 2 — Box 3 Capital gain (included in box 2a):
+    type: string
+  Copy 2 — Box 4 Federal income tax withheld:
+    type: string
+  Copy 2 — Box 5 Employee contributions / Designated Roth contributions or insurance premiums:
+    type: string
+  Copy 2 — Box 6 Net unrealized appreciation in employer's securities:
+    type: string
+  Copy 2 — Box 7 Distribution code(s):
+    type: string
+  Copy 2 — Box 7 IRA/SEP/SIMPLE:
+    type: bool
+  Copy 2 — Box 8 Other (amount):
+    type: string
+  Copy 2 — Box 8 Other (percent):
+    type: string
+  Copy 2 — Box 9a Your percentage of total distribution:
+    type: string
+  Copy 2 — Box 9b Total employee contributions:
+    type: string
+  Copy 2 — Box 10 Amount allocable to IRR within 5 years:
+    type: string
+  Copy 2 — Box 11 1st year of designated Roth contribution:
+    type: string
+  Copy 2 — Box 12 FATCA filing requirement:
+    type: bool
+  Copy 2 — Box 13 Date of payment:
+    type: string
+  Copy 2 — Box 14 State tax withheld (line 1):
+    type: string
+  Copy 2 — Box 14 State tax withheld (line 2):
+    type: string
+  Copy 2 — Box 15 State/Payer's state no. (line 1):
+    type: string
+  Copy 2 — Box 15 State/Payer's state no. (line 2):
+    type: string
+  Copy 2 — Box 16 State distribution (line 1):
+    type: string
+  Copy 2 — Box 16 State distribution (line 2):
+    type: string
+  Copy 2 — Box 17 Local tax withheld (line 1):
+    type: string
+  Copy 2 — Box 17 Local tax withheld (line 2):
+    type: string
+  Copy 2 — Box 18 Name of locality (line 1):
+    type: string
+  Copy 2 — Box 18 Name of locality (line 2):
+    type: string
+  Copy 2 — Box 19 Local distribution (line 1):
+    type: string
+  Copy 2 — Box 19 Local distribution (line 2):
+    type: string

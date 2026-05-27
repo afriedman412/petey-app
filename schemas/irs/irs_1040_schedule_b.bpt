@@ -1,0 +1,151 @@
+name: irs_1040_schedule_b
+record_type: object
+description: Interest and ordinary dividends schedule for Form 1040.
+source:
+  owner: IRS
+  url: https://www.irs.gov/forms-pubs/about-schedule-b-form-1040
+fields:
+  Name(s) shown on return:
+    type: string
+  Your social security number:
+    type: string
+  Part I Line 1 — Payer name 1:
+    type: string
+  Part I Line 1 — Interest amount 1:
+    type: string
+  Part I Line 1 — Payer name 2:
+    type: string
+  Part I Line 1 — Interest amount 2:
+    type: string
+  Part I Line 1 — Payer name 3:
+    type: string
+  Part I Line 1 — Interest amount 3:
+    type: string
+  Part I Line 1 — Payer name 4:
+    type: string
+  Part I Line 1 — Interest amount 4:
+    type: string
+  Part I Line 1 — Payer name 5:
+    type: string
+  Part I Line 1 — Interest amount 5:
+    type: string
+  Part I Line 1 — Payer name 6:
+    type: string
+  Part I Line 1 — Interest amount 6:
+    type: string
+  Part I Line 1 — Payer name 7:
+    type: string
+  Part I Line 1 — Interest amount 7:
+    type: string
+  Part I Line 1 — Payer name 8:
+    type: string
+  Part I Line 1 — Interest amount 8:
+    type: string
+  Part I Line 1 — Payer name 9:
+    type: string
+  Part I Line 1 — Interest amount 9:
+    type: string
+  Part I Line 1 — Payer name 10:
+    type: string
+  Part I Line 1 — Interest amount 10:
+    type: string
+  Part I Line 1 — Payer name 11:
+    type: string
+  Part I Line 1 — Interest amount 11:
+    type: string
+  Part I Line 1 — Payer name 12:
+    type: string
+  Part I Line 1 — Interest amount 12:
+    type: string
+  Part I Line 1 — Payer name 13:
+    type: string
+  Part I Line 1 — Interest amount 13:
+    type: string
+  Part I Line 1 — Payer name 14:
+    type: string
+  Part I Line 1 — Interest amount 14:
+    type: string
+  Line 2 — Total interest (sum of Line 1 amounts):
+    type: string
+  Line 3 — Excludable interest on Series EE and I U.S. savings bonds (Form 8815):
+    type: string
+  Line 4 — Subtract line 3 from line 2 (taxable interest, to Form 1040 line 2b):
+    type: string
+  Part II Line 5 — Payer name 1:
+    type: string
+  Part II Line 5 — Dividend amount 1:
+    type: string
+  Part II Line 5 — Payer name 2:
+    type: string
+  Part II Line 5 — Dividend amount 2:
+    type: string
+  Part II Line 5 — Payer name 3:
+    type: string
+  Part II Line 5 — Dividend amount 3:
+    type: string
+  Part II Line 5 — Payer name 4:
+    type: string
+  Part II Line 5 — Dividend amount 4:
+    type: string
+  Part II Line 5 — Payer name 5:
+    type: string
+  Part II Line 5 — Dividend amount 5:
+    type: string
+  Part II Line 5 — Payer name 6:
+    type: string
+  Part II Line 5 — Dividend amount 6:
+    type: string
+  Part II Line 5 — Payer name 7:
+    type: string
+  Part II Line 5 — Dividend amount 7:
+    type: string
+  Part II Line 5 — Payer name 8:
+    type: string
+  Part II Line 5 — Dividend amount 8:
+    type: string
+  Part II Line 5 — Payer name 9:
+    type: string
+  Part II Line 5 — Dividend amount 9:
+    type: string
+  Part II Line 5 — Payer name 10:
+    type: string
+  Part II Line 5 — Dividend amount 10:
+    type: string
+  Part II Line 5 — Payer name 11:
+    type: string
+  Part II Line 5 — Dividend amount 11:
+    type: string
+  Part II Line 5 — Payer name 12:
+    type: string
+  Part II Line 5 — Dividend amount 12:
+    type: string
+  Part II Line 5 — Payer name 13:
+    type: string
+  Part II Line 5 — Dividend amount 13:
+    type: string
+  Part II Line 5 — Payer name 14:
+    type: string
+  Part II Line 5 — Dividend amount 14:
+    type: string
+  Part II Line 5 — Payer name 15:
+    type: string
+  Part II Line 5 — Dividend amount 15:
+    type: string
+  Line 6 — Total ordinary dividends (sum of Line 5 amounts, to Form 1040 line 3b):
+    type: string
+  'Line 7a — Financial interest/signature authority over foreign account: Yes':
+    type: bool
+  'Line 7a — Financial interest/signature authority over foreign account: No':
+    type: bool
+  'Line 7a — Required to file FinCEN Form 114 (FBAR): Yes':
+    type: bool
+  'Line 7a — Required to file FinCEN Form 114 (FBAR): No':
+    type: bool
+  Line 7b — Foreign country(-ies) where financial account(s) located (1):
+    type: string
+  Line 7b — Foreign country(-ies) where financial account(s) located (2):
+    type: string
+  'Line 8 — Received distribution from / grantor / transferor to a foreign trust: Yes':
+    type: bool
+  'Line 8 — Received distribution from / grantor / transferor to a foreign trust: No':
+    type: bool

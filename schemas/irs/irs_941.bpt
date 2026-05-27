@@ -1,0 +1,239 @@
+name: irs_941
+record_type: object
+description: Quarterly payroll tax return reporting wages and federal tax withholding.
+source:
+  owner: IRS
+  url: https://www.irs.gov/forms-pubs/about-form-941
+fields:
+  Employer Identification Number (EIN):
+    type: string
+  Name (not your trade name):
+    type: string
+  Trade name (if any):
+    type: string
+  Address — Number and Street:
+    type: string
+  Address — Suite or room number:
+    type: string
+  Address — City:
+    type: string
+  Address — State:
+    type: string
+  Address — ZIP code:
+    type: string
+  Address — Foreign country name:
+    type: string
+  Address — Foreign province/county:
+    type: string
+  Address — Foreign postal code:
+    type: string
+  Report for this Quarter — Quarter 1 (January, February, March):
+    type: bool
+  Report for this Quarter — Quarter 2 (April, May, June):
+    type: bool
+  Report for this Quarter — Quarter 3 (July, August, September):
+    type: bool
+  Report for this Quarter — Quarter 4 (October, November, December):
+    type: bool
+  Aggregate Return Filer — Section 3504 Agent:
+    type: bool
+  Aggregate Return Filer — Certified Professional Employer Organization (CPEO):
+    type: bool
+  Aggregate Return Filer — Other Third Party:
+    type: bool
+  Line 1 — Number of employees who received wages, tips, or other compensation:
+    type: string
+  Line 2 — Wages, tips, and other compensation (dollars):
+    type: string
+  Line 2 — Wages, tips, and other compensation (cents):
+    type: string
+  Line 3 — Federal income tax withheld from wages, tips, and other compensation (dollars):
+    type: string
+  Line 3 — Federal income tax withheld from wages, tips, and other compensation (cents):
+    type: string
+  Line 4 — No wages, tips, and other compensation are subject to social security or Medicare tax:
+    type: bool
+  Line 5a — Taxable social security wages, Column 1 (dollars):
+    type: string
+  Line 5a — Taxable social security wages, Column 1 (cents):
+    type: string
+  Line 5a — Taxable social security wages, Column 2 (dollars):
+    type: string
+  Line 5a — Taxable social security wages, Column 2 (cents):
+    type: string
+  Line 5b — Taxable social security tips, Column 1 (dollars):
+    type: string
+  Line 5b — Taxable social security tips, Column 1 (cents):
+    type: string
+  Line 5b — Taxable social security tips, Column 2 (dollars):
+    type: string
+  Line 5b — Taxable social security tips, Column 2 (cents):
+    type: string
+  Line 5c — Taxable Medicare wages & tips, Column 1 (dollars):
+    type: string
+  Line 5c — Taxable Medicare wages & tips, Column 1 (cents):
+    type: string
+  Line 5c — Taxable Medicare wages & tips, Column 2 (dollars):
+    type: string
+  Line 5c — Taxable Medicare wages & tips, Column 2 (cents):
+    type: string
+  Line 5d — Taxable wages & tips subject to Additional Medicare Tax withholding, Column 1 (dollars):
+    type: string
+  Line 5d — Taxable wages & tips subject to Additional Medicare Tax withholding, Column 1 (cents):
+    type: string
+  Line 5d — Taxable wages & tips subject to Additional Medicare Tax withholding, Column 2 (dollars):
+    type: string
+  Line 5d — Taxable wages & tips subject to Additional Medicare Tax withholding, Column 2 (cents):
+    type: string
+  Line 5e — Total social security and Medicare taxes (dollars):
+    type: string
+  Line 5e — Total social security and Medicare taxes (cents):
+    type: string
+  Line 5f — Section 3121(q) Notice and Demand—Tax due on unreported tips (dollars):
+    type: string
+  Line 5f — Section 3121(q) Notice and Demand—Tax due on unreported tips (cents):
+    type: string
+  Line 6 — Total taxes before adjustments (dollars):
+    type: string
+  Line 6 — Total taxes before adjustments (cents):
+    type: string
+  Line 7 — Current quarter's adjustment for fractions of cents (dollars):
+    type: string
+  Line 7 — Current quarter's adjustment for fractions of cents (cents):
+    type: string
+  Line 8 — Current quarter's adjustment for sick pay (dollars):
+    type: string
+  Line 8 — Current quarter's adjustment for sick pay (cents):
+    type: string
+  Line 9 — Current quarter's adjustments for tips and group-term life insurance (dollars):
+    type: string
+  Line 9 — Current quarter's adjustments for tips and group-term life insurance (cents):
+    type: string
+  Line 10 — Total taxes after adjustments (dollars):
+    type: string
+  Line 10 — Total taxes after adjustments (cents):
+    type: string
+  Line 11 — Qualified small business payroll tax credit for increasing research activities (dollars):
+    type: string
+  Line 11 — Qualified small business payroll tax credit for increasing research activities (cents):
+    type: string
+  Line 12 — Total taxes after adjustments and nonrefundable credits (dollars):
+    type: string
+  Line 12 — Total taxes after adjustments and nonrefundable credits (cents):
+    type: string
+  Line 13 — Total deposits for this quarter (dollars):
+    type: string
+  Line 13 — Total deposits for this quarter (cents):
+    type: string
+  Line 14 — Balance due (dollars):
+    type: string
+  Line 14 — Balance due (cents):
+    type: string
+  Line 15a — Overpayment (dollars):
+    type: string
+  Line 15a — Overpayment (cents):
+    type: string
+  Line 15b — Apply overpayment to next return:
+    type: bool
+  Line 15b — Send overpayment as a refund:
+    type: bool
+  Line 15c — Routing number:
+    type: string
+  'Line 15d — Account type: Checking':
+    type: bool
+  'Line 15d — Account type: Savings':
+    type: bool
+  Line 15e — Account number:
+    type: string
+  Page 2 — Name (not your trade name):
+    type: string
+  Page 2 — EIN (first part):
+    type: string
+  Page 2 — EIN (second part):
+    type: string
+  Line 16 — Line 12 less than $2,500 (no deposit schedule required):
+    type: bool
+  Line 16 — Monthly schedule depositor for the entire quarter:
+    type: bool
+  'Line 16 — Tax liability: Month 1 (dollars)':
+    type: string
+  'Line 16 — Tax liability: Month 1 (cents)':
+    type: string
+  'Line 16 — Tax liability: Month 2 (dollars)':
+    type: string
+  'Line 16 — Tax liability: Month 2 (cents)':
+    type: string
+  'Line 16 — Tax liability: Month 3 (dollars)':
+    type: string
+  'Line 16 — Tax liability: Month 3 (cents)':
+    type: string
+  Line 16 — Total liability for quarter (dollars):
+    type: string
+  Line 16 — Total liability for quarter (cents):
+    type: string
+  Line 16 — Semiweekly schedule depositor for any part of this quarter (Schedule B attached):
+    type: bool
+  Line 17 — Business closed or stopped paying wages:
+    type: bool
+  Line 17 — Final date wages were paid:
+    type: string
+  Line 18 — Seasonal employer (don't have to file every quarter):
+    type: bool
+  Part 4 — Yes, allow third-party designee to discuss return with IRS:
+    type: bool
+  Part 4 — Designee's name:
+    type: string
+  Part 4 — Designee's phone number:
+    type: string
+  Part 4 — Designee's 5-digit personal identification number (PIN):
+    type: string
+  Part 4 — No, do not allow third-party designee:
+    type: bool
+  Part 5 — Date signed:
+    type: string
+  Part 5 — Print your name:
+    type: string
+  Part 5 — Print your title:
+    type: string
+  Paid Preparer — Self-employed checkbox:
+    type: bool
+  Part 5 — Best daytime phone:
+    type: string
+  Paid Preparer — Preparer's name:
+    type: string
+  Paid Preparer — PTIN:
+    type: string
+  Paid Preparer — Date signed:
+    type: string
+  Paid Preparer — Firm's name (or yours if self-employed):
+    type: string
+  Paid Preparer — Firm's EIN:
+    type: string
+  Paid Preparer — Address:
+    type: string
+  Paid Preparer — Phone:
+    type: string
+  Paid Preparer — City, State, ZIP code:
+    type: string
+  Form 941-V Box 1 — EIN (first part):
+    type: string
+  Form 941-V Box 1 — EIN (second part):
+    type: string
+  Form 941-V Box 2 — Amount of payment (dollars):
+    type: string
+  Form 941-V Box 2 — Amount of payment (cents):
+    type: string
+  'Form 941-V Box 3 — Tax Period: 1st Quarter':
+    type: bool
+  'Form 941-V Box 3 — Tax Period: 2nd Quarter':
+    type: bool
+  'Form 941-V Box 3 — Tax Period: 3rd Quarter':
+    type: bool
+  'Form 941-V Box 3 — Tax Period: 4th Quarter':
+    type: bool
+  Form 941-V Box 4 — Business name (individual name if sole proprietor):
+    type: string
+  Form 941-V Box 4 — Address:
+    type: string
+  Form 941-V Box 4 — City, state, and ZIP code (or foreign equivalent):
+    type: string

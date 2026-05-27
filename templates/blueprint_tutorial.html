@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Schema Tutorial — Petey</title>
+<title>Blueprint Tutorial — Petey</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
@@ -141,7 +141,7 @@ body {
 <main class="main">
 
   <script src="/static/navbar.js"></script>
-  <nav-bar active="demos" subtitle="Schema Tutorial"></nav-bar>
+  <nav-bar active="demos" subtitle="Blueprint Tutorial"></nav-bar>
 
   <div class="progress-dots" id="progressDots"></div>
 
@@ -149,11 +149,11 @@ body {
   <!-- INTRO -->
   <!-- ============================================================ -->
   <div class="tut-step visible" id="tut-0">
-    <div class="step-title">Understanding Schemas</div>
-    <div class="step-subtitle">A schema tells Petey exactly what data to extract from your documents. It's the most important part of the process.</div>
+    <div class="step-title">Understanding Blueprints</div>
+    <div class="step-subtitle">A blueprint tells Petey exactly what data to extract from your documents. It's the most important part of the process.</div>
 
     <div class="prose">
-      A schema is a list of <strong>fields</strong>. Each field has three parts:
+      A blueprint is a list of <strong>fields</strong>. Each field has three parts:
     </div>
 
     <div class="field-preview">
@@ -172,11 +172,11 @@ body {
     </div>
 
     <div class="prose">
-      If you've used ChatGPT or Claude, you already know the basics — a schema is essentially a <strong>structured prompt</strong>. Instead of writing a paragraph asking an AI to "find the patient's name, age, and gender", you define each piece of data as a field. Petey turns your schema into a prompt behind the scenes.
+      If you've used ChatGPT or Claude, you already know the basics — a blueprint is essentially a <strong>structured prompt</strong>. Instead of writing a paragraph asking an AI to "find the patient's name, age, and gender", you define each piece of data as a field. Petey turns your blueprint into a prompt behind the scenes.
     </div>
 
     <div class="prose">
-      We'll build a schema for a clinical note step by step. By the end, you'll understand when to use each field type and how descriptions shape your results.
+      We'll build a blueprint for a clinical note step by step. By the end, you'll understand when to use each field type and how descriptions shape your results.
     </div>
 
     <div class="wizard-nav">
@@ -423,7 +423,7 @@ body {
     </div>
 
     <div class="callout">
-      This does three things: it tells the model the <strong>type of document</strong> it's reading (so it knows what context to apply), sets a <strong>tone</strong> (medical terminology), and establishes a <strong>default behavior</strong> (null over guessing). These instructions are sent to the model alongside your schema and the document text — it's all part of the same prompt.
+      This does three things: it tells the model the <strong>type of document</strong> it's reading (so it knows what context to apply), sets a <strong>tone</strong> (medical terminology), and establishes a <strong>default behavior</strong> (null over guessing). These instructions are sent to the model alongside your blueprint and the document text — it's all part of the same prompt.
     </div>
 
     <div class="prose">
@@ -440,8 +440,8 @@ body {
   <!-- SUMMARY -->
   <!-- ============================================================ -->
   <div class="tut-step" id="tut-7">
-    <div class="step-title">Your schema</div>
-    <div class="step-subtitle">Here's the complete schema we built, plus a few extra fields.</div>
+    <div class="step-title">Your blueprint</div>
+    <div class="step-subtitle">Here's the complete blueprint we built, plus a few extra fields.</div>
 
     <div class="field-preview">
       <div class="fp-label">ed_clinical_note</div>
@@ -483,7 +483,7 @@ body {
     </div>
 
     <div class="prose">
-      We added two fields for <strong>presenting complaints</strong> to round out the schema. Notice that the second complaint says <strong>"can be null"</strong> in the description — this tells the model it's OK to leave it blank when there's no secondary complaint. You can add as many fields as you need.
+      We added two fields for <strong>presenting complaints</strong> to round out the blueprint. Notice that the second complaint says <strong>"can be null"</strong> in the description — this tells the model it's OK to leave it blank when there's no secondary complaint. You can add as many fields as you need.
     </div>
 
     <div class="callout">
@@ -494,15 +494,15 @@ body {
       &bull; <strong>Date</strong> — date values, use the description to specify format<br>
       &bull; <strong>Descriptions</strong> are mini-prompts — they're your per-field instructions to the AI<br>
       &bull; <strong>Additional instructions</strong> set context for the whole extraction<br>
-      &bull; You can also use <strong>Suggest Fields</strong> to have Petey generate a schema automatically
+      &bull; You can also use <strong>Suggest Fields</strong> to have Petey generate a blueprint automatically
     </div>
 
     <div class="prose">
-      The schema is ready to use. Download it and load it in the Extractor, or see it in action in the Getting Started demo.
+      The blueprint is ready to use. Download it and load it in the Extractor, or see it in action in the Getting Started demo.
     </div>
 
     <div style="margin-bottom:0.5rem;">
-      <button id="toggleYaml" style="font-size:0.75rem; color:var(--text-dim); background:none; border:none; cursor:pointer; font-family:inherit; text-decoration:underline; text-underline-offset:3px;">View schema YAML</button>
+      <button id="toggleYaml" style="font-size:0.75rem; color:var(--text-dim); background:none; border:none; cursor:pointer; font-family:inherit; text-decoration:underline; text-underline-offset:3px;">View blueprint source</button>
     </div>
 
     <div class="schema-yaml" id="schemaYaml" style="display:none;">name: ed_clinical_note
@@ -532,7 +532,7 @@ fields:
     description: "Outcome of the visit"</div>
 
     <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:1.5rem;">
-      <button class="btn-next" id="downloadSchema" style="font-size:0.78rem;">Download Schema</button>
+      <button class="btn-next" id="downloadSchema" style="font-size:0.78rem;">Download Blueprint</button>
       <a class="btn-next" href="/guide?demo=clinical" style="text-decoration:none; text-align:center;">See it in the Getting Started demo &rarr;</a>
     </div>
 
@@ -573,7 +573,7 @@ document.getElementById('toggleYaml').addEventListener('click', () => {
   const btn = document.getElementById('toggleYaml');
   const open = el.style.display !== 'none';
   el.style.display = open ? 'none' : 'block';
-  btn.textContent = open ? 'View schema YAML' : 'Hide schema YAML';
+  btn.textContent = open ? 'View blueprint source' : 'Hide blueprint source';
 });
 
 document.getElementById('downloadSchema').addEventListener('click', () => {
@@ -582,7 +582,7 @@ document.getElementById('downloadSchema').addEventListener('click', () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'ed_clinical_note.yaml';
+  a.download = 'ed_clinical_note.bpt';
   a.click();
   URL.revokeObjectURL(url);
 });

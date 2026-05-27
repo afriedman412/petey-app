@@ -385,7 +385,7 @@ if (new URLSearchParams(window.location.search).get('demo')) {
         We'll extract structured data from a <strong>synthetic emergency department clinical note</strong>.
         The document is a one-page PDF containing a patient's name, age, complaints, and visit outcome written in clinical prose.
         <br><br>
-        You'll walk through each step: uploading, choosing a mode, picking tools, defining a schema, and extracting. Each step includes an explanation of <strong>why</strong> we're making each choice.
+        You'll walk through each step: uploading, choosing a mode, picking tools, defining a blueprint, and extracting. Each step includes an explanation of <strong>why</strong> we're making each choice.
       </div>
       <div class="demo-disclaimer" id="demoOverviewDisclaimer">This document was generated entirely by AI for demonstration purposes. It does not represent a real patient, provider, or medical event. Any resemblance to real persons or events is coincidental.</div>
       <div class="demo-disclaimer" style="margin-top:0.5rem;">This demo uses pre-computed results to show you the full workflow without needing an API key. To run real extractions, <a href="/settings/page" style="color:var(--accent);">add an API key in Settings</a>.</div>
@@ -457,7 +457,7 @@ if (new URLSearchParams(window.location.search).get('demo')) {
       </div>
       <div class="mode-card" data-mode="text">
         <div class="mode-title">Text</div>
-        <div class="mode-desc">Just get the text -- no schema needed.</div>
+        <div class="mode-desc">Just get the text -- no blueprint needed.</div>
       </div>
     </div>
     <div class="wizard-nav">
@@ -537,20 +537,20 @@ if (new URLSearchParams(window.location.search).get('demo')) {
   </div>
 
   <!-- ============================================================ -->
-  <!-- STEP 5: Schema -->
+  <!-- STEP 5: Blueprint -->
   <!-- ============================================================ -->
   <div class="wizard-step" id="step-4">
-    <div class="step-title">Define your schema</div>
+    <div class="step-title">Define your blueprint</div>
     <div class="step-subtitle" id="schemaSubtitle">Add the data points you want to extract from each document.</div>
     <div class="demo-explainer" id="demo-step4">
       <div class="demo-label">Demo walkthrough</div>
-      The schema tells Petey <strong>what to look for</strong>. Each field is a data point you want extracted. A few things to notice:
+      The blueprint tells Petey <strong>what to look for</strong>. Each field is a data point you want extracted. A few things to notice:
       <br><br>
       <strong>Gender</strong> is a Category field — we give it a fixed set of values (Male, Female, Non-binary) so the model picks from a controlled list instead of making up its own labels.
       <br><br>
       <strong>Descriptions matter.</strong> For gender, we say "infer from pronouns if not obvious" — this guides the model when the document doesn't state gender explicitly. For the second complaint, we note it "can be null" so the model knows it's OK to leave it blank.
       <br><br>
-      You can also click <strong>Suggest fields</strong> to have Petey analyze the document and propose a schema automatically.
+      You can also click <strong>Suggest fields</strong> to have Petey analyze the document and propose a blueprint automatically.
     </div>
 
     <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:1rem;">
@@ -563,8 +563,8 @@ if (new URLSearchParams(window.location.search).get('demo')) {
 
     <div class="config-form" style="margin-top:1.5rem;">
       <div class="config-group">
-        <label>Schema name</label>
-        <input type="text" class="schema-name-input" id="schemaName" placeholder="my_extraction_schema" style="display:block; margin-top:0.3rem; border-bottom:1px solid var(--border); padding-bottom:0.3rem;">
+        <label>Blueprint name</label>
+        <input type="text" class="schema-name-input" id="schemaName" placeholder="my_extraction_blueprint" style="display:block; margin-top:0.3rem; border-bottom:1px solid var(--border); padding-bottom:0.3rem;">
       </div>
       <div class="config-group" id="headerPagesGroup" style="display:none;">
         <label>Header pages</label>
@@ -577,7 +577,7 @@ if (new URLSearchParams(window.location.search).get('demo')) {
       <button class="btn-back" onclick="goToStep(3)">Back</button>
       <button class="btn-next" id="extractBtn">Extract</button>
     </div>
-    <div class="extract-hint" id="extractHint" style="display:none;">Click <strong>Suggest fields</strong> above to generate a schema first.</div>
+    <div class="extract-hint" id="extractHint" style="display:none;">Click <strong>Suggest fields</strong> above to generate a blueprint first.</div>
   </div>
 
   <!-- ============================================================ -->
@@ -588,7 +588,7 @@ if (new URLSearchParams(window.location.search).get('demo')) {
     <div class="step-subtitle" id="resultsSubtitle">Working on your files.</div>
     <div class="demo-explainer" id="demo-step5">
       <div class="demo-label">Demo walkthrough</div>
-      That's it! Petey parsed the PDF, sent the text to the model with your schema, and returned structured data. You can <strong>download the results</strong> as CSV or JSON, and <strong>download the schema</strong> to reuse it on the main Extractor page with a whole batch of files.
+      That's it! Petey parsed the PDF, sent the text to the model with your blueprint, and returned structured data. You can <strong>download the results</strong> as CSV or JSON, and <strong>download the blueprint</strong> to reuse it on the main Extractor page with a whole batch of files.
     </div>
 
     <div id="streamProgress" style="display:none;">
@@ -650,7 +650,7 @@ async function authFetch(url, opts = {}) {
 }
 
 // --- Wizard state ---
-const STEPS = ['Upload', 'Mode', 'Parser', 'Model', 'Schema', 'Results'];
+const STEPS = ['Upload', 'Mode', 'Parser', 'Model', 'Blueprint', 'Results'];
 
 window.openLightbox = function(src) {
   const lb = document.createElement('div');
@@ -794,10 +794,10 @@ const DEMOS = {
   clinical: {
     title: 'Demo: Getting Started',
     subtitle: 'Walk through the entire extraction process with a sample document.',
-    about: 'We\'ll extract structured data from a <strong>synthetic emergency department clinical note</strong>. The document is a one-page PDF containing a patient\'s name, age, complaints, and visit outcome written in clinical prose.<br><br>You\'ll walk through each step: uploading, choosing a mode, picking tools, defining a schema, and extracting. Each step includes an explanation of <strong>why</strong> we\'re making each choice.',
+    about: 'We\'ll extract structured data from a <strong>synthetic emergency department clinical note</strong>. The document is a one-page PDF containing a patient\'s name, age, complaints, and visit outcome written in clinical prose.<br><br>You\'ll walk through each step: uploading, choosing a mode, picking tools, defining a blueprint, and extracting. Each step includes an explanation of <strong>why</strong> we\'re making each choice.',
     disclaimer: 'This document was generated entirely by AI for demonstration purposes. It does not represent a real patient, provider, or medical event. Any resemblance to real persons or events is coincidental.',
     doc: { pdf: '/static/demo/clinical_demo.pdf', screenshot: '/static/demo/clinical_screenshot.png', filename: 'clinical_demo.pdf' },
-    schema: { yaml: '/static/demo/clinical_schema.yaml', name: 'ed_clinical_note' },
+    schema: { yaml: '/static/demo/clinical_schema.bpt', name: 'ed_clinical_note' },
     resultCsv: '',
     demoPages: 1,
     mode: 'query',
@@ -818,8 +818,8 @@ const DEMOS = {
       mode: 'This clinical note contains <strong>one set of data points per document</strong> — a single patient\'s info. There\'s no table or list of rows to extract. That makes this a <strong>Query</strong> — we want one row of results per file. If we had a batch of 100 notes, we\'d get 100 rows.',
       toolsParser: 'The <strong>parser</strong> reads text from the PDF. Since this is a clean, digital document, <strong>PyMuPDF</strong> is fast and free. For scanned or handwritten documents, use Datalab instead.',
       toolsModel: 'The <strong>model</strong> does the actual extraction. <strong>GPT-4.1 Mini</strong> is the best default — it\'s cheap, fast, and handles most documents well. For complex or ambiguous documents, GPT-4.1 or Claude Sonnet are more capable but cost more.',
-      schema: 'The schema tells Petey <strong>what to look for</strong>. Each field is a data point you want extracted. A few things to notice:<br><br><strong>Gender</strong> is a Category field — we give it a fixed set of values (Male, Female, Non-binary) so the model picks from a controlled list instead of making up its own labels.<br><br><strong>Descriptions matter.</strong> For gender, we say "infer from pronouns if not obvious" — this guides the model when the document doesn\'t state gender explicitly. For the second complaint, we note it "can be null" so the model knows it\'s OK to leave it blank.<br><br>You can also click <strong>Suggest fields</strong> to have Petey analyze the document and propose a schema automatically.',
-      results: 'That\'s it! Petey parsed the PDF, sent the text to the model with your schema, and returned structured data. You can <strong>download the results</strong> as CSV or JSON, and <strong>download the schema</strong> to reuse it on the main Extractor page with a whole batch of files.',
+      schema: 'The blueprint tells Petey <strong>what to look for</strong>. Each field is a data point you want extracted. A few things to notice:<br><br><strong>Gender</strong> is a Category field — we give it a fixed set of values (Male, Female, Non-binary) so the model picks from a controlled list instead of making up its own labels.<br><br><strong>Descriptions matter.</strong> For gender, we say "infer from pronouns if not obvious" — this guides the model when the document doesn\'t state gender explicitly. For the second complaint, we note it "can be null" so the model knows it\'s OK to leave it blank.<br><br>You can also click <strong>Suggest fields</strong> to have Petey analyze the document and propose a blueprint automatically.',
+      results: 'That\'s it! Petey parsed the PDF, sent the text to the model with your blueprint, and returned structured data. You can <strong>download the results</strong> as CSV or JSON, and <strong>download the blueprint</strong> to reuse it on the main Extractor page with a whole batch of files.',
     },
     result: {
       name: 'Margaret Ellison', age: '34', gender: 'Female',
@@ -835,7 +835,7 @@ const DEMOS = {
     about: 'We\'ll extract tabular data from the <strong>Des Moines, Iowa adopted operating budget</strong> for fiscal year 2022. The document has four consecutive pages of financial tables with titles, interspersed copy, and variable values in the first column.<br><br>This demo shows how Petey handles <strong>subtables</strong>, <strong>category/subcategory labels</strong>, and why you sometimes want to use <strong>Text instead of Number</strong> for certain fields.',
     disclaimer: '',
     doc: { pdf: '/static/demo/des_moines_demo.pdf', screenshot: '/static/demo/des_moines_screenshot.png', filename: 'des_moines_demo.pdf' },
-    schema: { yaml: '/static/demo/des_moines_schema.yaml', name: 'city_budget_summary' },
+    schema: { yaml: '/static/demo/des_moines_schema.bpt', name: 'city_budget_summary' },
     mode: 'table',
     parser: 'marker',
     model: 'gpt-4.1-mini',
@@ -856,7 +856,7 @@ const DEMOS = {
       mode: 'Each page has <strong>multiple rows of budget data</strong> — line items with dollar amounts across fiscal years. That makes this a <strong>Table</strong> extraction. Petey will return multiple rows per page.',
       toolsParser: 'We\'re using <strong>Datalab</strong> here. While PyMuPDF is free and fast, tabular data benefits from Datalab\'s AI-powered parsing — it better preserves the structure of complex tables with subtables and interspersed text.',
       toolsModel: '<strong>GPT-4.1 Mini</strong> handles tabular extraction well at low cost. For especially complex tables, GPT-4.1 or Claude Sonnet can be more accurate, but Mini is usually sufficient.',
-      schema: 'We built this schema from the <strong>column headers in the budget tables</strong>. One key decision: <strong>fy_2021_22_percent_total</strong> is set to Text instead of Number. That\'s because the original data includes percentage signs and "&lt;1%" values that won\'t parse as numbers.<br><br>The <strong>section</strong> field is a Category with fixed values — this helps the model correctly label which budget section each row belongs to, even when the section header is several rows above.',
+      schema: 'We built this blueprint from the <strong>column headers in the budget tables</strong>. One key decision: <strong>fy_2021_22_percent_total</strong> is set to Text instead of Number. That\'s because the original data includes percentage signs and "&lt;1%" values that won\'t parse as numbers.<br><br>The <strong>section</strong> field is a Category with fixed values — this helps the model correctly label which budget section each row belongs to, even when the section header is several rows above.',
       results: 'Petey extracted all the budget line items across four pages, complete with the correct category and subcategory labels. You can download the results as CSV and work with them in a spreadsheet.',
     },
     resultCsv: '/static/demo/des_moines_sample_output.csv',
@@ -870,7 +870,7 @@ const DEMOS = {
     about: 'We\'ll extract transaction data from a <strong>Congressional Periodic Transaction Report (PTR)</strong>. The filer\'s name, status, and district appear only on the first page, but need to be attached to every transaction row.<br><br>This demo shows how <strong>header pages</strong> solve the problem of data that appears once but applies to the entire document.',
     disclaimer: '',
     doc: { pdf: '/static/demo/ptr_demo.pdf', screenshot: '/static/demo/ptr_screenshot.png', filename: 'ptr_demo.pdf' },
-    schema: { yaml: '/static/demo/ptr_schema.yaml', name: 'periodic_transaction_report' },
+    schema: { yaml: '/static/demo/ptr_schema.bpt', name: 'periodic_transaction_report' },
     mode: 'table',
     parser: 'marker',
     model: 'gpt-4.1-mini',
@@ -904,11 +904,11 @@ const DEMOS = {
 
   taxroll: {
     title: 'Demo: Page Range + Suggest Fields',
-    subtitle: 'Use page range to target specific pages, then let Suggest Fields figure out the schema.',
-    about: 'We\'ll extract property data from a <strong>municipal tax assessment roll</strong> for the town of Greenburgh, New York. The full document is 20 pages, but we only need a few — so we\'ll use <strong>page range</strong> to target pages 2–4.<br><br>The layout is non-traditional — the only labels are a data map at the top of each page, and the data is arranged in blocks rather than clean rows. This demo shows how <strong>Suggest Fields</strong> can handle documents that most people wouldn\'t know how to schema by hand.',
+    subtitle: 'Use page range to target specific pages, then let Suggest Fields figure out the blueprint.',
+    about: 'We\'ll extract property data from a <strong>municipal tax assessment roll</strong> for the town of Greenburgh, New York. The full document is 20 pages, but we only need a few — so we\'ll use <strong>page range</strong> to target pages 2–4.<br><br>The layout is non-traditional — the only labels are a data map at the top of each page, and the data is arranged in blocks rather than clean rows. This demo shows how <strong>Suggest Fields</strong> can handle documents that most people wouldn\'t know how to blueprint by hand.',
     disclaimer: '',
     doc: { pdf: '/static/demo/tax_roll_1_20.pdf', screenshot: '/static/demo/tax_roll_screenshot.png', filename: 'tax_roll_1_20.pdf' },
-    schema: { yaml: '/static/demo/tax_roll_schema.yaml', name: 'property_tax_roll' },
+    schema: { yaml: '/static/demo/tax_roll_schema.bpt', name: 'property_tax_roll' },
     mode: 'table',
     parser: 'marker',
     model: 'gpt-4.1-mini',
@@ -934,8 +934,8 @@ const DEMOS = {
       upload: 'We\'ve loaded the first 20 pages of the Greenburgh, NY tax assessment roll. The data we want is on <strong>pages 2 through 4</strong>, so we\'ve set the page range — Petey will skip the rest of the document. This is useful for large files where you only need a specific section.',
       mode: 'Each page has <strong>multiple property entries</strong> in a repeating block format. That makes this a <strong>Table</strong> extraction.',
       toolsParser: 'We\'re using <strong>Datalab</strong> here. The tax roll has a non-traditional block layout that\'s hard for basic text extractors — Datalab\'s AI parsing does a much better job preserving the spatial relationships in the data.',
-      toolsModel: '<strong>GPT-4.1 Mini</strong> works well even for this unusual layout. The model just needs the parsed text and a good schema — the parser does the heavy lifting on layout.',
-      schema: 'This is where it gets interesting. The tax roll doesn\'t have obvious column headers — just a data map at the top of each page. Most people wouldn\'t know where to start with a schema.<br><br>Click <strong>Suggest fields</strong> and Petey will analyze the document and figure out the structure. Most LLMs know what a tax assessment roll is, so the schema it generates is surprisingly accurate.',
+      toolsModel: '<strong>GPT-4.1 Mini</strong> works well even for this unusual layout. The model just needs the parsed text and a good blueprint — the parser does the heavy lifting on layout.',
+      schema: 'This is where it gets interesting. The tax roll doesn\'t have obvious column headers — just a data map at the top of each page. Most people wouldn\'t know where to start with a blueprint.<br><br>Click <strong>Suggest fields</strong> and Petey will analyze the document and figure out the structure. Most LLMs know what a tax assessment roll is, so the blueprint it generates is surprisingly accurate.',
       results: 'Petey extracted structured property records from a document that has no traditional table format. Each block became a clean row with parcel ID, owner, address, and assessment values.',
     },
     resultCsv: '/static/demo/tax_roll_sample_output.csv',
@@ -965,7 +965,7 @@ async function loadDemo(demoId) {
   document.getElementById('demoOverviewDownloads').innerHTML =
     '<div style="font-size:0.72rem; color:var(--text-dim); margin-bottom:0.35rem;">Download original documents:</div>' +
     '<a href="' + demo.doc.pdf + '" download="' + demo.doc.filename + '" style="font-size:0.75rem; color:var(--accent); text-decoration:none;">PDF</a>' +
-    (demo.schema.yaml ? ' &nbsp;|&nbsp; <a href="' + demo.schema.yaml + '" download style="font-size:0.75rem; color:var(--accent); text-decoration:none;">Schema</a>' : '');
+    (demo.schema.yaml ? ' &nbsp;|&nbsp; <a href="' + demo.schema.yaml + '" download style="font-size:0.75rem; color:var(--accent); text-decoration:none;">Blueprint</a>' : '');
 
   // Inject step-specific explainer copy
   const stepIds = ['demo-step0', 'demo-step1', 'demo-step2', 'demo-step3', 'demo-step4', 'demo-step5'];
@@ -1289,10 +1289,10 @@ document.getElementById('suggestFieldsBtn').addEventListener('click', async () =
     if (model && model !== 'none') form.append('model', model);
     const pr = document.getElementById('cfgPageRange').value.trim();
     if (pr) form.append('page_range', pr);
-    const resp = await authFetch('/infer-schema/vision', { method: 'POST', body: form });
+    const resp = await authFetch('/infer-blueprint/vision', { method: 'POST', body: form });
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));
-      throw new Error(err.error || 'Schema inference failed');
+      throw new Error(err.error || 'Blueprint inference failed');
     }
     const spec = await resp.json();
     if (spec.name) document.getElementById('schemaName').value = spec.name;
@@ -1325,7 +1325,7 @@ document.getElementById('extractBtn').addEventListener('click', () => {
 // --- Build schema spec ---
 function buildSpec() {
   const spec = {};
-  const name = W.schemaName || 'guide_schema';
+  const name = W.schemaName || 'guide_blueprint';
   spec.name = name;
   if (W.mode === 'table') spec.mode = 'table';
   if (W.pageRange) spec.pages = W.pageRange;
@@ -1374,7 +1374,7 @@ async function extractFile(file, spec, instr) {
   const form = new FormData();
   form.append('file', file);
   form.append('mode', W.mode || 'query');
-  if (W.mode !== 'text') form.append('schema_spec', JSON.stringify(spec));
+  if (W.mode !== 'text') form.append('blueprint_spec', JSON.stringify(spec));
   if (instr) form.append('instructions', instr);
   form.append('parser', W.parser);
   form.append('model', W.model);
@@ -1394,7 +1394,7 @@ async function extractFileStream(file, spec, instr, onEvent) {
   _streamAbort = new AbortController();
   const form = new FormData();
   form.append('file', file);
-  form.append('schema_spec', JSON.stringify(spec));
+  form.append('blueprint_spec', JSON.stringify(spec));
   if (instr) form.append('instructions', instr);
   form.append('parser', W.parser);
   form.append('model', W.model);
@@ -1601,11 +1601,11 @@ async function runDemoExtraction() {
   html += '<span style="font-size:0.72rem; color:var(--text-dim);">Download original documents:</span>';
   html += '<a class="btn-add" href="' + demo.doc.pdf + '" download="' + demo.doc.filename + '" style="text-decoration:none; text-align:center; font-size:0.75rem;">PDF</a>';
   if (demo.schema.yaml) {
-    html += '<a class="btn-add" href="' + demo.schema.yaml + '" download style="text-decoration:none; text-align:center; font-size:0.75rem;">Schema</a>';
+    html += '<a class="btn-add" href="' + demo.schema.yaml + '" download style="text-decoration:none; text-align:center; font-size:0.75rem;">Blueprint</a>';
   }
   html += '</div>';
   html += '<div style="margin-top:0.75rem; font-size:0.82rem; color:var(--text-dim);">';
-  html += 'Ready to try it yourself? Load the PDF and schema in the <a href="/" style="color:var(--accent); text-decoration:none; font-weight:600;">Extractor</a> with your own API key.';
+  html += 'Ready to try it yourself? Load the PDF and blueprint in the <a href="/" style="color:var(--accent); text-decoration:none; font-weight:600;">Extractor</a> with your own API key.';
   html += '</div>';
 
   resultsEl.innerHTML = html;
@@ -1783,11 +1783,11 @@ async function runExtraction() {
   if (W.mode !== 'text') {
     const schemaBtn = document.createElement('button');
     schemaBtn.className = 'download-btn';
-    schemaBtn.textContent = 'Download Schema (.yaml)';
+    schemaBtn.textContent = 'Download Blueprint (.bpt)';
     schemaBtn.addEventListener('click', () => {
       const s = buildSpec();
       const yaml = specToYaml(s);
-      const filename = (s.name || 'schema').toLowerCase().replace(/\s+/g, '_') + '.yaml';
+      const filename = (s.name || 'blueprint').toLowerCase().replace(/\s+/g, '_') + '.bpt';
       triggerDownload(new Blob([yaml], { type: 'text/yaml' }), filename);
     });
     dlContainer.appendChild(schemaBtn);

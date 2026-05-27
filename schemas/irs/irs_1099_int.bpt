@@ -1,0 +1,261 @@
+name: irs_1099_int
+record_type: object
+description: Reports interest income paid by financial institutions.
+source:
+  owner: IRS
+  url: https://www.irs.gov/forms-pubs/about-form-1099-int
+fields:
+  Calendar year:
+    type: string
+  VOID:
+    type: bool
+  CORRECTED:
+    type: bool
+  Payer's name, street address, city, state, ZIP, and telephone no.:
+    type: string
+  Payer's RTN (optional):
+    type: string
+  Payer's TIN:
+    type: string
+  Recipient's TIN:
+    type: string
+  Recipient's name:
+    type: string
+  Recipient's street address (including apt. no.):
+    type: string
+  FATCA filing requirement:
+    type: bool
+  Recipient's city or town, state or province, country, and ZIP or foreign postal code:
+    type: string
+  2nd TIN not.:
+    type: bool
+  Account number (see instructions):
+    type: string
+  Box 2 — Early withdrawal penalty:
+    type: string
+  Box 1 — Interest income:
+    type: string
+  Box 3 — Interest on U.S. Savings Bonds and Treasury obligations:
+    type: string
+  Box 4 — Federal income tax withheld:
+    type: string
+  Box 5 — Investment expenses:
+    type: string
+  Box 6 — Foreign tax paid:
+    type: string
+  Box 7 — Foreign country or U.S. territory:
+    type: string
+  Box 8 — Tax-exempt interest:
+    type: string
+  Box 9 — Specified private activity bond interest:
+    type: string
+  Box 10 — Market discount:
+    type: string
+  Box 11 — Bond premium:
+    type: string
+  Box 12 — Bond premium on Treasury obligations:
+    type: string
+  Box 13 — Bond premium on tax-exempt bond:
+    type: string
+  Box 14 — Tax-exempt and tax credit bond CUSIP no.:
+    type: string
+  Box 15 — State (1):
+    type: string
+  Box 16 — State identification no. (1):
+    type: string
+  Box 17 — State tax withheld (1):
+    type: string
+  Box 15 — State (2):
+    type: string
+  Box 16 — State identification no. (2):
+    type: string
+  Box 17 — State tax withheld (2):
+    type: string
+  Copy 1 — Calendar year:
+    type: string
+  Copy 1 — VOID:
+    type: bool
+  Copy 1 — CORRECTED:
+    type: bool
+  Copy 1 — Payer's name, street address, city, state, ZIP, and telephone no.:
+    type: string
+  Copy 1 — Payer's RTN (optional):
+    type: string
+  Copy 1 — Payer's TIN:
+    type: string
+  Copy 1 — Recipient's TIN:
+    type: string
+  Copy 1 — Recipient's name:
+    type: string
+  Copy 1 — Recipient's street address (including apt. no.):
+    type: string
+  Copy 1 — FATCA filing requirement:
+    type: bool
+  Copy 1 — Recipient's city, state, country, and ZIP:
+    type: string
+  Copy 1 — Account number (see instructions):
+    type: string
+  Copy 1 — Box 1 Interest income:
+    type: string
+  Copy 1 — Box 2 Early withdrawal penalty:
+    type: string
+  Copy 1 — Box 3 Interest on U.S. Savings Bonds and Treasury obligations:
+    type: string
+  Copy 1 — Box 4 Federal income tax withheld:
+    type: string
+  Copy 1 — Box 5 Investment expenses:
+    type: string
+  Copy 1 — Box 6 Foreign tax paid:
+    type: string
+  Copy 1 — Box 7 Foreign country or U.S. territory:
+    type: string
+  Copy 1 — Box 8 Tax-exempt interest:
+    type: string
+  Copy 1 — Box 9 Specified private activity bond interest:
+    type: string
+  Copy 1 — Box 10 Market discount:
+    type: string
+  Copy 1 — Box 11 Bond premium:
+    type: string
+  Copy 1 — Box 12 Bond premium on Treasury obligations:
+    type: string
+  Copy 1 — Box 13 Bond premium on tax-exempt bond:
+    type: string
+  Copy 1 — Box 14 Tax-exempt and tax credit bond CUSIP no.:
+    type: string
+  Copy 1 — Box 15 State (1):
+    type: string
+  Copy 1 — Box 16 State identification no. (1):
+    type: string
+  Copy 1 — Box 17 State tax withheld (1):
+    type: string
+  Copy 1 — Box 15 State (2):
+    type: string
+  Copy 1 — Box 16 State identification no. (2):
+    type: string
+  Copy 1 — Box 17 State tax withheld (2):
+    type: string
+  Copy B — Calendar year:
+    type: string
+  Copy B — CORRECTED (if checked):
+    type: bool
+  Copy B — Payer's name, street address, city, state, ZIP, and telephone no.:
+    type: string
+  Copy B — Payer's RTN (optional):
+    type: string
+  Copy B — Payer's TIN:
+    type: string
+  Copy B — Recipient's TIN:
+    type: string
+  Copy B — Recipient's name:
+    type: string
+  Copy B — Recipient's street address (including apt. no.):
+    type: string
+  Copy B — FATCA filing requirement:
+    type: bool
+  Copy B — Recipient's city, state, country, and ZIP:
+    type: string
+  Copy B — Account number (see instructions):
+    type: string
+  Copy B — Box 1 Interest income:
+    type: string
+  Copy B — Box 2 Early withdrawal penalty:
+    type: string
+  Copy B — Box 3 Interest on U.S. Savings Bonds and Treasury obligations:
+    type: string
+  Copy B — Box 4 Federal income tax withheld:
+    type: string
+  Copy B — Box 5 Investment expenses:
+    type: string
+  Copy B — Box 6 Foreign tax paid:
+    type: string
+  Copy B — Box 7 Foreign country or U.S. territory:
+    type: string
+  Copy B — Box 8 Tax-exempt interest:
+    type: string
+  Copy B — Box 9 Specified private activity bond interest:
+    type: string
+  Copy B — Box 10 Market discount:
+    type: string
+  Copy B — Box 11 Bond premium:
+    type: string
+  Copy B — Box 12 Bond premium on Treasury obligations:
+    type: string
+  Copy B — Box 13 Bond premium on tax-exempt bond:
+    type: string
+  Copy B — Box 14 Tax-exempt and tax credit bond CUSIP no.:
+    type: string
+  Copy B — Box 15 State (1):
+    type: string
+  Copy B — Box 16 State identification no. (1):
+    type: string
+  Copy B — Box 17 State tax withheld (1):
+    type: string
+  Copy B — Box 15 State (2):
+    type: string
+  Copy B — Box 16 State identification no. (2):
+    type: string
+  Copy B — Box 17 State tax withheld (2):
+    type: string
+  Copy 2 — Calendar year:
+    type: string
+  Copy 2 — CORRECTED (if checked):
+    type: bool
+  Copy 2 — Payer's name, street address, city, state, ZIP, and telephone no.:
+    type: string
+  Copy 2 — Payer's RTN (optional):
+    type: string
+  Copy 2 — Payer's TIN:
+    type: string
+  Copy 2 — Recipient's TIN:
+    type: string
+  Copy 2 — Recipient's name:
+    type: string
+  Copy 2 — Recipient's street address (including apt. no.):
+    type: string
+  Copy 2 — FATCA filing requirement:
+    type: bool
+  Copy 2 — Recipient's city, state, country, and ZIP:
+    type: string
+  Copy 2 — Account number (see instructions):
+    type: string
+  Copy 2 — Box 1 Interest income:
+    type: string
+  Copy 2 — Box 2 Early withdrawal penalty:
+    type: string
+  Copy 2 — Box 3 Interest on U.S. Savings Bonds and Treasury obligations:
+    type: string
+  Copy 2 — Box 4 Federal income tax withheld:
+    type: string
+  Copy 2 — Box 5 Investment expenses:
+    type: string
+  Copy 2 — Box 6 Foreign tax paid:
+    type: string
+  Copy 2 — Box 7 Foreign country or U.S. territory:
+    type: string
+  Copy 2 — Box 8 Tax-exempt interest:
+    type: string
+  Copy 2 — Box 9 Specified private activity bond interest:
+    type: string
+  Copy 2 — Box 10 Market discount:
+    type: string
+  Copy 2 — Box 11 Bond premium:
+    type: string
+  Copy 2 — Box 12 Bond premium on Treasury obligations:
+    type: string
+  Copy 2 — Box 13 Bond premium on tax-exempt bond:
+    type: string
+  Copy 2 — Box 14 Tax-exempt and tax credit bond CUSIP no.:
+    type: string
+  Copy 2 — Box 15 State (1):
+    type: string
+  Copy 2 — Box 16 State identification no. (1):
+    type: string
+  Copy 2 — Box 17 State tax withheld (1):
+    type: string
+  Copy 2 — Box 15 State (2):
+    type: string
+  Copy 2 — Box 16 State identification no. (2):
+    type: string
+  Copy 2 — Box 17 State tax withheld (2):
+    type: string

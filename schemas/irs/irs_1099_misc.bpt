@@ -1,0 +1,245 @@
+name: irs_1099_misc
+record_type: object
+description: Reports miscellaneous payments such as rents, royalties, and prizes.
+source:
+  owner: IRS
+  url: https://www.irs.gov/forms-pubs/about-form-1099-misc
+fields:
+  Calendar year:
+    type: string
+  VOID:
+    type: bool
+  CORRECTED:
+    type: bool
+  Payer's name, street address, city, state, ZIP, and telephone no.:
+    type: string
+  Payer's TIN:
+    type: string
+  Recipient's TIN:
+    type: string
+  Recipient's name:
+    type: string
+  Recipient's street address (including apt. no.):
+    type: string
+  Recipient's city or town, state or province, country, and ZIP or foreign postal code:
+    type: string
+  Account number:
+    type: string
+  2nd TIN not.:
+    type: bool
+  Box 1 — Rents:
+    type: string
+  Box 2 — Royalties:
+    type: string
+  Box 3 — Other income:
+    type: string
+  Box 4 — Federal income tax withheld:
+    type: string
+  Box 5 — Fishing boat proceeds:
+    type: string
+  Box 6 — Medical and health care payments:
+    type: string
+  Box 7 — Payer made direct sales totaling $5,000 or more of consumer products to recipient for resale:
+    type: bool
+  Box 8 — Substitute payments in lieu of dividends or interest:
+    type: string
+  Box 9 — Crop insurance proceeds:
+    type: string
+  Box 10 — Gross proceeds paid to an attorney:
+    type: string
+  Box 12 — Section 409A deferrals:
+    type: string
+  Box 13 — FATCA filing requirement:
+    type: bool
+  Box 15 — Nonqualified deferred compensation:
+    type: string
+  Box 11 — Fish purchased for resale:
+    type: string
+  Box 16 — State tax withheld (state 1):
+    type: string
+  Box 16 — State tax withheld (state 2):
+    type: string
+  Box 17 — State/Payer's state no. (state 1):
+    type: string
+  Box 17 — State/Payer's state no. (state 2):
+    type: string
+  Box 18 — State income (state 1):
+    type: string
+  Box 18 — State income (state 2):
+    type: string
+  Copy 1 — Calendar year:
+    type: string
+  Copy 1 — VOID:
+    type: bool
+  Copy 1 — CORRECTED:
+    type: bool
+  Copy 1 — Payer's name, street address, city, state, ZIP, and telephone no.:
+    type: string
+  Copy 1 — Payer's TIN:
+    type: string
+  Copy 1 — Recipient's TIN:
+    type: string
+  Copy 1 — Recipient's name:
+    type: string
+  Copy 1 — Recipient's street address (including apt. no.):
+    type: string
+  Copy 1 — Recipient's city, state, country, and ZIP:
+    type: string
+  Copy 1 — Account number:
+    type: string
+  Copy 1 — Box 1 Rents:
+    type: string
+  Copy 1 — Box 2 Royalties:
+    type: string
+  Copy 1 — Box 3 Other income:
+    type: string
+  Copy 1 — Box 4 Federal income tax withheld:
+    type: string
+  Copy 1 — Box 5 Fishing boat proceeds:
+    type: string
+  Copy 1 — Box 6 Medical and health care payments:
+    type: string
+  Copy 1 — Box 7 Payer made direct sales of $5,000+ for resale:
+    type: bool
+  Copy 1 — Box 8 Substitute payments in lieu of dividends or interest:
+    type: string
+  Copy 1 — Box 9 Crop insurance proceeds:
+    type: string
+  Copy 1 — Box 10 Gross proceeds paid to an attorney:
+    type: string
+  Copy 1 — Box 11 Fish purchased for resale:
+    type: string
+  Copy 1 — Box 12 Section 409A deferrals:
+    type: string
+  Copy 1 — Box 13 FATCA filing requirement:
+    type: bool
+  Copy 1 — Box 15 Nonqualified deferred compensation:
+    type: string
+  Copy 1 — Box 16 State tax withheld (state 1):
+    type: string
+  Copy 1 — Box 16 State tax withheld (state 2):
+    type: string
+  Copy 1 — Box 17 State/Payer's state no. (state 1):
+    type: string
+  Copy 1 — Box 17 State/Payer's state no. (state 2):
+    type: string
+  Copy 1 — Box 18 State income (state 1):
+    type: string
+  Copy 1 — Box 18 State income (state 2):
+    type: string
+  Copy B — Calendar year:
+    type: string
+  Copy B — CORRECTED (if checked):
+    type: bool
+  Copy B — Payer's name, street address, city, state, ZIP, and telephone no.:
+    type: string
+  Copy B — Payer's TIN:
+    type: string
+  Copy B — Recipient's TIN:
+    type: string
+  Copy B — Recipient's name:
+    type: string
+  Copy B — Recipient's street address (including apt. no.):
+    type: string
+  Copy B — Recipient's city, state, country, and ZIP:
+    type: string
+  Copy B — Account number:
+    type: string
+  Copy B — Box 1 Rents:
+    type: string
+  Copy B — Box 2 Royalties:
+    type: string
+  Copy B — Box 3 Other income:
+    type: string
+  Copy B — Box 4 Federal income tax withheld:
+    type: string
+  Copy B — Box 5 Fishing boat proceeds:
+    type: string
+  Copy B — Box 6 Medical and health care payments:
+    type: string
+  Copy B — Box 7 Payer made direct sales of $5,000+ for resale:
+    type: bool
+  Copy B — Box 8 Substitute payments in lieu of dividends or interest:
+    type: string
+  Copy B — Box 9 Crop insurance proceeds:
+    type: string
+  Copy B — Box 10 Gross proceeds paid to an attorney:
+    type: string
+  Copy B — Box 11 Fish purchased for resale:
+    type: string
+  Copy B — Box 12 Section 409A deferrals:
+    type: string
+  Copy B — Box 13 FATCA filing requirement:
+    type: bool
+  Copy B — Box 15 Nonqualified deferred compensation:
+    type: string
+  Copy B — Box 16 State tax withheld (state 1):
+    type: string
+  Copy B — Box 16 State tax withheld (state 2):
+    type: string
+  Copy B — Box 17 State/Payer's state no. (state 1):
+    type: string
+  Copy B — Box 17 State/Payer's state no. (state 2):
+    type: string
+  Copy B — Box 18 State income (state 1):
+    type: string
+  Copy B — Box 18 State income (state 2):
+    type: string
+  Copy 2 — Calendar year:
+    type: string
+  Copy 2 — CORRECTED (if checked):
+    type: bool
+  Copy 2 — Payer's name, street address, city, state, ZIP, and telephone no.:
+    type: string
+  Copy 2 — Payer's TIN:
+    type: string
+  Copy 2 — Recipient's TIN:
+    type: string
+  Copy 2 — Recipient's name:
+    type: string
+  Copy 2 — Recipient's street address (including apt. no.):
+    type: string
+  Copy 2 — Recipient's city, state, country, and ZIP:
+    type: string
+  Copy 2 — Account number:
+    type: string
+  Copy 2 — Box 1 Rents:
+    type: string
+  Copy 2 — Box 2 Royalties:
+    type: string
+  Copy 2 — Box 3 Other income:
+    type: string
+  Copy 2 — Box 4 Federal income tax withheld:
+    type: string
+  Copy 2 — Box 5 Fishing boat proceeds:
+    type: string
+  Copy 2 — Box 6 Medical and health care payments:
+    type: string
+  Copy 2 — Box 7 Payer made direct sales of $5,000+ for resale:
+    type: bool
+  Copy 2 — Box 8 Substitute payments in lieu of dividends or interest:
+    type: string
+  Copy 2 — Box 9 Crop insurance proceeds:
+    type: string
+  Copy 2 — Box 10 Gross proceeds paid to an attorney:
+    type: string
+  Copy 2 — Box 11 Fish purchased for resale:
+    type: string
+  Copy 2 — Box 12 Section 409A deferrals:
+    type: string
+  Copy 2 — Box 13 FATCA filing requirement:
+    type: bool
+  Copy 2 — Box 15 Nonqualified deferred compensation:
+    type: string
+  Copy 2 — Box 16 State tax withheld (state 1):
+    type: string
+  Copy 2 — Box 16 State tax withheld (state 2):
+    type: string
+  Copy 2 — Box 17 State/Payer's state no. (state 1):
+    type: string
+  Copy 2 — Box 17 State/Payer's state no. (state 2):
+    type: string
+  Copy 2 — Box 18 State income (state 1):
+    type: string
+  Copy 2 — Box 18 State income (state 2):
+    type: string

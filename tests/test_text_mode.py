@@ -226,7 +226,7 @@ class TestInferSchemaVisionEndpoint:
         }
 
         with patch(
-            "server.app.async_infer_schema_vision",
+            "server.app.async_infer_blueprint_vision",
             new_callable=AsyncMock,
             return_value=dummy_spec,
         ):
@@ -254,7 +254,7 @@ class TestInferSchemaVisionEndpoint:
         import asyncio
 
         with patch(
-            "server.app.async_infer_schema_vision",
+            "server.app.async_infer_blueprint_vision",
             new_callable=AsyncMock,
             side_effect=ValueError("Model returned empty response"),
         ):

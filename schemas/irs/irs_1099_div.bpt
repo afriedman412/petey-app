@@ -1,0 +1,287 @@
+name: irs_1099_div
+record_type: object
+description: Reports dividend and capital gain distributions paid to shareholders.
+source:
+  owner: IRS
+  url: https://www.irs.gov/forms-pubs/about-form-1099-div
+fields:
+  Calendar year:
+    type: string
+  VOID:
+    type: bool
+  CORRECTED:
+    type: bool
+  Payer's name, address, and telephone number:
+    type: string
+  Payer's TIN:
+    type: string
+  Recipient's TIN:
+    type: string
+  Recipient's name:
+    type: string
+  Recipient's street address (including apt. no.):
+    type: string
+  Recipient's city, state, country, and ZIP code:
+    type: string
+  Account number:
+    type: string
+  2nd TIN not.:
+    type: bool
+  Box 1a — Total ordinary dividends:
+    type: string
+  Box 1b — Qualified dividends:
+    type: string
+  Box 2a — Total capital gain distributions:
+    type: string
+  Box 2b — Unrecaptured Sec. 1250 gain:
+    type: string
+  Box 2c — Section 1202 gain:
+    type: string
+  Box 2d — Collectibles (28%) gain:
+    type: string
+  Box 2e — Section 897 ordinary dividends:
+    type: string
+  Box 2f — Section 897 capital gain:
+    type: string
+  Box 3 — Nondividend distributions:
+    type: string
+  Box 4 — Federal income tax withheld:
+    type: string
+  Box 5 — Section 199A dividends:
+    type: string
+  Box 6 — Investment expenses:
+    type: string
+  Box 7 — Foreign tax paid:
+    type: string
+  Box 8 — Foreign country or U.S. possession:
+    type: string
+  Box 9 — Cash liquidation distributions:
+    type: string
+  Box 10 — Noncash liquidation distributions:
+    type: string
+  Box 11 — FATCA filing requirement:
+    type: bool
+  Box 12 — Exempt-interest dividends:
+    type: string
+  Box 13 — Specified private activity bond interest dividends:
+    type: string
+  Box 14 — State (1):
+    type: string
+  Box 14 — State (2):
+    type: string
+  Box 15 — State identification no. (1):
+    type: string
+  Box 15 — State identification no. (2):
+    type: string
+  Box 16 — State tax withheld (1):
+    type: string
+  Box 16 — State tax withheld (2):
+    type: string
+  Copy 1 — Calendar year:
+    type: string
+  Copy 1 — VOID:
+    type: bool
+  Copy 1 — CORRECTED:
+    type: bool
+  Copy 1 — Payer's name, address, and telephone number:
+    type: string
+  Copy 1 — Payer's TIN:
+    type: string
+  Copy 1 — Recipient's TIN:
+    type: string
+  Copy 1 — Recipient's name:
+    type: string
+  Copy 1 — Recipient's street address (including apt. no.):
+    type: string
+  Copy 1 — Recipient's city, state, country, and ZIP code:
+    type: string
+  Copy 1 — Account number:
+    type: string
+  Copy 1 — Box 1a — Total ordinary dividends:
+    type: string
+  Copy 1 — Box 1b — Qualified dividends:
+    type: string
+  Copy 1 — Box 2a — Total capital gain distributions:
+    type: string
+  Copy 1 — Box 2b — Unrecaptured Sec. 1250 gain:
+    type: string
+  Copy 1 — Box 2c — Section 1202 gain:
+    type: string
+  Copy 1 — Box 2d — Collectibles (28%) gain:
+    type: string
+  Copy 1 — Box 2e — Section 897 ordinary dividends:
+    type: string
+  Copy 1 — Box 2f — Section 897 capital gain:
+    type: string
+  Copy 1 — Box 3 — Nondividend distributions:
+    type: string
+  Copy 1 — Box 4 — Federal income tax withheld:
+    type: string
+  Copy 1 — Box 5 — Section 199A dividends:
+    type: string
+  Copy 1 — Box 6 — Investment expenses:
+    type: string
+  Copy 1 — Box 7 — Foreign tax paid:
+    type: string
+  Copy 1 — Box 8 — Foreign country or U.S. possession:
+    type: string
+  Copy 1 — Box 9 — Cash liquidation distributions:
+    type: string
+  Copy 1 — Box 10 — Noncash liquidation distributions:
+    type: string
+  Copy 1 — Box 11 — FATCA filing requirement:
+    type: bool
+  Copy 1 — Box 12 — Exempt-interest dividends:
+    type: string
+  Copy 1 — Box 13 — Specified private activity bond interest dividends:
+    type: string
+  Copy 1 — Box 14 — State (1):
+    type: string
+  Copy 1 — Box 14 — State (2):
+    type: string
+  Copy 1 — Box 15 — State identification no. (1):
+    type: string
+  Copy 1 — Box 15 — State identification no. (2):
+    type: string
+  Copy 1 — Box 16 — State tax withheld (1):
+    type: string
+  Copy 1 — Box 16 — State tax withheld (2):
+    type: string
+  Copy B — Calendar year:
+    type: string
+  Copy B — CORRECTED (if checked):
+    type: bool
+  Copy B — Payer's name, address, and telephone number:
+    type: string
+  Copy B — Payer's TIN:
+    type: string
+  Copy B — Recipient's TIN:
+    type: string
+  Copy B — Recipient's name:
+    type: string
+  Copy B — Recipient's street address (including apt. no.):
+    type: string
+  Copy B — Recipient's city, state, country, and ZIP code:
+    type: string
+  Copy B — Account number:
+    type: string
+  Copy B — Box 1a — Total ordinary dividends:
+    type: string
+  Copy B — Box 1b — Qualified dividends:
+    type: string
+  Copy B — Box 2a — Total capital gain distributions:
+    type: string
+  Copy B — Box 2b — Unrecaptured Sec. 1250 gain:
+    type: string
+  Copy B — Box 2c — Section 1202 gain:
+    type: string
+  Copy B — Box 2d — Collectibles (28%) gain:
+    type: string
+  Copy B — Box 2e — Section 897 ordinary dividends:
+    type: string
+  Copy B — Box 2f — Section 897 capital gain:
+    type: string
+  Copy B — Box 3 — Nondividend distributions:
+    type: string
+  Copy B — Box 4 — Federal income tax withheld:
+    type: string
+  Copy B — Box 5 — Section 199A dividends:
+    type: string
+  Copy B — Box 6 — Investment expenses:
+    type: string
+  Copy B — Box 7 — Foreign tax paid:
+    type: string
+  Copy B — Box 8 — Foreign country or U.S. possession:
+    type: string
+  Copy B — Box 9 — Cash liquidation distributions:
+    type: string
+  Copy B — Box 10 — Noncash liquidation distributions:
+    type: string
+  Copy B — Box 11 — FATCA filing requirement:
+    type: bool
+  Copy B — Box 12 — Exempt-interest dividends:
+    type: string
+  Copy B — Box 13 — Specified private activity bond interest dividends:
+    type: string
+  Copy B — Box 14 — State (1):
+    type: string
+  Copy B — Box 14 — State (2):
+    type: string
+  Copy B — Box 15 — State identification no. (1):
+    type: string
+  Copy B — Box 15 — State identification no. (2):
+    type: string
+  Copy B — Box 16 — State tax withheld (1):
+    type: string
+  Copy B — Box 16 — State tax withheld (2):
+    type: string
+  Copy 2 — Calendar year:
+    type: string
+  Copy 2 — VOID:
+    type: bool
+  Copy 2 — CORRECTED:
+    type: bool
+  Copy 2 — Payer's name, address, and telephone number:
+    type: string
+  Copy 2 — Payer's TIN:
+    type: string
+  Copy 2 — Recipient's TIN:
+    type: string
+  Copy 2 — Recipient's name:
+    type: string
+  Copy 2 — Recipient's street address (including apt. no.):
+    type: string
+  Copy 2 — Recipient's city, state, country, and ZIP code:
+    type: string
+  Copy 2 — Account number:
+    type: string
+  Copy 2 — Box 1a — Total ordinary dividends:
+    type: string
+  Copy 2 — Box 1b — Qualified dividends:
+    type: string
+  Copy 2 — Box 2a — Total capital gain distributions:
+    type: string
+  Copy 2 — Box 2b — Unrecaptured Sec. 1250 gain:
+    type: string
+  Copy 2 — Box 2c — Section 1202 gain:
+    type: string
+  Copy 2 — Box 2d — Collectibles (28%) gain:
+    type: string
+  Copy 2 — Box 2e — Section 897 ordinary dividends:
+    type: string
+  Copy 2 — Box 2f — Section 897 capital gain:
+    type: string
+  Copy 2 — Box 3 — Nondividend distributions:
+    type: string
+  Copy 2 — Box 4 — Federal income tax withheld:
+    type: string
+  Copy 2 — Box 5 — Section 199A dividends:
+    type: string
+  Copy 2 — Box 6 — Investment expenses:
+    type: string
+  Copy 2 — Box 7 — Foreign tax paid:
+    type: string
+  Copy 2 — Box 8 — Foreign country or U.S. possession:
+    type: string
+  Copy 2 — Box 9 — Cash liquidation distributions:
+    type: string
+  Copy 2 — Box 10 — Noncash liquidation distributions:
+    type: string
+  Copy 2 — Box 11 — FATCA filing requirement:
+    type: bool
+  Copy 2 — Box 12 — Exempt-interest dividends:
+    type: string
+  Copy 2 — Box 13 — Specified private activity bond interest dividends:
+    type: string
+  Copy 2 — Box 14 — State (1):
+    type: string
+  Copy 2 — Box 14 — State (2):
+    type: string
+  Copy 2 — Box 15 — State identification no. (1):
+    type: string
+  Copy 2 — Box 15 — State identification no. (2):
+    type: string
+  Copy 2 — Box 16 — State tax withheld (1):
+    type: string
+  Copy 2 — Box 16 — State tax withheld (2):
+    type: string

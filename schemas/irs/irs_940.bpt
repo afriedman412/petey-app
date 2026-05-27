@@ -1,0 +1,201 @@
+name: irs_940
+record_type: object
+description: Annual federal unemployment tax (FUTA) return.
+source:
+  owner: IRS
+  url: https://www.irs.gov/forms-pubs/about-form-940
+fields:
+  EIN — first 2 digits:
+    type: string
+  EIN — last 7 digits:
+    type: string
+  Name (not your trade name):
+    type: string
+  Trade name (if any):
+    type: string
+  Address — Number and street:
+    type: string
+  Address — Suite or room number:
+    type: string
+  Address — City:
+    type: string
+  Address — State:
+    type: string
+  Address — ZIP code:
+    type: string
+  Address — Foreign country name:
+    type: string
+  Address — Foreign province/county:
+    type: string
+  Type of Return — a. Amended:
+    type: bool
+  Type of Return — b. Successor employer:
+    type: bool
+  Type of Return — c. No payments to employees in 2025:
+    type: bool
+  'Type of Return — d. Final: Business closed or stopped paying wages':
+    type: bool
+  Aggregate Return Filer — Section 3504 Agent:
+    type: bool
+  Aggregate Return Filer — Certified Professional Employer Organization (CPEO):
+    type: bool
+  Aggregate Return Filer — Other Third Party:
+    type: bool
+  Address — Foreign postal code:
+    type: string
+  Line 1a — State abbreviation (single-state employer):
+    type: string
+  Line 1b — Multi-state employer (check here):
+    type: bool
+  Line 2 — Paid wages in a credit reduction state (check here):
+    type: bool
+  Line 3 — Total payments to all employees (dollars):
+    type: string
+  Line 3 — Total payments to all employees (cents):
+    type: string
+  Line 4 — Payments exempt from FUTA tax (dollars):
+    type: string
+  Line 4 — Payments exempt from FUTA tax (cents):
+    type: string
+  Line 4a — Fringe benefits:
+    type: bool
+  Line 4b — Group-term life insurance:
+    type: bool
+  Line 4c — Retirement/Pension:
+    type: bool
+  Line 4d — Dependent care:
+    type: bool
+  Line 4e — Other:
+    type: bool
+  Line 5 — Total payments to each employee in excess of $7,000 (dollars):
+    type: string
+  Line 5 — Total payments to each employee in excess of $7,000 (cents):
+    type: string
+  Line 6 — Subtotal (line 4 + line 5) (dollars):
+    type: string
+  Line 6 — Subtotal (line 4 + line 5) (cents):
+    type: string
+  Line 7 — Total taxable FUTA wages (dollars):
+    type: string
+  Line 7 — Total taxable FUTA wages (cents):
+    type: string
+  Line 8 — FUTA tax before adjustments (dollars):
+    type: string
+  Line 8 — FUTA tax before adjustments (cents):
+    type: string
+  'Line 9 — All taxable FUTA wages excluded from state UI: line 7 × 0.054 (dollars)':
+    type: string
+  'Line 9 — All taxable FUTA wages excluded from state UI: line 7 × 0.054 (cents)':
+    type: string
+  Line 10 — Adjustment from worksheet (dollars):
+    type: string
+  Line 10 — Adjustment from worksheet (cents):
+    type: string
+  Line 11 — Credit reduction total from Schedule A (dollars):
+    type: string
+  Line 11 — Credit reduction total from Schedule A (cents):
+    type: string
+  Line 12 — Total FUTA tax after adjustments (dollars):
+    type: string
+  Line 12 — Total FUTA tax after adjustments (cents):
+    type: string
+  Line 13 — FUTA tax deposited for the year (dollars):
+    type: string
+  Line 13 — FUTA tax deposited for the year (cents):
+    type: string
+  Line 14 — Balance due (dollars):
+    type: string
+  Line 14 — Balance due (cents):
+    type: string
+  Line 15c — Routing number:
+    type: string
+  'Line 15d — Account type: Checking':
+    type: bool
+  'Line 15d — Account type: Savings':
+    type: bool
+  Line 15e — Account number:
+    type: string
+  Line 15a — Overpayment (dollars):
+    type: string
+  Line 15a — Overpayment (cents):
+    type: string
+  Line 15b — Apply overpayment to next return:
+    type: bool
+  Line 15b — Send a refund:
+    type: bool
+  Page 2 header — Name (not your trade name):
+    type: string
+  Page 2 header — EIN first 2 digits:
+    type: string
+  Page 2 header — EIN last 7 digits:
+    type: string
+  Line 16a — 1st quarter FUTA tax liability (dollars):
+    type: string
+  Line 16a — 1st quarter FUTA tax liability (cents):
+    type: string
+  Line 16b — 2nd quarter FUTA tax liability (dollars):
+    type: string
+  Line 16b — 2nd quarter FUTA tax liability (cents):
+    type: string
+  Line 16c — 3rd quarter FUTA tax liability (dollars):
+    type: string
+  Line 16c — 3rd quarter FUTA tax liability (cents):
+    type: string
+  Line 16d — 4th quarter FUTA tax liability (dollars):
+    type: string
+  Line 16d — 4th quarter FUTA tax liability (cents):
+    type: string
+  Line 17 — Total tax liability for the year (dollars):
+    type: string
+  Line 17 — Total tax liability for the year (cents):
+    type: string
+  Part 6 — Yes, allow third-party designee:
+    type: bool
+  Third-party designee — Name:
+    type: string
+  Third-party designee — Phone number:
+    type: string
+  Third-party designee — 5-digit PIN:
+    type: string
+  Part 6 — No, do not allow third-party designee:
+    type: bool
+  Signature — Date signed:
+    type: string
+  Signature — Print your name:
+    type: string
+  Signature — Print your title:
+    type: string
+  Paid Preparer — Check if self-employed:
+    type: bool
+  Signature — Best daytime phone:
+    type: string
+  Paid Preparer — Name:
+    type: string
+  Paid Preparer — PTIN:
+    type: string
+  Paid Preparer — Date signed:
+    type: string
+  Paid Preparer — Firm's name (or yours if self-employed):
+    type: string
+  Paid Preparer — Firm's EIN:
+    type: string
+  Paid Preparer — Address:
+    type: string
+  Paid Preparer — Phone:
+    type: string
+  Paid Preparer — City, State, ZIP code:
+    type: string
+  Form 940-V Box 1 — EIN first 2 digits:
+    type: string
+  Form 940-V Box 1 — EIN last 7 digits:
+    type: string
+  Form 940-V Box 2 — Amount of payment (dollars):
+    type: string
+  Form 940-V Box 2 — Amount of payment (cents):
+    type: string
+  Form 940-V Box 3 — Business name (or individual name if sole proprietor):
+    type: string
+  Form 940-V Box 3 — Address:
+    type: string
+  Form 940-V Box 3 — City, state, ZIP (or foreign equivalents):
+    type: string

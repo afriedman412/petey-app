@@ -1,0 +1,401 @@
+name: irs_1040
+record_type: object
+description: Standard US individual income tax return.
+source:
+  owner: IRS
+  url: https://www.irs.gov/forms-pubs/about-form-1040
+fields:
+  Tax year beginning date:
+    type: string
+  Tax year ending — year:
+    type: string
+  Tax year ending date:
+    type: string
+  Filed pursuant to section 301.9100-2:
+    type: bool
+  Combat zone:
+    type: bool
+  Other (top-of-form designation):
+    type: string
+  Deceased — taxpayer:
+    type: bool
+  Taxpayer date of death:
+    type: string
+  Taxpayer date of death — additional segment:
+    type: string
+  Taxpayer date of death — additional segment (2):
+    type: string
+  Spouse date of death — segment:
+    type: string
+  Spouse date of death — segment (2):
+    type: string
+  Spouse date of death — segment (3):
+    type: string
+  Deceased — spouse:
+    type: bool
+  Your first name and middle initial:
+    type: string
+  Your last name:
+    type: string
+  Your social security number:
+    type: string
+  Spouse's first name and middle initial:
+    type: string
+  Spouse's last name:
+    type: string
+  Spouse's social security number:
+    type: string
+  Home address (number and street):
+    type: string
+  Apt. no.:
+    type: string
+  City, town, or post office:
+    type: string
+  State:
+    type: string
+  ZIP code:
+    type: string
+  Foreign country name:
+    type: string
+  Foreign province/state/county:
+    type: string
+  Foreign postal code:
+    type: string
+  MFS spouse's full name:
+    type: string
+  HOH/QSS qualifying child name:
+    type: string
+  Nonresident/dual-status alien spouse name:
+    type: string
+  Main home in U.S. for more than half of 2025:
+    type: bool
+  Presidential Election Campaign — You:
+    type: bool
+  Presidential Election Campaign — Spouse:
+    type: bool
+  Filing status — Single:
+    type: bool
+  Filing status — Married filing jointly:
+    type: bool
+  Filing status — Married filing separately (MFS):
+    type: bool
+  MFS spouse's SSN:
+    type: string
+  Filing status — Head of household (HOH):
+    type: bool
+  Filing status — Qualifying surviving spouse (QSS):
+    type: bool
+  Treating nonresident/dual-status alien spouse as U.S. resident — additional name field:
+    type: string
+  Treating nonresident or dual-status alien spouse as U.S. resident — checkbox:
+    type: bool
+  Treating nonresident/dual-status alien spouse — name (additional):
+    type: string
+  Digital assets — Yes:
+    type: bool
+  Digital assets — No:
+    type: bool
+  More than four dependents — check here:
+    type: bool
+  Dependent 1 — First name:
+    type: string
+  Dependent 2 — First name:
+    type: string
+  Dependent 3 — First name:
+    type: string
+  Dependent 4 — First name:
+    type: string
+  Dependent 1 — Last name:
+    type: string
+  Dependent 2 — Last name:
+    type: string
+  Dependent 3 — Last name:
+    type: string
+  Dependent 4 — Last name:
+    type: string
+  Dependent 1 — SSN:
+    type: string
+  Dependent 2 — SSN:
+    type: string
+  Dependent 3 — SSN:
+    type: string
+  Dependent 4 — SSN:
+    type: string
+  Dependent 1 — Relationship:
+    type: string
+  Dependent 2 — Relationship:
+    type: string
+  Dependent 3 — Relationship:
+    type: string
+  Dependent 4 — Relationship:
+    type: string
+  Dependent 1 — Lived with you more than half of 2025 (Yes):
+    type: bool
+  Dependent 1 — And in the U.S.:
+    type: bool
+  Dependent 2 — Lived with you more than half of 2025 (Yes):
+    type: bool
+  Dependent 2 — And in the U.S.:
+    type: bool
+  Dependent 3 — Lived with you more than half of 2025 (Yes):
+    type: bool
+  Dependent 3 — And in the U.S.:
+    type: bool
+  Dependent 4 — Lived with you more than half of 2025 (Yes):
+    type: bool
+  Dependent 4 — And in the U.S.:
+    type: bool
+  Dependent 1 — Full-time student:
+    type: bool
+  Dependent 1 — Permanently and totally disabled:
+    type: bool
+  Dependent 2 — Full-time student:
+    type: bool
+  Dependent 2 — Permanently and totally disabled:
+    type: bool
+  Dependent 3 — Full-time student:
+    type: bool
+  Dependent 3 — Permanently and totally disabled:
+    type: bool
+  Dependent 4 — Full-time student:
+    type: bool
+  Dependent 4 — Permanently and totally disabled:
+    type: bool
+  Dependent 1 — Child tax credit:
+    type: bool
+  Dependent 1 — Credit for other dependents:
+    type: bool
+  Dependent 2 — Child tax credit:
+    type: bool
+  Dependent 2 — Credit for other dependents:
+    type: bool
+  Dependent 3 — Child tax credit:
+    type: bool
+  Dependent 3 — Credit for other dependents:
+    type: bool
+  Dependent 4 — Child tax credit:
+    type: bool
+  Dependent 4 — Credit for other dependents:
+    type: bool
+  MFS/HOH lived apart from spouse last 6 months of 2025:
+    type: bool
+  Line 1a — Total amount from Form(s) W-2, box 1:
+    type: string
+  Line 1b — Household employee wages not reported on Form(s) W-2:
+    type: string
+  Line 1c — Tip income not reported on line 1a:
+    type: string
+  Line 1d — Medicaid waiver payments not reported on Form(s) W-2:
+    type: string
+  Line 1e — Taxable dependent care benefits from Form 2441, line 26:
+    type: string
+  Line 1f — Employer-provided adoption benefits from Form 8839, line 31:
+    type: string
+  Line 1g — Wages from Form 8919, line 6:
+    type: string
+  Line 1h — Other earned income — type:
+    type: string
+  Line 1h — Other earned income — amount:
+    type: string
+  Line 1i — Nontaxable combat pay election:
+    type: string
+  Line 1z — Add lines 1a through 1h:
+    type: string
+  Line 2a — Tax-exempt interest:
+    type: string
+  Line 2b — Taxable interest:
+    type: string
+  Line 3a — Qualified dividends:
+    type: string
+  Line 3b — Ordinary dividends:
+    type: string
+  Line 3 — Child's dividends included in line 3a:
+    type: bool
+  Line 3 — Child's dividends included in line 3b:
+    type: bool
+  Line 4a — IRA distributions:
+    type: string
+  Line 4b — IRA distributions taxable amount:
+    type: string
+  Line 4c — Rollover:
+    type: bool
+  Line 4c — QCD:
+    type: bool
+  Line 4c — Option 3:
+    type: bool
+  Line 5a — Pensions and annuities:
+    type: string
+  Line 5b — Pensions and annuities taxable amount:
+    type: string
+  Line 6a — Social security benefits:
+    type: string
+  Line 5c — Rollover:
+    type: bool
+  Line 5c — PSO:
+    type: bool
+  Line 5c — Option 3:
+    type: bool
+  Line 6b — Social security benefits taxable amount:
+    type: string
+  Line 7a — Capital gain or (loss):
+    type: string
+  Line 8 — Additional income from Schedule 1, line 10:
+    type: string
+  Line 6c — Lump-sum election method:
+    type: bool
+  Line 6d — MFS lived apart from spouse entire year:
+    type: bool
+  Line 9 — Total income:
+    type: string
+  Line 7 — Schedule D not required:
+    type: bool
+  Line 7 — Includes child's capital gain or (loss):
+    type: bool
+  Line 10 — Adjustments to income from Schedule 1, line 26:
+    type: string
+  Line 11a — Adjusted gross income:
+    type: string
+  Page 1 footer field:
+    type: string
+  Line 11b — Adjusted gross income (from line 11a):
+    type: string
+  Line 12a — Someone can claim you as a dependent:
+    type: bool
+  Line 12a — Someone can claim your spouse as a dependent:
+    type: bool
+  Line 12b — Spouse itemizes on a separate return:
+    type: bool
+  Line 12c — You were a dual-status alien:
+    type: bool
+  'Line 12d — You: Were born before January 2, 1961':
+    type: bool
+  'Line 12d — You: Are blind':
+    type: bool
+  'Line 12d — Spouse: Was born before January 2, 1961':
+    type: bool
+  'Line 12d — Spouse: Is blind':
+    type: bool
+  Line 12e — Standard deduction or itemized deductions:
+    type: string
+  Line 13a — Qualified business income deduction (Form 8995/8995-A):
+    type: string
+  Line 13b — Additional deductions from Schedule 1-A, line 38:
+    type: string
+  Line 14 — Add lines 12e, 13a, and 13b:
+    type: string
+  Line 15 — Taxable income:
+    type: string
+  Line 16 — Tax from Form 8814:
+    type: bool
+  Line 16 — Tax from Form 4972:
+    type: bool
+  Line 16 — Tax from other form (option 3):
+    type: bool
+  Line 16 — Tax:
+    type: string
+  Line 17 — Amount from Schedule 2, line 3:
+    type: string
+  Line 18 — Add lines 16 and 17:
+    type: string
+  Line 19 — Child tax credit or credit for other dependents:
+    type: string
+  Line 20 — Amount from Schedule 3, line 8:
+    type: string
+  Line 21 — Add lines 19 and 20:
+    type: string
+  Line 22 — Subtract line 21 from line 18:
+    type: string
+  Line 23 — Other taxes from Schedule 2, line 21:
+    type: string
+  Line 24 — Total tax:
+    type: string
+  Line 25a — Federal income tax withheld from Form(s) W-2:
+    type: string
+  Line 25b — Federal income tax withheld from Form(s) 1099:
+    type: string
+  Line 25c — Federal income tax withheld from other forms:
+    type: string
+  Line 25d — Add lines 25a through 25c:
+    type: string
+  Line 26 — 2025 estimated tax payments and amount applied from 2024 return:
+    type: string
+  Former spouse's SSN (estimated tax payments):
+    type: string
+  Former spouse's SSN — additional segment:
+    type: string
+  Line 27a — Earned income credit (EIC):
+    type: string
+  Line 27b — Clergy filing Schedule SE:
+    type: bool
+  Line 27c — Do not want to claim the EIC:
+    type: bool
+  Line 28 — Do not want to claim the ACTC:
+    type: bool
+  Line 28 — Additional child tax credit (ACTC) from Schedule 8812:
+    type: string
+  Line 29 — American opportunity credit from Form 8863, line 8:
+    type: string
+  Line 30 — Refundable adoption credit from Form 8839, line 13:
+    type: string
+  Line 31 — Amount from Schedule 3, line 15:
+    type: string
+  Line 32 — Total other payments and refundable credits:
+    type: string
+  Line 33 — Total payments:
+    type: string
+  Line 34 — Amount overpaid:
+    type: string
+  Line 35a — Form 8888 attached:
+    type: bool
+  Line 35a — Amount of line 34 to be refunded:
+    type: string
+  Line 35b — Routing number:
+    type: string
+  'Line 35c — Account type: Checking':
+    type: bool
+  'Line 35c — Account type: Savings':
+    type: bool
+  Line 35d — Account number:
+    type: string
+  Line 36 — Amount applied to 2026 estimated tax:
+    type: string
+  Line 37 — Amount you owe:
+    type: string
+  Line 38 — Estimated tax penalty:
+    type: string
+  Third Party Designee — Yes:
+    type: bool
+  Third Party Designee — No:
+    type: bool
+  Third Party Designee — Name:
+    type: string
+  Third Party Designee — Phone number:
+    type: string
+  Third Party Designee — Personal identification number (PIN):
+    type: string
+  Your occupation:
+    type: string
+  Your Identity Protection PIN:
+    type: string
+  Spouse's occupation:
+    type: string
+  Spouse's Identity Protection PIN:
+    type: string
+  Phone number:
+    type: string
+  Email address:
+    type: string
+  Preparer's name:
+    type: string
+  Preparer's PTIN:
+    type: string
+  Preparer — Self-employed:
+    type: bool
+  Firm's name:
+    type: string
+  Firm's address:
+    type: string
+  Firm's phone number:
+    type: string
+  Firm's EIN:
+    type: string

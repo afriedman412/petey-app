@@ -1,0 +1,575 @@
+name: irs_w2
+record_type: object
+description: Annual wage and tax statement employers issue to employees and the SSA.
+source:
+  owner: IRS
+  url: https://www.irs.gov/forms-pubs/about-form-w-2
+fields:
+  c1 1:
+    type: bool
+  f1 01:
+    type: string
+  f1 02:
+    type: string
+  f1 03:
+    type: string
+  f1 04:
+    type: string
+  f1 05:
+    type: string
+  f1 06:
+    type: string
+  f1 07:
+    type: string
+  f1 08:
+    type: string
+  f1 09:
+    type: string
+  f1 10:
+    type: string
+  f1 11:
+    type: string
+  f1 12:
+    type: string
+  f1 13:
+    type: string
+  f1 14:
+    type: string
+  f1 15:
+    type: string
+  f1 16:
+    type: string
+  f1 17:
+    type: string
+  f1 18:
+    type: string
+  f1 19:
+    type: string
+  f1 20:
+    type: string
+  f1 21:
+    type: string
+  f1 22:
+    type: string
+  f1 23:
+    type: string
+  f1 24:
+    type: string
+  f1 25:
+    type: string
+  f1 26:
+    type: string
+  f1 27:
+    type: string
+  c1 2:
+    type: bool
+  c1 3:
+    type: bool
+  c1 4:
+    type: bool
+  f1 28:
+    type: string
+  f1 29:
+    type: string
+  f1 30:
+    type: string
+  f1 31:
+    type: string
+  f1 32:
+    type: string
+  f1 33:
+    type: string
+  f1 34:
+    type: string
+  f1 35:
+    type: string
+  f1 36:
+    type: string
+  f1 37:
+    type: string
+  f1 38:
+    type: string
+  f1 39:
+    type: string
+  f1 40:
+    type: string
+  f1 41:
+    type: string
+  f1 42:
+    type: string
+  f1 43:
+    type: string
+  f1 44:
+    type: string
+  f2 01:
+    type: string
+  f2 02:
+    type: string
+  f2 03:
+    type: string
+  f2 04:
+    type: string
+  f2 05:
+    type: string
+  f2 06:
+    type: string
+  f2 07:
+    type: string
+  f2 08:
+    type: string
+  f2 09:
+    type: string
+  f2 10:
+    type: string
+  f2 11:
+    type: string
+  f2 12:
+    type: string
+  f2 13:
+    type: string
+  f2 14:
+    type: string
+  f2 15:
+    type: string
+  f2 16:
+    type: string
+  f2 17:
+    type: string
+  f2 18:
+    type: string
+  f2 19:
+    type: string
+  f2 20:
+    type: string
+  f2 21:
+    type: string
+  f2 22:
+    type: string
+  f2 23:
+    type: string
+  f2 24:
+    type: string
+  f2 25:
+    type: string
+  f2 26:
+    type: string
+  f2 27:
+    type: string
+  c2 2:
+    type: bool
+  c2 3:
+    type: bool
+  c2 4:
+    type: bool
+  f2 28:
+    type: string
+  f2 29:
+    type: string
+  f2 30:
+    type: string
+  f2 31:
+    type: string
+  f2 32:
+    type: string
+  f2 33:
+    type: string
+  f2 34:
+    type: string
+  f2 35:
+    type: string
+  f2 36:
+    type: string
+  f2 37:
+    type: string
+  f2 38:
+    type: string
+  f2 39:
+    type: string
+  f2 40:
+    type: string
+  f2 41:
+    type: string
+  f2 42:
+    type: string
+  f2 43:
+    type: string
+  f2 44:
+    type: string
+  f2 01 2:
+    type: string
+  f2 02 2:
+    type: string
+  f2 03 2:
+    type: string
+  f2 04 2:
+    type: string
+  f2 05 2:
+    type: string
+  f2 06 2:
+    type: string
+  f2 07 2:
+    type: string
+  f2 08 2:
+    type: string
+  f2 09 2:
+    type: string
+  f2 10 2:
+    type: string
+  f2 11 2:
+    type: string
+  f2 12 2:
+    type: string
+  f2 13 2:
+    type: string
+  f2 14 2:
+    type: string
+  f2 15 2:
+    type: string
+  f2 16 2:
+    type: string
+  f2 17 2:
+    type: string
+  f2 18 2:
+    type: string
+  f2 19 2:
+    type: string
+  f2 20 2:
+    type: string
+  f2 21 2:
+    type: string
+  f2 22 2:
+    type: string
+  f2 23 2:
+    type: string
+  f2 24 2:
+    type: string
+  f2 25 2:
+    type: string
+  f2 26 2:
+    type: string
+  f2 27 2:
+    type: string
+  c2 2 2:
+    type: bool
+  c2 3 2:
+    type: bool
+  c2 4 2:
+    type: bool
+  f2 28 2:
+    type: string
+  f2 29 2:
+    type: string
+  f2 30 2:
+    type: string
+  f2 31 2:
+    type: string
+  f2 32 2:
+    type: string
+  f2 33 2:
+    type: string
+  f2 34 2:
+    type: string
+  f2 35 2:
+    type: string
+  f2 36 2:
+    type: string
+  f2 37 2:
+    type: string
+  f2 38 2:
+    type: string
+  f2 39 2:
+    type: string
+  f2 40 2:
+    type: string
+  f2 41 2:
+    type: string
+  f2 42 2:
+    type: string
+  f2 43 2:
+    type: string
+  f2 44 2:
+    type: string
+  f2 01 3:
+    type: string
+  f2 02 3:
+    type: string
+  f2 03 3:
+    type: string
+  f2 04 3:
+    type: string
+  f2 05 3:
+    type: string
+  f2 06 3:
+    type: string
+  f2 07 3:
+    type: string
+  f2 08 3:
+    type: string
+  f2 09 3:
+    type: string
+  f2 10 3:
+    type: string
+  f2 11 3:
+    type: string
+  f2 12 3:
+    type: string
+  f2 13 3:
+    type: string
+  f2 14 3:
+    type: string
+  f2 15 3:
+    type: string
+  f2 16 3:
+    type: string
+  f2 17 3:
+    type: string
+  f2 18 3:
+    type: string
+  f2 19 3:
+    type: string
+  f2 20 3:
+    type: string
+  f2 21 3:
+    type: string
+  f2 22 3:
+    type: string
+  f2 23 3:
+    type: string
+  f2 24 3:
+    type: string
+  f2 25 3:
+    type: string
+  f2 26 3:
+    type: string
+  f2 27 3:
+    type: string
+  c2 2 3:
+    type: bool
+  c2 3 3:
+    type: bool
+  c2 4 3:
+    type: bool
+  f2 28 3:
+    type: string
+  f2 29 3:
+    type: string
+  f2 30 3:
+    type: string
+  f2 31 3:
+    type: string
+  f2 32 3:
+    type: string
+  f2 33 3:
+    type: string
+  f2 34 3:
+    type: string
+  f2 35 3:
+    type: string
+  f2 36 3:
+    type: string
+  f2 37 3:
+    type: string
+  f2 38 3:
+    type: string
+  f2 39 3:
+    type: string
+  f2 40 3:
+    type: string
+  f2 41 3:
+    type: string
+  f2 42 3:
+    type: string
+  f2 43 3:
+    type: string
+  f2 44 3:
+    type: string
+  f2 01 4:
+    type: string
+  f2 02 4:
+    type: string
+  f2 03 4:
+    type: string
+  f2 04 4:
+    type: string
+  f2 05 4:
+    type: string
+  f2 06 4:
+    type: string
+  f2 07 4:
+    type: string
+  f2 08 4:
+    type: string
+  f2 09 4:
+    type: string
+  f2 10 4:
+    type: string
+  f2 11 4:
+    type: string
+  f2 12 4:
+    type: string
+  f2 13 4:
+    type: string
+  f2 14 4:
+    type: string
+  f2 15 4:
+    type: string
+  f2 16 4:
+    type: string
+  f2 17 4:
+    type: string
+  f2 18 4:
+    type: string
+  f2 19 4:
+    type: string
+  f2 20 4:
+    type: string
+  f2 21 4:
+    type: string
+  f2 22 4:
+    type: string
+  f2 23 4:
+    type: string
+  f2 24 4:
+    type: string
+  f2 25 4:
+    type: string
+  f2 26 4:
+    type: string
+  f2 27 4:
+    type: string
+  c2 2 4:
+    type: bool
+  c2 3 4:
+    type: bool
+  c2 4 4:
+    type: bool
+  f2 28 4:
+    type: string
+  f2 29 4:
+    type: string
+  f2 30 4:
+    type: string
+  f2 31 4:
+    type: string
+  f2 32 4:
+    type: string
+  f2 33 4:
+    type: string
+  f2 34 4:
+    type: string
+  f2 35 4:
+    type: string
+  f2 36 4:
+    type: string
+  f2 37 4:
+    type: string
+  f2 38 4:
+    type: string
+  f2 39 4:
+    type: string
+  f2 40 4:
+    type: string
+  f2 41 4:
+    type: string
+  f2 42 4:
+    type: string
+  f2 43 4:
+    type: string
+  f2 44 4:
+    type: string
+  c2 1:
+    type: bool
+  f2 01 5:
+    type: string
+  f2 02 5:
+    type: string
+  f2 03 5:
+    type: string
+  f2 04 5:
+    type: string
+  f2 05 5:
+    type: string
+  f2 06 5:
+    type: string
+  f2 07 5:
+    type: string
+  f2 08 5:
+    type: string
+  f2 09 5:
+    type: string
+  f2 10 5:
+    type: string
+  f2 11 5:
+    type: string
+  f2 12 5:
+    type: string
+  f2 13 5:
+    type: string
+  f2 14 5:
+    type: string
+  f2 15 5:
+    type: string
+  f2 16 5:
+    type: string
+  f2 17 5:
+    type: string
+  f2 18 5:
+    type: string
+  f2 19 5:
+    type: string
+  f2 20 5:
+    type: string
+  f2 21 5:
+    type: string
+  f2 22 5:
+    type: string
+  f2 23 5:
+    type: string
+  f2 24 5:
+    type: string
+  f2 25 5:
+    type: string
+  f2 26 5:
+    type: string
+  f2 27 5:
+    type: string
+  c2 2 5:
+    type: bool
+  c2 3 5:
+    type: bool
+  c2 4 5:
+    type: bool
+  f2 28 5:
+    type: string
+  f2 29 5:
+    type: string
+  f2 30 5:
+    type: string
+  f2 31 5:
+    type: string
+  f2 32 5:
+    type: string
+  f2 33 5:
+    type: string
+  f2 34 5:
+    type: string
+  f2 35 5:
+    type: string
+  f2 36 5:
+    type: string
+  f2 37 5:
+    type: string
+  f2 38 5:
+    type: string
+  f2 39 5:
+    type: string
+  f2 40 5:
+    type: string
+  f2 41 5:
+    type: string
+  f2 42 5:
+    type: string
+  f2 43 5:
+    type: string
+  f2 44 5:
+    type: string
