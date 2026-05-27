@@ -62,7 +62,7 @@ def create_run(uid: str, data: dict) -> dict:
     run = {
         "id": run_id,
         "filename": data.get("filename", ""),
-        "schema_spec": data.get("schema_spec"),
+        "schema_spec": data.get("blueprint_spec") or data.get("schema_spec"),
         "instructions": data.get("instructions", ""),
         "model": data.get("model", ""),
         "parser": data.get("parser", "pymupdf"),

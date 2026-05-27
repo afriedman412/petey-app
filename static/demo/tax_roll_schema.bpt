@@ -1,0 +1,83 @@
+name: property_tax_roll
+mode: table
+
+fields:
+  parcel_id:
+    type: string
+    description: Tax map parcel ID (e.g., 6.10-1-11)
+
+  property_address:
+    type: string
+    description: Street address of the property
+
+  property_class:
+    type: string
+    description: "Property classification code and description (e.g., '210 One Family Year-Round Residence')"
+
+  owner_name:
+    type: string
+    description: Current property owner name(s), may be multiple names or trust
+
+  owner_address:
+    type: string
+    description: Mailing address of the property owner
+
+  school_district:
+    type: string
+    description: School district name (e.g., ARDSLEY)
+
+  acreage:
+    type: number
+    description: Property size in acres
+
+  deed_book:
+    type: string
+    description: Deed book number
+
+  deed_page:
+    type: string
+    description: Deed page number
+
+  land_assessment:
+    type: number
+    description: Assessed value of land only
+
+  total_assessment:
+    type: number
+    description: Total assessed value of property
+
+  full_market_value:
+    type: number
+    description: Full market value of property
+
+  account_number:
+    type: string
+    description: Property account number
+
+  county_taxable:
+    type: number
+    description: Taxable value for county taxes
+
+  town_taxable:
+    type: number
+    description: Taxable value for town taxes
+
+  school_taxable:
+    type: number
+    description: Taxable value for school taxes
+
+  exemption_code:
+    type: string
+    description: Tax exemption code if applicable (e.g., 41854 BAS STAR)
+
+  exemption_amount:
+    type: number
+    description: Dollar amount of tax exemption
+
+  bank_code:
+    type: string
+    description: Bank code designation
+
+  special_districts:
+    type: string
+    description: List of special tax districts that apply to this property (CS001, FD903, SM001, WR001, etc.)

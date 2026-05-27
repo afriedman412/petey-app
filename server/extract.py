@@ -8,13 +8,13 @@ from pathlib import Path
 import yaml
 from pydantic import BaseModel
 
-from petey.schema import build_model, load_schema  # noqa: F401
+from petey.schema import build_model, load_blueprint  # noqa: F401
 from petey.extract import (
     extract_text as _raw_extract_text,
     extract_async as _extract_async,
     extract_pages_async as _extract_pages_async,
-    infer_schema_async as _infer_schema_async,
-    infer_schema_vision_async as _infer_schema_vision_async,
+    infer_blueprint_async as _infer_blueprint_async,
+    infer_blueprint_vision_async as _infer_blueprint_vision_async,
     TEXT_WARN_THRESHOLD,
     PARSERS,
 )  # noqa: E501
@@ -23,10 +23,12 @@ from server.settings import get_settings, get_provider
 from server.parse_client import parse_fn as _remote_parse_fn, page_parse_fn as _remote_page_parse_fn
 
 BASE_DIR = Path(os.environ.get("PETEY_WEB_BASE", Path(__file__).resolve().parent.parent))
-SCHEMAS_DIR = BASE_DIR / "schemas"
+BLUEPRINTS_DIR = BASE_DIR / "schemas"
+SCHEMAS_DIR = BLUEPRINTS_DIR  # backwards-compat alias
 
 # Re-export for backwards compatibility
 _build_model = build_model
+load_schema = load_blueprint  # backwards-compat alias
 
 
 async def extract_text(
@@ -216,7 +218,7 @@ async def async_extract_pages(
     )
 
 
-async def async_infer_schema(
+async def async_infer_blueprint(
     pdf_path: str,
     uid: str,
     max_pages: int = 2,
@@ -224,7 +226,7 @@ async def async_infer_schema(
     page_range: str | None = None,
     header_pages: int = 0,
 ) -> dict:
-    """Infer a schema from a sample PDF using the user's settings."""
+    """Infer a blueprint from a sample PDF using the user's settings."""
     settings = get_settings(uid)
     model_id = model_override or settings["model"]
     provider = get_provider(model_id)
@@ -241,10 +243,10 @@ async def async_infer_schema(
         kwargs["page_range"] = page_range
     if header_pages:
         kwargs["header_pages"] = header_pages
-    return await _infer_schema_async(pdf_path, **kwargs)
+    return await _infer_blueprint_async(pdf_path, **kwargs)
 
 
-async def async_infer_schema_vision(
+async def async_infer_blueprint_vision(
     pdf_path: str,
     uid: str,
     max_pages: int = 2,
@@ -252,7 +254,7 @@ async def async_infer_schema_vision(
     page_range: str | None = None,
     header_pages: int = 0,
 ) -> dict:
-    """Infer a schema using vision (PDF pages as images)."""
+    """Infer a blueprint using vision (PDF pages as images)."""
     settings = get_settings(uid)
     model_id = model_override or settings["model"]
     provider = get_provider(model_id)
@@ -269,18 +271,29 @@ async def async_infer_schema_vision(
         kwargs["page_range"] = page_range
     if header_pages:
         kwargs["header_pages"] = header_pages
-    return await _infer_schema_vision_async(pdf_path, **kwargs)
+    return await _infer_blueprint_vision_async(pdf_path, **kwargs)
 
 
-def list_schemas() -> list[dict]:
-    schemas = []
-    for p in sorted(SCHEMAS_DIR.glob("*.yaml")):
-        with open(p) as f:
-            spec = yaml.safe_load(f)
-        schemas.append({
-            "file": p.name,
-            "name": spec.get("name", p.stem),
-            "description": spec.get("description", ""),
-            "fields": list(spec.get("fields", {}).keys()),
-        })
-    return schemas
+# Backwards-compat aliases
+async_infer_schema = async_infer_blueprint
+async_infer_schema_vision = async_infer_blueprint_vision
+
+
+def list_blueprints() -> list[dict]:
+    """List blueprints in BLUEPRINTS_DIR. Picks up both .bpt and .yaml."""
+    blueprints = []
+    for pattern in ("*.bpt", "*.yaml"):
+        for p in sorted(BLUEPRINTS_DIR.glob(pattern)):
+            with open(p) as f:
+                spec = yaml.safe_load(f)
+            blueprints.append({
+                "file": p.name,
+                "name": spec.get("name", p.stem),
+                "description": spec.get("description", ""),
+                "fields": list(spec.get("fields", {}).keys()),
+            })
+    return blueprints
+
+
+# Backwards-compat alias
+list_schemas = list_blueprints

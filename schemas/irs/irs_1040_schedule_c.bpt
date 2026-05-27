@@ -1,0 +1,217 @@
+name: irs_1040_schedule_c
+record_type: object
+description: Profit or loss from business (sole proprietorship) schedule for Form 1040.
+source:
+  owner: IRS
+  url: https://www.irs.gov/forms-pubs/about-schedule-c-form-1040
+fields:
+  Name of proprietor:
+    type: string
+  Social security number (SSN):
+    type: string
+  A — Principal business or profession, including product or service:
+    type: string
+  B — Principal business code:
+    type: string
+  C — Business name:
+    type: string
+  D — Employer ID number (EIN):
+    type: string
+  E — Business address (including suite or room no.):
+    type: string
+  E — City, town or post office, state, and ZIP code:
+    type: string
+  'F — Accounting method: Cash':
+    type: bool
+  'F — Accounting method: Accrual':
+    type: bool
+  'F — Accounting method: Other':
+    type: bool
+  'F — Accounting method: Other (specify)':
+    type: string
+  G — Materially participated in operation of business — Yes:
+    type: bool
+  G — Materially participated in operation of business — No:
+    type: bool
+  H — Started or acquired this business during 2025:
+    type: bool
+  I — Made payments requiring Form 1099 — Yes:
+    type: bool
+  I — Made payments requiring Form 1099 — No:
+    type: bool
+  J — Did/will file required Form(s) 1099 — Yes:
+    type: bool
+  J — Did/will file required Form(s) 1099 — No:
+    type: bool
+  Line 1 — Statutory employee box (income reported on W-2):
+    type: bool
+  Line 1 — Gross receipts or sales:
+    type: string
+  Line 2 — Returns and allowances:
+    type: string
+  Line 3 — Subtract line 2 from line 1:
+    type: string
+  Line 4 — Cost of goods sold (from line 42):
+    type: string
+  Line 5 — Gross profit:
+    type: string
+  Line 6 — Other income (incl. gasoline/fuel tax credit or refund):
+    type: string
+  Line 7 — Gross income:
+    type: string
+  Line 8 — Advertising:
+    type: string
+  Line 9 — Car and truck expenses:
+    type: string
+  Line 10 — Commissions and fees:
+    type: string
+  Line 11 — Contract labor:
+    type: string
+  Line 12 — Depletion:
+    type: string
+  Line 13 — Depreciation and section 179 expense deduction:
+    type: string
+  Line 14 — Employee benefit programs:
+    type: string
+  Line 15 — Insurance (other than health):
+    type: string
+  Line 16a — Mortgage interest (paid to banks, etc.):
+    type: string
+  Line 16b — Other interest:
+    type: string
+  Line 17 — Legal and professional services:
+    type: string
+  Line 18 — Office expense:
+    type: string
+  Line 19 — Pension and profit-sharing plans:
+    type: string
+  'Line 20a — Rent or lease: Vehicles, machinery, and equipment':
+    type: string
+  'Line 20b — Rent or lease: Other business property':
+    type: string
+  Line 21 — Repairs and maintenance:
+    type: string
+  Line 22 — Supplies:
+    type: string
+  Line 23 — Taxes and licenses:
+    type: string
+  Line 24a — Travel:
+    type: string
+  Line 24b — Deductible meals:
+    type: string
+  Line 25 — Utilities:
+    type: string
+  Line 26 — Wages (less employment credits):
+    type: string
+  Line 27a — Energy efficient commercial buildings deduction:
+    type: string
+  Line 27b — Other expenses (from line 48):
+    type: string
+  Line 28 — Total expenses before expenses for business use of home:
+    type: string
+  Line 29 — Tentative profit or (loss):
+    type: string
+  'Line 30 — Simplified method: Total square footage of home':
+    type: string
+  'Line 30 — Simplified method: Square footage of home used for business':
+    type: string
+  Line 30 — Expenses for business use of home:
+    type: string
+  Line 31 — Net profit or (loss):
+    type: string
+  Line 32a — All investment is at risk:
+    type: bool
+  Line 32b — Some investment is not at risk:
+    type: bool
+  'Line 33a — Inventory valuation method: Cost':
+    type: bool
+  'Line 33b — Inventory valuation method: Lower of cost or market':
+    type: bool
+  'Line 33c — Inventory valuation method: Other':
+    type: bool
+  Line 34 — Change in determining inventory quantities/costs/valuations — Yes:
+    type: bool
+  Line 34 — Change in determining inventory quantities/costs/valuations — No:
+    type: bool
+  Line 35 — Inventory at beginning of year:
+    type: string
+  Line 36 — Purchases less cost of items withdrawn for personal use:
+    type: string
+  Line 37 — Cost of labor:
+    type: string
+  Line 38 — Materials and supplies:
+    type: string
+  Line 39 — Other costs:
+    type: string
+  Line 40 — Sum of lines 35 through 39:
+    type: string
+  Line 41 — Inventory at end of year:
+    type: string
+  Line 42 — Cost of goods sold:
+    type: string
+  Line 43 — Date vehicle placed in service (month):
+    type: string
+  Line 43 — Date vehicle placed in service (day):
+    type: string
+  Line 43 — Date vehicle placed in service (year):
+    type: string
+  Line 44a — Business miles:
+    type: string
+  Line 44b — Commuting miles:
+    type: string
+  Line 44c — Other miles:
+    type: string
+  Line 45 — Vehicle available for personal use during off-duty hours — Yes:
+    type: bool
+  Line 45 — Vehicle available for personal use during off-duty hours — No:
+    type: bool
+  Line 46 — Another vehicle available for personal use — Yes:
+    type: bool
+  Line 46 — Another vehicle available for personal use — No:
+    type: bool
+  Line 47a — Have evidence to support deduction — Yes:
+    type: bool
+  Line 47a — Have evidence to support deduction — No:
+    type: bool
+  Line 47b — Is the evidence written — Yes:
+    type: bool
+  Line 47b — Is the evidence written — No:
+    type: bool
+  'Part V — Other expense 1: Description':
+    type: string
+  'Part V — Other expense 1: Amount':
+    type: string
+  'Part V — Other expense 2: Description':
+    type: string
+  'Part V — Other expense 2: Amount':
+    type: string
+  'Part V — Other expense 3: Description':
+    type: string
+  'Part V — Other expense 3: Amount':
+    type: string
+  'Part V — Other expense 4: Description':
+    type: string
+  'Part V — Other expense 4: Amount':
+    type: string
+  'Part V — Other expense 5: Description':
+    type: string
+  'Part V — Other expense 5: Amount':
+    type: string
+  'Part V — Other expense 6: Description':
+    type: string
+  'Part V — Other expense 6: Amount':
+    type: string
+  'Part V — Other expense 7: Description':
+    type: string
+  'Part V — Other expense 7: Amount':
+    type: string
+  'Part V — Other expense 8: Description':
+    type: string
+  'Part V — Other expense 8: Amount':
+    type: string
+  'Part V — Other expense 9: Description':
+    type: string
+  'Part V — Other expense 9: Amount':
+    type: string
+  Line 48 — Total other expenses:
+    type: string

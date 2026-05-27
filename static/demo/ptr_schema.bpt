@@ -1,0 +1,74 @@
+name: periodic_transaction_report
+record_type: array
+instructions: >
+  Extract all transactions from this Congressional Periodic Transaction Report (PTR).
+  Each row in the Transactions table is a separate record. The first page contains
+  filer information (name, status, state/district) which applies to all transactions.
+  Transaction Type uses abbreviations: P = Purchase, S = Sale, S (partial) = Partial Sale.
+  Amount is reported as a range (e.g. "$1,001 - $15,000"), extract it as-is.
+  The ticker symbol is in parentheses after the asset name.
+  Asset type codes appear in brackets: [ST] = Stock, [CS] = Corporate Security, [GS] = Government Security.
+  Filing Status and Subholding Of appear as metadata lines below each transaction row.
+header_pages: 1
+fields:
+  filer_name:
+    type: string
+    description: Name of the filer from the header (e.g. "Hon. Julia Letlow")
+  state_district:
+    type: string
+    description: State and district code (e.g. "LA05")
+  asset:
+    type: string
+    description: Full asset name as listed (e.g. "Apple Inc. - Common Stock")
+  ticker:
+    type: string
+    description: Ticker symbol in parentheses (e.g. "AAPL")
+  asset_type:
+    type: enum
+    description: Asset type code in brackets
+    values:
+      - ST
+      - CS
+      - GS
+  transaction_type:
+    type: enum
+    description: Transaction type
+    values:
+      - P
+      - S
+      - S (partial)
+  transaction_date:
+    type: string
+    description: Transaction date in MM/DD/YYYY format
+  notification_date:
+    type: string
+    description: Notification date in MM/DD/YYYY format
+  amount:
+    type: enum
+    description: Amount range as reported
+    values:
+      - "$1,001 - $15,000"
+      - "$15,001 - $50,000"
+      - "$50,001 - $100,000"
+      - "$100,001 - $250,000"
+      - "$250,001 - $500,000"
+      - "$500,001 - $1,000,000"
+      - "$1,000,001 - $5,000,000"
+      - "$5,000,001 - $25,000,000"
+      - "$25,000,001 - $50,000,000"
+      - "Over $50,000,000"
+  cap_gains_over_200:
+    type: enum
+    description: Whether capital gains exceed $200
+    values:
+      - "Yes"
+      - "No"
+  filing_status:
+    type: string
+    description: Filing Status line below the transaction (e.g. "New")
+  subholding_of:
+    type: string
+    description: Subholding Of line below the transaction (e.g. "Merrill Lynch Investment Account #025")
+  description:
+    type: string
+    description: Description line below the transaction if present (e.g. "Corporate Bond", "partial")

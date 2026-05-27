@@ -1,0 +1,73 @@
+name: irs_1040_schedule_a
+record_type: object
+description: Itemized deductions schedule for Form 1040.
+source:
+  owner: IRS
+  url: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+fields:
+  Name(s) shown on Form 1040 or 1040-SR:
+    type: string
+  Your social security number:
+    type: string
+  Line 1 — Medical and dental expenses:
+    type: string
+  Line 2 — AGI from Form 1040/1040-SR line 11b:
+    type: string
+  Line 3 — 7.5% of AGI (line 2 × 0.075):
+    type: string
+  Line 4 — Deductible medical and dental expenses (line 1 minus line 3):
+    type: string
+  Line 5a — Check if electing general sales taxes instead of income taxes:
+    type: bool
+  Line 5a — State and local income taxes or general sales taxes:
+    type: string
+  Line 5b — State and local real estate taxes:
+    type: string
+  Line 5c — State and local personal property taxes:
+    type: string
+  Line 5d — Sum of lines 5a through 5c:
+    type: string
+  Line 5e — Smaller of line 5d or $40,000 ($20,000 if MFS):
+    type: string
+  Line 6 — Other taxes (type and amount description):
+    type: string
+  Line 6 — Other taxes amount:
+    type: string
+  Line 7 — Total taxes paid (lines 5e + 6):
+    type: string
+  Line 8 — Check if home mortgage loan(s) not all used to buy, build, or improve home:
+    type: bool
+  Line 8a — Home mortgage interest and points reported on Form 1098:
+    type: string
+  Line 8b — Payee name, identifying number, and address (seller-financed mortgage):
+    type: string
+  Line 8b — Home mortgage interest not reported on Form 1098:
+    type: string
+  Line 8c — Points not reported on Form 1098:
+    type: string
+  Line 8d — Reserved for future use:
+    type: string
+  Line 8e — Sum of lines 8a through 8c:
+    type: string
+  Line 9 — Investment interest:
+    type: string
+  Line 10 — Total interest paid (lines 8e + 9):
+    type: string
+  Line 11 — Gifts by cash or check:
+    type: string
+  Line 12 — Gifts other than by cash or check:
+    type: string
+  Line 13 — Charitable contribution carryover from prior year:
+    type: string
+  Line 14 — Total gifts to charity (lines 11 through 13):
+    type: string
+  Line 15 — Casualty and theft losses from federally declared disaster:
+    type: string
+  Line 16 — Other itemized deductions (type and amount description):
+    type: string
+  Line 16 — Other itemized deductions amount:
+    type: string
+  Line 17 — Total itemized deductions (sum of lines 4 through 16):
+    type: string
+  Line 18 — Check if electing to itemize even though less than standard deduction:
+    type: bool

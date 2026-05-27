@@ -1,0 +1,36 @@
+name: city_budget_summary
+mode: table
+
+fields:
+  section:
+    type: enum
+    description: The main section of the budget (e.g., All City Funds, General Fund, Enterprise Funds, Special Revenue, Road Use Tax Allocations)
+    values: [all_city_funds, general_fund, enterprise_funds, special_revenue, road_use_tax_allocations]
+
+  subcategory:
+    type: string
+    description: The specific fund, department, or revenue source (e.g., Capital Projects, Police, Sanitary Sewer, TIF, Street Maintenance)
+
+  fy_2019_20_actual:
+    type: number
+    description: Actual value for fiscal year 2019-20
+
+  fy_2020_21_adopted:
+    type: number
+    description: Adopted value for fiscal year 2020-21
+
+  fy_2020_21_amended:
+    type: number
+    description: Amended value for fiscal year 2020-21
+
+  fy_2021_22_adopted:
+    type: number
+    description: Adopted value for fiscal year 2021-22
+
+  fy_2021_22_percent_total:
+    type: number
+    description: Percent of total for fiscal year 2021-22
+
+  fy_2022_23_projected:
+    type: number
+    description: Projected value for fiscal year 2022-23

@@ -204,4 +204,4 @@ class TestExtractNoKeyErrors:
                     files=[("file", ("test.pdf", f, "application/pdf"))],
                 )
         assert resp.status_code == 400
-        assert "schema" in resp.json().get("error", "").lower()
+        assert "blueprint" in resp.json().get("error", "").lower()

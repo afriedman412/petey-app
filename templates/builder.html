@@ -394,7 +394,7 @@ table.results tr:hover td { background: var(--surface-2); }
     <div class="toggle-group" id="modeToggle">
       <button class="active" data-mode="query" data-tip="Extract one record per document">Query</button>
       <button data-mode="table" data-tip="Extract rows from tables across pages">Table</button>
-      <button data-mode="text" data-tip="Extract text only — no schema needed">Text</button>
+      <button data-mode="text" data-tip="Extract text only — no blueprint needed">Text</button>
     </div>
   </div>
 
@@ -430,8 +430,8 @@ table.results tr:hover td { background: var(--surface-2); }
 
   <div class="card" id="schemaCard">
     <div class="card-header">
-      <span class="card-label">Schema</span>
-      <input type="text" class="schema-name-input" id="schemaName" placeholder="Untitled schema">
+      <span class="card-label">Blueprint</span>
+      <input type="text" class="schema-name-input" id="schemaName" placeholder="Untitled blueprint">
     </div>
     <div id="fieldRows"></div>
     <div style="padding:0.5rem 0.75rem;">
@@ -444,7 +444,7 @@ table.results tr:hover td { background: var(--surface-2); }
       <button class="schema-btn" id="suggestFields">Suggest fields</button>
       <input type="file" id="suggestFile" accept=".pdf" style="display:none;">
       <button class="schema-btn" id="yamlToggle">Load</button>
-      <input type="file" id="yamlFile" accept=".yaml,.yml" style="display:none;">
+      <input type="file" id="yamlFile" accept=".bpt,.yaml,.yml" style="display:none;">
       <button class="schema-btn" id="previewSchema">Preview</button>
       <button class="schema-btn" id="saveBtn">Download</button>
       <button class="schema-btn" id="resetSchema" style="color:var(--text-dim);">Reset</button>
@@ -870,9 +870,9 @@ function updateExtractBtn() {
     hint.textContent = !hasFiles ? 'Add files above to get started' : '';
   } else {
     extractBtn.disabled = !(hasFiles && hasFields);
-    if (!hasFiles && !hasFields) hint.textContent = 'Add files and define a schema to get started';
+    if (!hasFiles && !hasFields) hint.textContent = 'Add files and define a blueprint to get started';
     else if (!hasFiles) hint.textContent = 'Add files above to get started';
-    else if (!hasFields) hint.textContent = 'Add at least one field to your schema';
+    else if (!hasFields) hint.textContent = 'Add at least one field to your blueprint';
     else hint.textContent = '';
   }
 }
@@ -1009,7 +1009,7 @@ function loadYamlFile(file) {
       }));
       renderFields();
       saveState();
-    }).catch(() => alert('Invalid YAML file'));
+    }).catch(() => alert('Invalid blueprint file'));
   };
   reader.readAsText(file);
 }
@@ -1037,7 +1037,7 @@ schemaCardEl.addEventListener('dragleave', () => {
 schemaCardEl.addEventListener('drop', e => {
   e.preventDefault();
   schemaCardEl.style.borderColor = '';
-  const file = [...e.dataTransfer.files].find(f => /\.ya?ml$/i.test(f.name));
+  const file = [...e.dataTransfer.files].find(f => /\.(bpt|ya?ml)$/i.test(f.name));
   if (file) loadYamlFile(file);
 });
 
@@ -1057,7 +1057,7 @@ document.getElementById('suggestFile').addEventListener('change', async e => {
 });
 
 async function _runSuggest(file) {
-  const endpoint = '/infer-schema/vision';
+  const endpoint = '/infer-blueprint/vision';
   const btn = document.getElementById('suggestFields');
   const origText = btn.textContent;
   btn.textContent = 'Analyzing...';
@@ -1075,7 +1075,7 @@ async function _runSuggest(file) {
     const resp = await authFetch(endpoint, { method: 'POST', body: form });
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));
-      throw new Error(err.error || 'Schema inference failed');
+      throw new Error(err.error || 'Blueprint inference failed');
     }
     const spec = await resp.json();
     if (spec.name) document.getElementById('schemaName').value = spec.name;
@@ -1177,7 +1177,7 @@ async function extractFile(file, spec, instr) {
   const form = new FormData();
   form.append('file', file);
   form.append('mode', recordType);
-  if (recordType !== 'text') form.append('schema_spec', JSON.stringify(spec));
+  if (recordType !== 'text') form.append('blueprint_spec', JSON.stringify(spec));
   if (instr) form.append('instructions', instr);
   form.append('parser', document.getElementById('parserSelect').value);
   form.append('model', document.getElementById('modelSelect').value);
@@ -1201,7 +1201,7 @@ async function extractFileStream(file, spec, instr, onEvent) {
   _streamAbort = new AbortController();
   const form = new FormData();
   form.append('file', file);
-  form.append('schema_spec', JSON.stringify(spec));
+  form.append('blueprint_spec', JSON.stringify(spec));
   if (instr) form.append('instructions', instr);
   form.append('parser', document.getElementById('parserSelect').value);
   form.append('model', document.getElementById('modelSelect').value);
@@ -1632,8 +1632,8 @@ function renderTablePreview(records) {
   const schemaYaml = specToYaml(schemaSpec);
   const schemaBlob = new Blob([schemaYaml], { type: 'text/yaml' });
   const schemaUrl = URL.createObjectURL(schemaBlob);
-  const schemaFilename = (schemaSpec.name || 'schema').toLowerCase().replace(/\s+/g, '_') + '.yaml';
-  html += '<a class="download-btn" href="' + schemaUrl + '" download="' + schemaFilename + '">Download Schema</a>';
+  const schemaFilename = (schemaSpec.name || 'blueprint').toLowerCase().replace(/\s+/g, '_') + '.bpt';
+  html += '<a class="download-btn" href="' + schemaUrl + '" download="' + schemaFilename + '">Download Blueprint</a>';
 
   results.innerHTML = html;
 }
@@ -1699,8 +1699,8 @@ function renderTable(records) {
     const schemaYaml = specToYaml(schemaSpec);
     const schemaBlob = new Blob([schemaYaml], { type: 'text/yaml' });
     const schemaUrl = URL.createObjectURL(schemaBlob);
-    const schemaFilename = (schemaSpec.name || 'schema').toLowerCase().replace(/\s+/g, '_') + '.yaml';
-    html += '<a class="download-btn" href="' + schemaUrl + '" download="' + schemaFilename + '">Download Schema</a>';
+    const schemaFilename = (schemaSpec.name || 'blueprint').toLowerCase().replace(/\s+/g, '_') + '.bpt';
+    html += '<a class="download-btn" href="' + schemaUrl + '" download="' + schemaFilename + '">Download Blueprint</a>';
 
     results.innerHTML = html;
 
@@ -1747,13 +1747,13 @@ document.getElementById('saveBtn').addEventListener('click', () => {
   const spec = buildSpec();
   if (!Object.keys(spec.fields).length) { alert('Add at least one field.'); return; }
   if (!spec.name) {
-    const name = prompt('Schema name:');
+    const name = prompt('Blueprint name:');
     if (!name) return;
     spec.name = name;
     document.getElementById('schemaName').value = name;
   }
   const yaml = specToYaml(spec);
-  const filename = spec.name.toLowerCase().replace(/\s+/g, '_') + '.yaml';
+  const filename = spec.name.toLowerCase().replace(/\s+/g, '_') + '.bpt';
   const blob = new Blob([yaml], { type: 'text/yaml' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

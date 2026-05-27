@@ -1,0 +1,342 @@
+schemas:
+- id: irs_1040
+  title: IRS Form 1040 (US Individual Income Tax Return)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-form-1040
+  pdf_url: https://www.irs.gov/pub/irs-pdf/f1040.pdf
+  schema_path: petey-web/schemas/irs/irs_1040.bpt
+  field_count: 197
+  bool_count: 73
+  enum_count: 0
+  normalized: true
+  tier: quick-pass
+  status: ok
+  note: ''
+- id: irs_1040_schedule_a
+  title: IRS Form 1040 Schedule A (Itemized Deductions)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-schedule-a-form-1040
+  pdf_url: https://www.irs.gov/pub/irs-pdf/f1040sa.pdf
+  schema_path: petey-web/schemas/irs/irs_1040_schedule_a.bpt
+  field_count: 33
+  bool_count: 3
+  enum_count: 0
+  normalized: true
+  tier: quick-pass
+  status: ok
+  note: ''
+- id: irs_1040_schedule_b
+  title: IRS Form 1040 Schedule B (Interest and Ordinary Dividends)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-schedule-b-form-1040
+  pdf_url: https://www.irs.gov/pub/irs-pdf/f1040sb.pdf
+  schema_path: petey-web/schemas/irs/irs_1040_schedule_b.bpt
+  field_count: 72
+  bool_count: 6
+  enum_count: 0
+  normalized: true
+  tier: quick-pass
+  status: ok
+  note: ''
+- id: irs_1040_schedule_c
+  title: IRS Form 1040 Schedule C (Profit or Loss From Business)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-schedule-c-form-1040
+  pdf_url: https://www.irs.gov/pub/irs-pdf/f1040sc.pdf
+  schema_path: petey-web/schemas/irs/irs_1040_schedule_c.bpt
+  field_count: 105
+  bool_count: 26
+  enum_count: 0
+  normalized: true
+  tier: quick-pass
+  status: ok
+  note: ''
+- id: irs_1040_schedule_d
+  title: IRS Form 1040 Schedule D (Capital Gains and Losses)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-schedule-d-form-1040
+  pdf_url: https://www.irs.gov/pub/irs-pdf/f1040sd.pdf
+  schema_path: petey-web/schemas/irs/irs_1040_schedule_d.bpt
+  field_count: 55
+  bool_count: 8
+  enum_count: 0
+  normalized: true
+  tier: quick-pass
+  status: ok
+  note: ''
+- id: irs_1040_schedule_e
+  title: IRS Form 1040 Schedule E (Supplemental Income and Loss)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-schedule-e-form-1040
+  pdf_url: https://www.irs.gov/pub/irs-pdf/f1040se.pdf
+  schema_path: petey-web/schemas/irs/irs_1040_schedule_e.bpt
+  field_count: 185
+  bool_count: 21
+  enum_count: 0
+  normalized: true
+  tier: quick-pass
+  status: ok
+  note: ''
+- id: irs_1065
+  title: IRS Form 1065 (US Return of Partnership Income)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-form-1065
+  pdf_url: https://www.irs.gov/pub/irs-pdf/f1065.pdf
+  schema_path: petey-web/schemas/irs/irs_1065.bpt
+  field_count: 440
+  bool_count: 90
+  enum_count: 0
+  normalized: false
+  tier: quick-pass
+  status: ok
+  note: 'normalize_failed:JSONDecodeError:Unterminated string starting at: line 1 column 33333 (char 33332);
+    raw labels kept'
+- id: irs_1099_b
+  title: IRS Form 1099-B (Proceeds From Broker and Barter Exchange Transactions)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-form-1099-b
+  pdf_url: https://www.irs.gov/pub/irs-pdf/f1099b.pdf
+  schema_path: null
+  field_count: 0
+  bool_count: 0
+  enum_count: 0
+  normalized: false
+  tier: quick-pass
+  status: error
+  note: 'HTTPError: HTTP Error 404: Not Found'
+- id: irs_1099_div
+  title: IRS Form 1099-DIV (Dividends and Distributions)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-form-1099-div
+  pdf_url: https://www.irs.gov/pub/irs-pdf/f1099div.pdf
+  schema_path: petey-web/schemas/irs/irs_1099_div.bpt
+  field_count: 140
+  bool_count: 12
+  enum_count: 0
+  normalized: true
+  tier: quick-pass
+  status: ok
+  note: ''
+- id: irs_1099_g
+  title: IRS Form 1099-G (Certain Government Payments)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-form-1099-g
+  pdf_url: https://www.irs.gov/pub/irs-pdf/f1099g.pdf
+  schema_path: petey-web/schemas/irs/irs_1099_g.bpt
+  field_count: 100
+  bool_count: 12
+  enum_count: 0
+  normalized: true
+  tier: quick-pass
+  status: ok
+  note: ''
+- id: irs_1099_int
+  title: IRS Form 1099-INT (Interest Income)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-form-1099-int
+  pdf_url: https://www.irs.gov/pub/irs-pdf/f1099int.pdf
+  schema_path: petey-web/schemas/irs/irs_1099_int.bpt
+  field_count: 127
+  bool_count: 11
+  enum_count: 0
+  normalized: true
+  tier: quick-pass
+  status: ok
+  note: ''
+- id: irs_1099_k
+  title: IRS Form 1099-K (Payment Card and Third Party Network Transactions)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-form-1099-k
+  pdf_url: https://www.irs.gov/pub/irs-pdf/f1099k.pdf
+  schema_path: petey-web/schemas/irs/irs_1099_k.bpt
+  field_count: 151
+  bool_count: 23
+  enum_count: 0
+  normalized: true
+  tier: quick-pass
+  status: ok
+  note: ''
+- id: irs_1099_misc
+  title: IRS Form 1099-MISC (Miscellaneous Information)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-form-1099-misc
+  pdf_url: https://www.irs.gov/pub/irs-pdf/f1099msc.pdf
+  schema_path: petey-web/schemas/irs/irs_1099_misc.bpt
+  field_count: 119
+  bool_count: 15
+  enum_count: 0
+  normalized: true
+  tier: quick-pass
+  status: ok
+  note: ''
+- id: irs_1099_nec
+  title: IRS Form 1099-NEC (Nonemployee Compensation)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-form-1099-nec
+  pdf_url: https://www.irs.gov/pub/irs-pdf/f1099nec.pdf
+  schema_path: petey-web/schemas/irs/irs_1099_nec.bpt
+  field_count: 80
+  bool_count: 12
+  enum_count: 0
+  normalized: true
+  tier: quick-pass
+  status: ok
+  note: ''
+- id: irs_1099_r
+  title: IRS Form 1099-R (Distributions From Pensions, Annuities, Retirement Plans, IRAs, etc.)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-form-1099-r
+  pdf_url: https://www.irs.gov/pub/irs-pdf/f1099r.pdf
+  schema_path: petey-web/schemas/irs/irs_1099_r.bpt
+  field_count: 192
+  bool_count: 27
+  enum_count: 0
+  normalized: true
+  tier: quick-pass
+  status: ok
+  note: ''
+- id: irs_1120
+  title: IRS Form 1120 (US Corporation Income Tax Return)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-form-1120
+  pdf_url: https://www.irs.gov/pub/irs-pdf/f1120.pdf
+  schema_path: petey-web/schemas/irs/irs_1120.bpt
+  field_count: 481
+  bool_count: 84
+  enum_count: 0
+  normalized: false
+  tier: quick-pass
+  status: ok
+  note: 'normalize_failed:JSONDecodeError:Unterminated string starting at: line 1 column 31853 (char 31852);
+    raw labels kept'
+- id: irs_1120s
+  title: IRS Form 1120-S (US Income Tax Return for an S Corporation)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-form-1120-s
+  pdf_url: https://www.irs.gov/pub/irs-pdf/f1120s.pdf
+  schema_path: petey-web/schemas/irs/irs_1120s.bpt
+  field_count: 390
+  bool_count: 54
+  enum_count: 0
+  normalized: false
+  tier: quick-pass
+  status: ok
+  note: 'normalize_failed:JSONDecodeError:Unterminated string starting at: line 1 column 32898 (char 32897);
+    raw labels kept'
+- id: irs_940
+  title: IRS Form 940 (Employer's Annual Federal Unemployment (FUTA) Tax Return)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-form-940
+  pdf_url: https://www.irs.gov/pub/irs-pdf/f940.pdf
+  schema_path: petey-web/schemas/irs/irs_940.bpt
+  field_count: 97
+  bool_count: 21
+  enum_count: 0
+  normalized: true
+  tier: quick-pass
+  status: ok
+  note: ''
+- id: irs_941
+  title: IRS Form 941 (Employer's Quarterly Federal Tax Return)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-form-941
+  pdf_url: https://www.irs.gov/pub/irs-pdf/f941.pdf
+  schema_path: petey-web/schemas/irs/irs_941.bpt
+  field_count: 116
+  bool_count: 24
+  enum_count: 0
+  normalized: true
+  tier: quick-pass
+  status: ok
+  note: ''
+- id: irs_990
+  title: IRS Form 990 (Return of Organization Exempt From Income Tax)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-form-990
+  pdf_url: https://www.irs.gov/pub/irs-pdf/f990.pdf
+  schema_path: petey-web/schemas/irs/irs_990.bpt
+  field_count: 1075
+  bool_count: 422
+  enum_count: 0
+  normalized: false
+  tier: quick-pass
+  status: ok
+  note: 'normalize_failed:JSONDecodeError:Expecting value: line 1 column 32027 (char 32026); raw labels
+    kept'
+- id: irs_w2
+  title: IRS Form W-2 (Wage and Tax Statement)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-form-w-2
+  pdf_url: https://www.irs.gov/pub/irs-pdf/fw2.pdf
+  schema_path: petey-web/schemas/irs/irs_w2.bpt
+  field_count: 284
+  bool_count: 20
+  enum_count: 0
+  normalized: false
+  tier: quick-pass
+  status: ok
+  note: 'normalize_failed:JSONDecodeError:Unterminated string starting at: line 1 column 29588 (char 29587);
+    raw labels kept'
+- id: irs_w4
+  title: IRS Form W-4 (Employee's Withholding Certificate)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-form-w-4
+  pdf_url: https://www.irs.gov/pub/irs-pdf/fw4.pdf
+  schema_path: petey-web/schemas/irs/irs_w4.bpt
+  field_count: 48
+  bool_count: 5
+  enum_count: 0
+  normalized: true
+  tier: quick-pass
+  status: ok
+  note: ''
+- id: irs_w7
+  title: IRS Form W-7 (Application for IRS Individual Taxpayer Identification Number)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-form-w-7
+  pdf_url: https://www.irs.gov/pub/irs-pdf/fw7.pdf
+  schema_path: petey-web/schemas/irs/irs_w7.bpt
+  field_count: 69
+  bool_count: 21
+  enum_count: 0
+  normalized: true
+  tier: quick-pass
+  status: ok
+  note: ''
+- id: irs_w9
+  title: IRS Form W-9 (Request for Taxpayer Identification Number and Certification)
+  owner: IRS
+  category: irs
+  source_url: https://www.irs.gov/forms-pubs/about-form-w-9
+  pdf_url: https://www.irs.gov/pub/irs-pdf/fw9.pdf
+  schema_path: petey-web/schemas/irs/irs_w9.bpt
+  field_count: 23
+  bool_count: 8
+  enum_count: 0
+  normalized: true
+  tier: quick-pass
+  status: ok
+  note: ''
