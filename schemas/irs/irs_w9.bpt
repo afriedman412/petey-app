@@ -1,0 +1,53 @@
+name: irs_w9
+record_type: object
+description: Used by US persons to provide a taxpayer identification number to a requester.
+source:
+  owner: IRS
+  url: https://www.irs.gov/forms-pubs/about-form-w-9
+fields:
+  Line 1 — Name of entity/individual:
+    type: string
+  Line 2 — Business name/disregarded entity name:
+    type: string
+  Line 3a — Individual/sole proprietor:
+    type: bool
+  Line 3a — C corporation:
+    type: bool
+  Line 3a — S corporation:
+    type: bool
+  Line 3a — Partnership:
+    type: bool
+  Line 3a — Trust/estate:
+    type: bool
+  Line 3a — LLC:
+    type: bool
+  Line 3a — LLC tax classification code (C, S, or P):
+    type: string
+  Line 3a — Other:
+    type: bool
+  Line 3a — Other classification description:
+    type: string
+  Line 3b — Foreign partners, owners, or beneficiaries:
+    type: bool
+  Line 4 — Exempt payee code (if any):
+    type: string
+  Line 4 — Exemption from FATCA reporting code (if any):
+    type: string
+  Line 5 — Address (number, street, and apt. or suite no.):
+    type: string
+  Line 6 — City, state, and ZIP code:
+    type: string
+  Requester's name and address (optional):
+    type: string
+  Line 7 — Account number(s) (optional):
+    type: string
+  Social Security Number — Area (first 3 digits):
+    type: string
+  Social Security Number — Group (middle 2 digits):
+    type: string
+  Social Security Number — Serial (last 4 digits):
+    type: string
+  Employer Identification Number — Prefix (first 2 digits):
+    type: string
+  Employer Identification Number — Remainder (last 7 digits):
+    type: string

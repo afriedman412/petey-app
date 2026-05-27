@@ -1,0 +1,145 @@
+name: irs_w7
+record_type: object
+description: Application for an Individual Taxpayer Identification Number (ITIN).
+source:
+  owner: IRS
+  url: https://www.irs.gov/forms-pubs/about-form-w-7
+fields:
+  Application type — Apply for a new ITIN:
+    type: bool
+  Application type — Renew an existing ITIN:
+    type: bool
+  Reason for submitting — a) Nonresident alien required to get an ITIN to claim tax treaty benefit:
+    type: bool
+  Reason for submitting — b) Nonresident alien filing a U.S. federal tax return:
+    type: bool
+  Reason for submitting — c) U.S. resident alien filing a U.S. federal tax return:
+    type: bool
+  Reason for submitting — d) Dependent of U.S. citizen/resident alien:
+    type: bool
+  Relationship to U.S. citizen/resident alien (if box d):
+    type: string
+  Reason for submitting — e) Spouse of U.S. citizen/resident alien:
+    type: bool
+  Name of U.S. citizen/resident alien (if box d or e):
+    type: string
+  SSN/ITIN of U.S. citizen/resident alien (if box d or e):
+    type: string
+  Reason for submitting — f) Nonresident alien student, professor, or researcher:
+    type: bool
+  Reason for submitting — g) Dependent/spouse of a nonresident alien holding a U.S. visa:
+    type: bool
+  Reason for submitting — h) Other:
+    type: bool
+  Additional information for boxes a and f — Treaty country:
+    type: string
+  Additional information for boxes a and f — Treaty article number:
+    type: string
+  Line 1a — First name:
+    type: string
+  Line 1a — Middle name:
+    type: string
+  Line 1a — Last name:
+    type: string
+  Line 1b — Name at birth, First name:
+    type: string
+  Line 1b — Name at birth, Middle name:
+    type: string
+  Line 1b — Name at birth, Last name:
+    type: string
+  Line 2 — Mailing address (street, apt, or rural route):
+    type: string
+  Line 2 — Mailing address city/state/province/country/ZIP:
+    type: string
+  Line 3 — Foreign address (street, apt, or rural route):
+    type: string
+  Line 3 — Foreign address city/state/province/country/postal code:
+    type: string
+  Line 4 — Date of birth (MM/DD/YYYY):
+    type: string
+  Line 4 — Country of birth:
+    type: string
+  Line 4 — City and state or province of birth (optional):
+    type: string
+  Line 4 — Date of birth (alternate field):
+    type: string
+  'Line 5 — Gender: Male':
+    type: bool
+  'Line 5 — Gender: Female':
+    type: bool
+  Line 6a — Country(ies) of citizenship:
+    type: string
+  Line 6b — Foreign tax I.D. number:
+    type: string
+  Line 6c — Type of U.S. visa, number, and expiration date:
+    type: string
+  'Line 6d — Identification document: Passport':
+    type: bool
+  'Line 6d — Identification document: Driver''s license/State I.D.':
+    type: bool
+  'Line 6d — Identification document: USCIS documentation':
+    type: bool
+  'Line 6d — Identification document: Other':
+    type: bool
+  Line 6d — Other identification document description:
+    type: string
+  Line 6d — Issued by:
+    type: string
+  Line 6d — Identification document number:
+    type: string
+  Line 6d — Identification document expiration date (MM/DD/YYYY):
+    type: string
+  Line 6d — Date of entry into the United States (MM/DD/YYYY):
+    type: string
+  'Line 6e — Previously received ITIN/IRSN: No/Don''t know':
+    type: bool
+  'Line 6e — Previously received ITIN/IRSN: Yes':
+    type: bool
+  Line 6f — ITIN (first segment):
+    type: string
+  Line 6f — ITIN (second segment):
+    type: string
+  Line 6f — ITIN (third segment):
+    type: string
+  Line 6f — IRSN (first segment):
+    type: string
+  Line 6f — IRSN (second segment):
+    type: string
+  Line 6f — IRSN (third segment):
+    type: string
+  'Line 6f — Name under which ITIN/IRSN was issued: First name':
+    type: string
+  'Line 6f — Name under which ITIN/IRSN was issued: Middle name':
+    type: string
+  'Line 6f — Name under which ITIN/IRSN was issued: Last name':
+    type: string
+  Line 6g — Name of college/university or company:
+    type: string
+  Line 6g — City and state:
+    type: string
+  Line 6g — Length of stay:
+    type: string
+  Applicant signature date (MM/DD/YYYY):
+    type: string
+  Applicant phone number:
+    type: string
+  Delegate's relationship to applicant — Parent:
+    type: bool
+  Delegate's relationship to applicant — Power of attorney:
+    type: bool
+  Delegate's relationship to applicant — Court-appointed guardian:
+    type: bool
+  Name of delegate (if applicable):
+    type: string
+  Acceptance Agent — Signature date (MM/DD/YYYY):
+    type: string
+  Acceptance Agent — Phone:
+    type: string
+  Acceptance Agent — Fax:
+    type: string
+  Acceptance Agent — Name and title:
+    type: string
+  Acceptance Agent — Name of company:
+    type: string
+  Acceptance Agent — EIN / PTIN / Office code:
+    type: string

@@ -1,0 +1,103 @@
+name: irs_w4
+record_type: object
+description: Employee withholding certificate used to determine federal income tax withholding.
+source:
+  owner: IRS
+  url: https://www.irs.gov/forms-pubs/about-form-w-4
+fields:
+  Step 1(a) — First name and middle initial:
+    type: string
+  Step 1(a) — Last name:
+    type: string
+  Step 1(a) — Address:
+    type: string
+  Step 1(a) — City or town, state, and ZIP code:
+    type: string
+  Step 1(b) — Social security number:
+    type: string
+  'Step 1(c) — Filing status: Single or Married filing separately':
+    type: bool
+  'Step 1(c) — Filing status: Married filing jointly or Qualifying surviving spouse':
+    type: bool
+  'Step 1(c) — Filing status: Head of household':
+    type: bool
+  Step 2(c) — Two-jobs checkbox:
+    type: bool
+  Step 3(a) — Qualifying children under 17 × $2,200:
+    type: string
+  Step 3(b) — Other dependents × $500:
+    type: string
+  Step 3 — Total of dependents and other credits:
+    type: string
+  Step 4(a) — Other income (not from jobs):
+    type: string
+  Step 4(b) — Deductions:
+    type: string
+  Step 4(c) — Extra withholding per pay period:
+    type: string
+  Exempt from withholding:
+    type: bool
+  Employer's name and address:
+    type: string
+  First date of employment:
+    type: string
+  Employer identification number (EIN):
+    type: string
+  Multiple Jobs Worksheet — Line 1 (Two jobs amount):
+    type: string
+  Multiple Jobs Worksheet — Line 2a:
+    type: string
+  Multiple Jobs Worksheet — Line 2b:
+    type: string
+  Multiple Jobs Worksheet — Line 2c (sum of 2a and 2b):
+    type: string
+  Multiple Jobs Worksheet — Line 3 (Pay periods per year for highest paying job):
+    type: string
+  Multiple Jobs Worksheet — Line 4 (Per-pay-period extra withholding):
+    type: string
+  Deductions Worksheet — Line 1a (Qualified tips):
+    type: string
+  Deductions Worksheet — Line 1b (Qualified overtime compensation):
+    type: string
+  Deductions Worksheet — Line 1c (Qualified passenger vehicle loan interest):
+    type: string
+  Deductions Worksheet — Line 2 (Sum of 1a, 1b, 1c):
+    type: string
+  Deductions Worksheet — Line 3a (Senior age 65+ self):
+    type: string
+  Deductions Worksheet — Line 3b (Senior age 65+ spouse):
+    type: string
+  Deductions Worksheet — Line 4 (Sum of 3a and 3b):
+    type: string
+  Deductions Worksheet — Line 5 (Student loan interest, IRA, other adjustments):
+    type: string
+  Deductions Worksheet — Line 6a (Medical and dental expenses):
+    type: string
+  Deductions Worksheet — Line 6b (State and local taxes):
+    type: string
+  Deductions Worksheet — Line 6c (Home mortgage interest):
+    type: string
+  Deductions Worksheet — Line 6d (Gifts to charities):
+    type: string
+  Deductions Worksheet — Line 6e (Other itemized deductions):
+    type: string
+  Deductions Worksheet — Line 7 (Sum of 6a–6e):
+    type: string
+  Deductions Worksheet — Line 8a (Total income):
+    type: string
+  Deductions Worksheet — Line 8b (Line 8a minus line 4):
+    type: string
+  Deductions Worksheet — Line 9 (Filing-status threshold):
+    type: string
+  Deductions Worksheet — Line 10 (Itemized deductions after limitation):
+    type: string
+  Deductions Worksheet — Line 11 (Standard deduction):
+    type: string
+  Deductions Worksheet — Line 12 (Cash gifts to charities with standard deduction):
+    type: string
+  Deductions Worksheet — Line 13 (Sum of 11 and 12):
+    type: string
+  Deductions Worksheet — Line 14:
+    type: string
+  Deductions Worksheet — Line 15 (Total to enter in Step 4(b)):
+    type: string

@@ -1,0 +1,377 @@
+name: irs_1040_schedule_e
+record_type: object
+description: Supplemental income and loss schedule (rental, royalties, partnerships) for Form 1040.
+source:
+  owner: IRS
+  url: https://www.irs.gov/forms-pubs/about-schedule-e-form-1040
+fields:
+  Name(s) shown on return:
+    type: string
+  Your social security number:
+    type: string
+  'Line A — Made payments requiring Form 1099: Yes':
+    type: bool
+  'Line A — Made payments requiring Form 1099: No':
+    type: bool
+  'Line B — Did/will file required Form(s) 1099: Yes':
+    type: bool
+  'Line B — Did/will file required Form(s) 1099: No':
+    type: bool
+  Line 1a — Property A physical address:
+    type: string
+  Line 1a — Property B physical address:
+    type: string
+  Line 1a — Property C physical address:
+    type: string
+  Line 1b — Property A type (1-8):
+    type: string
+  Line 1b — Property B type (1-8):
+    type: string
+  Line 1b — Property C type (1-8):
+    type: string
+  Line 2 — Property A fair rental days:
+    type: string
+  Line 2 — Property A personal use days:
+    type: string
+  Line 2 — Property A QJV:
+    type: bool
+  Line 2 — Property B fair rental days:
+    type: string
+  Line 2 — Property B personal use days:
+    type: string
+  Line 2 — Property B QJV:
+    type: bool
+  Line 2 — Property C fair rental days:
+    type: string
+  Line 2 — Property C personal use days:
+    type: string
+  Line 2 — Property C QJV:
+    type: bool
+  Line 1b — 'Other' property type description:
+    type: string
+  Line 3 — Rents received (Property A):
+    type: string
+  Line 3 — Rents received (Property B):
+    type: string
+  Line 3 — Rents received (Property C):
+    type: string
+  Line 4 — Royalties received (Property A):
+    type: string
+  Line 4 — Royalties received (Property B):
+    type: string
+  Line 4 — Royalties received (Property C):
+    type: string
+  Line 5 — Advertising (Property A):
+    type: string
+  Line 5 — Advertising (Property B):
+    type: string
+  Line 5 — Advertising (Property C):
+    type: string
+  Line 6 — Auto and travel (Property A):
+    type: string
+  Line 6 — Auto and travel (Property B):
+    type: string
+  Line 6 — Auto and travel (Property C):
+    type: string
+  Line 7 — Cleaning and maintenance (Property A):
+    type: string
+  Line 7 — Cleaning and maintenance (Property B):
+    type: string
+  Line 7 — Cleaning and maintenance (Property C):
+    type: string
+  Line 8 — Commissions (Property A):
+    type: string
+  Line 8 — Commissions (Property B):
+    type: string
+  Line 8 — Commissions (Property C):
+    type: string
+  Line 9 — Insurance (Property A):
+    type: string
+  Line 9 — Insurance (Property B):
+    type: string
+  Line 9 — Insurance (Property C):
+    type: string
+  Line 10 — Legal and other professional fees (Property A):
+    type: string
+  Line 10 — Legal and other professional fees (Property B):
+    type: string
+  Line 10 — Legal and other professional fees (Property C):
+    type: string
+  Line 11 — Management fees (Property A):
+    type: string
+  Line 11 — Management fees (Property B):
+    type: string
+  Line 11 — Management fees (Property C):
+    type: string
+  Line 12 — Mortgage interest paid to banks, etc. (Property A):
+    type: string
+  Line 12 — Mortgage interest paid to banks, etc. (Property B):
+    type: string
+  Line 12 — Mortgage interest paid to banks, etc. (Property C):
+    type: string
+  Line 13 — Other interest (Property A):
+    type: string
+  Line 13 — Other interest (Property B):
+    type: string
+  Line 13 — Other interest (Property C):
+    type: string
+  Line 14 — Repairs (Property A):
+    type: string
+  Line 14 — Repairs (Property B):
+    type: string
+  Line 14 — Repairs (Property C):
+    type: string
+  Line 15 — Supplies (Property A):
+    type: string
+  Line 15 — Supplies (Property B):
+    type: string
+  Line 15 — Supplies (Property C):
+    type: string
+  Line 16 — Taxes (Property A):
+    type: string
+  Line 16 — Taxes (Property B):
+    type: string
+  Line 16 — Taxes (Property C):
+    type: string
+  Line 17 — Utilities (Property A):
+    type: string
+  Line 17 — Utilities (Property B):
+    type: string
+  Line 17 — Utilities (Property C):
+    type: string
+  Line 18 — Depreciation expense or depletion (Property A):
+    type: string
+  Line 18 — Depreciation expense or depletion (Property B):
+    type: string
+  Line 18 — Depreciation expense or depletion (Property C):
+    type: string
+  Line 19 — Other expenses description:
+    type: string
+  Line 19 — Other expenses (Property A):
+    type: string
+  Line 19 — Other expenses (Property B):
+    type: string
+  Line 19 — Other expenses (Property C):
+    type: string
+  Line 20 — Total expenses (Property A):
+    type: string
+  Line 20 — Total expenses (Property B):
+    type: string
+  Line 20 — Total expenses (Property C):
+    type: string
+  Line 21 — Income/(loss) (Property A):
+    type: string
+  Line 21 — Income/(loss) (Property B):
+    type: string
+  Line 21 — Income/(loss) (Property C):
+    type: string
+  Line 22 — Deductible rental real estate loss after Form 8582 limitation (Property A):
+    type: string
+  Line 22 — Deductible rental real estate loss after Form 8582 limitation (Property B):
+    type: string
+  Line 22 — Deductible rental real estate loss after Form 8582 limitation (Property C):
+    type: string
+  Line 23a — Total rents (line 3) for all rental properties:
+    type: string
+  Line 23b — Total royalties (line 4) for all royalty properties:
+    type: string
+  Line 23c — Total mortgage interest (line 12) for all properties:
+    type: string
+  Line 23d — Total depreciation (line 18) for all properties:
+    type: string
+  Line 23e — Total expenses (line 20) for all properties:
+    type: string
+  Line 24 — Income (sum of positive amounts on line 21):
+    type: string
+  Line 25 — Losses (royalty losses from line 21 + rental losses from line 22):
+    type: string
+  Line 26 — Total rental real estate and royalty income or (loss):
+    type: string
+  Name(s) shown on return (page 2):
+    type: string
+  Your social security number (page 2):
+    type: string
+  'Line 27 — Reporting prior-year disallowed loss / passive loss / unreimbursed partnership expenses: Yes':
+    type: bool
+  'Line 27 — Reporting prior-year disallowed loss / passive loss / unreimbursed partnership expenses: No':
+    type: bool
+  Line 28 Row A — (a) Name:
+    type: string
+  Line 28 Row A — (b) P (partnership) or S (S corp):
+    type: string
+  Line 28 Row A — (c) Check if foreign partnership:
+    type: bool
+  Line 28 Row A — (d) Employer identification number:
+    type: string
+  Line 28 Row A — (e) Check if basis computation required:
+    type: bool
+  Line 28 Row A — (f) Check if any amount is not at risk:
+    type: bool
+  Line 28 Row B — (a) Name:
+    type: string
+  Line 28 Row B — (b) P or S:
+    type: string
+  Line 28 Row B — (c) Check if foreign partnership:
+    type: bool
+  Line 28 Row B — (d) Employer identification number:
+    type: string
+  Line 28 Row B — (e) Check if basis computation required:
+    type: bool
+  Line 28 Row B — (f) Check if any amount is not at risk:
+    type: bool
+  Line 28 Row C — (a) Name:
+    type: string
+  Line 28 Row C — (b) P or S:
+    type: string
+  Line 28 Row C — (c) Check if foreign partnership:
+    type: bool
+  Line 28 Row C — (d) Employer identification number:
+    type: string
+  Line 28 Row C — (e) Check if basis computation required:
+    type: bool
+  Line 28 Row C — (f) Check if any amount is not at risk:
+    type: bool
+  Line 28 Row D — (a) Name:
+    type: string
+  Line 28 Row D — (b) P or S:
+    type: string
+  Line 28 Row D — (c) Check if foreign partnership:
+    type: bool
+  Line 28 Row D — (d) Employer identification number:
+    type: string
+  Line 28 Row D — (e) Check if basis computation required:
+    type: bool
+  Line 28 Row D — (f) Check if any amount is not at risk:
+    type: bool
+  Line 28 Row A — (g) Passive loss allowed:
+    type: string
+  Line 28 Row A — (h) Passive income from Schedule K-1:
+    type: string
+  Line 28 Row A — (i) Nonpassive loss allowed:
+    type: string
+  Line 28 Row A — (j) Section 179 expense deduction from Form 4562:
+    type: string
+  Line 28 Row A — (k) Nonpassive income from Schedule K-1:
+    type: string
+  Line 28 Row B — (g) Passive loss allowed:
+    type: string
+  Line 28 Row B — (h) Passive income from Schedule K-1:
+    type: string
+  Line 28 Row B — (i) Nonpassive loss allowed:
+    type: string
+  Line 28 Row B — (j) Section 179 expense deduction from Form 4562:
+    type: string
+  Line 28 Row B — (k) Nonpassive income from Schedule K-1:
+    type: string
+  Line 28 Row C — (g) Passive loss allowed:
+    type: string
+  Line 28 Row C — (h) Passive income from Schedule K-1:
+    type: string
+  Line 28 Row C — (i) Nonpassive loss allowed:
+    type: string
+  Line 28 Row C — (j) Section 179 expense deduction from Form 4562:
+    type: string
+  Line 28 Row C — (k) Nonpassive income from Schedule K-1:
+    type: string
+  Line 28 Row D — (g) Passive loss allowed:
+    type: string
+  Line 28 Row D — (h) Passive income from Schedule K-1:
+    type: string
+  Line 28 Row D — (i) Nonpassive loss allowed:
+    type: string
+  Line 28 Row D — (j) Section 179 expense deduction from Form 4562:
+    type: string
+  Line 28 Row D — (k) Nonpassive income from Schedule K-1:
+    type: string
+  Line 29a Totals — (h) Passive income:
+    type: string
+  Line 29a Totals — (k) Nonpassive income:
+    type: string
+  Line 29b Totals — (g) Passive loss:
+    type: string
+  Line 29b Totals — (i) Nonpassive loss:
+    type: string
+  Line 29b Totals — (j) Section 179 expense:
+    type: string
+  Line 30 — Total of columns (h) and (k) of line 29a:
+    type: string
+  Line 31 — Total of columns (g), (i), and (j) of line 29b:
+    type: string
+  Line 32 — Total partnership and S corporation income or (loss):
+    type: string
+  Line 34a Totals — (d) Passive income:
+    type: string
+  Line 34a Totals — (f) Other income:
+    type: string
+  Line 34b Totals — (c) Passive deduction or loss:
+    type: string
+  Line 34b Totals — (e) Deduction or loss:
+    type: string
+  Line 35 — Total of columns (d) and (f) of line 34a:
+    type: string
+  Line 33 Row A — (a) Name:
+    type: string
+  Line 33 Row A — (b) Employer identification number:
+    type: string
+  Line 33 Row B — (a) Name:
+    type: string
+  Line 33 Row B — (b) Employer identification number:
+    type: string
+  Line 33 Row A — (c) Passive deduction or loss allowed:
+    type: string
+  Line 33 Row A — (d) Passive income from Schedule K-1:
+    type: string
+  Line 33 Row A — (e) Deduction or loss from Schedule K-1:
+    type: string
+  Line 33 Row A — (f) Other income from Schedule K-1:
+    type: string
+  Line 33 Row B — (c) Passive deduction or loss allowed:
+    type: string
+  Line 33 Row B — (d) Passive income from Schedule K-1:
+    type: string
+  Line 33 Row B — (e) Deduction or loss from Schedule K-1:
+    type: string
+  Line 33 Row B — (f) Other income from Schedule K-1:
+    type: string
+  Line 36 — Total of columns (c) and (e) of line 34b:
+    type: string
+  Line 37 — Total estate and trust income or (loss):
+    type: string
+  Line 35 — Total of columns (d) and (f) of line 34a (duplicate field):
+    type: string
+  Line 36 — Total of columns (c) and (e) of line 34b (duplicate field):
+    type: string
+  Line 37 — Total estate and trust income or (loss) (duplicate field):
+    type: string
+  Line 34a Totals — (d) Passive income (duplicate):
+    type: string
+  Line 34a Totals — (f) Other income (duplicate):
+    type: string
+  Line 34b Totals — (c) Passive deduction or loss (duplicate):
+    type: string
+  Line 34b Totals — (e) Deduction or loss (duplicate):
+    type: string
+  Line 35 (alt) — Total of columns (d) and (f) of line 34a:
+    type: string
+  Line 36 (alt) — Total of columns (c) and (e) of line 34b:
+    type: string
+  Line 38 — (a) Name:
+    type: string
+  Line 38 — (b) Employer identification number:
+    type: string
+  Line 38 — (c) Excess inclusion from Schedules Q, line 2c:
+    type: string
+  Line 38 — (d) Taxable income (net loss) from Schedules Q, line 1b:
+    type: string
+  Line 38 — (e) Income from Schedules Q, line 3b:
+    type: string
+  Line 39 — Combined columns (d) and (e) total:
+    type: string
+  Line 40 — Net farm rental income or (loss) from Form 4835:
+    type: string
+  Line 41 — Total income or (loss):
+    type: string
+  Line 42 — Reconciliation of farming and fishing income:
+    type: string
+  Line 43 — Reconciliation for real estate professionals:
+    type: string

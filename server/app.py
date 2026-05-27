@@ -15,10 +15,10 @@ from fastapi.staticfiles import StaticFiles
 
 from server.auth import FirebaseAuthMiddleware, get_uid
 from server.extract import (
-    async_extract, async_extract_pages, load_schema,
-    list_schemas, SCHEMAS_DIR, _build_model,
-    extract_text, check_text_length, async_infer_schema,
-    async_infer_schema_vision, PARSERS,
+    async_extract, async_extract_pages, load_blueprint,
+    list_blueprints, BLUEPRINTS_DIR, _build_model,
+    extract_text, check_text_length, async_infer_blueprint,
+    async_infer_blueprint_vision, PARSERS,
 )
 from petey.schema import normalize_dates
 from server.par_extract import async_process_file as par_process_file, extract_text as par_extract_text
@@ -32,6 +32,13 @@ from server.validate_keys import (
 from server.runs import (
     create_run, update_run, list_runs, get_run, delete_run,
 )
+
+# Backwards-compat aliases so legacy imports / patch targets still resolve.
+async_infer_schema = async_infer_blueprint
+async_infer_schema_vision = async_infer_blueprint_vision
+load_schema = load_blueprint
+list_schemas = list_blueprints
+SCHEMAS_DIR = BLUEPRINTS_DIR
 
 BASE_DIR = Path(os.environ.get("PETEY_WEB_BASE", Path(__file__).resolve().parent.parent))
 TEMPLATES_DIR = BASE_DIR / "templates"
@@ -69,14 +76,14 @@ def _check_page_limit(
         )
     return None
 
-_schema_cache: dict[str, type] = {}
+_blueprint_cache: dict[str, type] = {}
 
 
-def get_model(schema_file: str):
-    if schema_file not in _schema_cache:
-        model, _ = load_schema(SCHEMAS_DIR / schema_file)
-        _schema_cache[schema_file] = model
-    return _schema_cache[schema_file]
+def get_model(blueprint_file: str):
+    if blueprint_file not in _blueprint_cache:
+        model, _ = load_blueprint(BLUEPRINTS_DIR / blueprint_file)
+        _blueprint_cache[blueprint_file] = model
+    return _blueprint_cache[blueprint_file]
 
 
 def _load_template(name: str) -> str:
@@ -92,35 +99,58 @@ async def health():
     return {"status": "ok"}
 
 
-@app.get("/schemas")
-async def schemas():
-    return list_schemas()
+@app.get("/blueprints")
+async def blueprints():
+    return list_blueprints()
 
 
-@app.get("/schemas/{schema_file}")
-async def get_schema(schema_file: str):
+@app.get("/blueprints/{blueprint_file}")
+async def get_blueprint(blueprint_file: str):
     # Sanitize filename to prevent path traversal
-    safe_name = Path(schema_file).name
-    path = SCHEMAS_DIR / safe_name
+    safe_name = Path(blueprint_file).name
+    path = BLUEPRINTS_DIR / safe_name
     if not path.exists():
-        return JSONResponse({"error": "not found"}, 404)
+        # Fall back to .yaml for legacy files saved before the rename
+        if safe_name.endswith(".bpt"):
+            legacy = BLUEPRINTS_DIR / (safe_name[:-4] + ".yaml")
+            if legacy.exists():
+                path = legacy
+        if not path.exists():
+            return JSONResponse({"error": "not found"}, 404)
     with open(path) as f:
         return yaml.safe_load(f)
 
 
-@app.post("/schemas")
-async def save_schema(request: Request):
+@app.post("/blueprints")
+async def save_blueprint(request: Request):
     spec = await request.json()
     filename = (
-        spec.get("name", "schema").lower().replace(" ", "_") + ".yaml"
+        spec.get("name", "blueprint").lower().replace(" ", "_") + ".bpt"
     )
     # Sanitize filename
     filename = Path(filename).name
-    path = SCHEMAS_DIR / filename
+    path = BLUEPRINTS_DIR / filename
     with open(path, "w") as f:
         yaml.dump(spec, f, default_flow_style=False, sort_keys=False)
-    _schema_cache.pop(filename, None)
+    _blueprint_cache.pop(filename, None)
     return {"file": filename, "name": spec.get("name")}
+
+
+# --- Legacy /schemas routes (deprecated; removed in next major) ---
+
+@app.get("/schemas")
+async def schemas_legacy():
+    return list_blueprints()
+
+
+@app.get("/schemas/{schema_file}")
+async def get_schema_legacy(schema_file: str):
+    return await get_blueprint(schema_file)
+
+
+@app.post("/schemas")
+async def save_schema_legacy(request: Request):
+    return await save_blueprint(request)
 
 
 @app.post("/page-count")
@@ -155,14 +185,18 @@ async def page_count_endpoint(
 async def extract_endpoint(
     request: Request,
     file: UploadFile,
-    schema_file: str = Form(None),
-    schema_spec: str = Form(None),
+    blueprint_file: str = Form(None),
+    blueprint_spec: str = Form(None),
+    schema_file: str = Form(None),   # deprecated alias for blueprint_file
+    schema_spec: str = Form(None),   # deprecated alias for blueprint_spec
     instructions: str = Form(""),
     parser: str = Form("pymupdf"),
     model: str = Form(None),
     mode: str = Form("query"),
     uid: str = Depends(get_uid),
 ):
+    blueprint_file = blueprint_file or schema_file
+    blueprint_spec = blueprint_spec or schema_spec
     # Check that the user has the required API key before processing
     settings = get_settings(uid)
     if model:
@@ -188,8 +222,8 @@ async def extract_endpoint(
         tmp.write(await file.read())
         tmp_path = tmp.name
     _pr = None
-    if schema_spec:
-        _pr = json.loads(schema_spec).get("pages") or None
+    if blueprint_spec:
+        _pr = json.loads(blueprint_spec).get("pages") or None
     page_err = _check_page_limit(tmp_path, _pr)
     if page_err:
         Path(tmp_path).unlink(missing_ok=True)
@@ -211,15 +245,15 @@ async def extract_endpoint(
             Path(tmp_path).unlink(missing_ok=True)
         return data
 
-    if schema_spec:
-        spec = json.loads(schema_spec)
+    if blueprint_spec:
+        spec = json.loads(blueprint_spec)
         response_model = _build_model(spec)
-    elif schema_file:
-        response_model = get_model(schema_file)
-        with open(SCHEMAS_DIR / schema_file) as f:
+    elif blueprint_file:
+        response_model = get_model(blueprint_file)
+        with open(BLUEPRINTS_DIR / blueprint_file) as f:
             spec = yaml.safe_load(f)
     else:
-        return JSONResponse({"error": "No schema provided"}, 400)
+        return JSONResponse({"error": "No blueprint provided"}, 400)
 
     try:
         is_table = spec.get("mode") == "table" or spec.get("record_type") == "array"
@@ -274,13 +308,15 @@ async def extract_endpoint(
 async def extract_stream_endpoint(
     request: Request,
     file: UploadFile,
-    schema_spec: str = Form(None),
+    blueprint_spec: str = Form(None),
+    schema_spec: str = Form(None),   # deprecated alias
     instructions: str = Form(""),
     parser: str = Form("pymupdf"),
     model: str = Form(None),
     uid: str = Depends(get_uid),
 ):
     """Streaming array extraction — emits NDJSON page progress then result."""
+    blueprint_spec = blueprint_spec or schema_spec
     settings = get_settings(uid)
     if model:
         settings["model"] = model
@@ -290,9 +326,9 @@ async def extract_stream_endpoint(
     if provider == "openai" and not settings.get("openai_api_key"):
         return JSONResponse({"error": "No OpenAI API key configured."}, 400)
 
-    if not schema_spec:
-        return JSONResponse({"error": "No schema provided"}, 400)
-    spec = json.loads(schema_spec)
+    if not blueprint_spec:
+        return JSONResponse({"error": "No blueprint provided"}, 400)
+    spec = json.loads(blueprint_spec)
     response_model = _build_model(spec)
 
     with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
@@ -514,22 +550,22 @@ async def results_append(request: Request):
     return {"ok": True}
 
 
-@app.post("/infer-schema")
-async def infer_schema_endpoint(
+@app.post("/infer-blueprint")
+async def infer_blueprint_endpoint(
     file: UploadFile,
     model: str = Form(None),
     page_range: str = Form(None),
     header_pages: int = Form(0),
     uid: str = Depends(get_uid),
 ):
-    """Analyze a PDF and suggest an extraction schema."""
+    """Analyze a PDF and suggest a blueprint."""
     with tempfile.NamedTemporaryFile(
         suffix=".pdf", delete=False
     ) as tmp:
         tmp.write(await file.read())
         tmp_path = tmp.name
     try:
-        spec = await async_infer_schema(
+        spec = await async_infer_blueprint(
             tmp_path, uid=uid,
             model_override=model,
             page_range=page_range or None,
@@ -542,36 +578,60 @@ async def infer_schema_endpoint(
         )
     finally:
         Path(tmp_path).unlink(missing_ok=True)
+
+
+@app.post("/infer-blueprint/vision")
+async def infer_blueprint_vision_endpoint(
+    file: UploadFile,
+    model: str = Form(None),
+    page_range: str = Form(None),
+    header_pages: int = Form(0),
+    uid: str = Depends(get_uid),
+):
+    """Suggest a blueprint using vision — sends page images directly."""
+    with tempfile.NamedTemporaryFile(
+        suffix=".pdf", delete=False
+    ) as tmp:
+        tmp.write(await file.read())
+        tmp_path = tmp.name
+    try:
+        spec = await async_infer_blueprint_vision(
+            tmp_path, uid=uid,
+            model_override=model,
+            page_range=page_range or None,
+            header_pages=header_pages,
+        )
+        return spec
+    except Exception as e:
+        return JSONResponse(
+            {"error": str(e)}, status_code=500,
+        )
+    finally:
+        Path(tmp_path).unlink(missing_ok=True)
+
+
+# --- Legacy /infer-schema routes (deprecated; removed in next major) ---
+
+@app.post("/infer-schema")
+async def infer_schema_endpoint_legacy(
+    file: UploadFile,
+    model: str = Form(None),
+    page_range: str = Form(None),
+    header_pages: int = Form(0),
+    uid: str = Depends(get_uid),
+):
+    return await infer_blueprint_endpoint(file, model, page_range, header_pages, uid)
 
 
 @app.post("/infer-schema/vision")
-async def infer_schema_vision_endpoint(
+async def infer_schema_vision_endpoint_legacy(
     file: UploadFile,
     model: str = Form(None),
     page_range: str = Form(None),
     header_pages: int = Form(0),
     uid: str = Depends(get_uid),
 ):
-    """Suggest schema using vision — sends page images directly."""
-    with tempfile.NamedTemporaryFile(
-        suffix=".pdf", delete=False
-    ) as tmp:
-        tmp.write(await file.read())
-        tmp_path = tmp.name
-    try:
-        spec = await async_infer_schema_vision(
-            tmp_path, uid=uid,
-            model_override=model,
-            page_range=page_range or None,
-            header_pages=header_pages,
-        )
-        return spec
-    except Exception as e:
-        return JSONResponse(
-            {"error": str(e)}, status_code=500,
-        )
-    finally:
-        Path(tmp_path).unlink(missing_ok=True)
+    return await infer_blueprint_vision_endpoint(file, model, page_range, header_pages, uid)
 
 
 @app.post("/parse-yaml")
@@ -792,7 +852,7 @@ async def guide_page():
 @app.get("/demo/{filename}")
 async def demo_file(filename: str):
     from fastapi.responses import FileResponse
-    ALLOWED = {".pdf": "application/pdf", ".yaml": "text/yaml", ".yml": "text/yaml", ".png": "image/png", ".csv": "text/csv"}
+    ALLOWED = {".pdf": "application/pdf", ".bpt": "text/yaml", ".yaml": "text/yaml", ".yml": "text/yaml", ".png": "image/png", ".csv": "text/csv"}
     suffix = Path(filename).suffix.lower()
     if suffix not in ALLOWED:
         return JSONResponse({"error": "Invalid file type"}, 400)
@@ -811,9 +871,15 @@ async def demos_page():
     return _load_template("demos.html")
 
 
+@app.get("/blueprint-tutorial", response_class=HTMLResponse)
+async def blueprint_tutorial_page():
+    return _load_template("blueprint_tutorial.html")
+
+
+# Legacy alias — removed in next major.
 @app.get("/schema-tutorial", response_class=HTMLResponse)
-async def schema_tutorial_page():
-    return _load_template("schema_tutorial.html")
+async def schema_tutorial_page_legacy():
+    return _load_template("blueprint_tutorial.html")
 
 
 @app.get("/download", response_class=HTMLResponse)

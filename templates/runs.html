@@ -377,8 +377,8 @@ async function showDetail(runId) {
   inner += '<div class="detail-actions">';
   inner += '<button class="detail-btn primary btn-load">Reload Run</button>';
   if (run.schema_spec) {
-    inner += '<button class="detail-btn btn-view-schema">View Schema</button>';
-    inner += '<button class="detail-btn btn-dl-schema">Download Schema</button>';
+    inner += '<button class="detail-btn btn-view-schema">View Blueprint</button>';
+    inner += '<button class="detail-btn btn-dl-schema">Download Blueprint</button>';
   }
   if (hasResults) {
     inner += '<button class="detail-btn btn-json">Download JSON</button>';
@@ -414,7 +414,7 @@ async function showDetail(runId) {
     viewSchemaBtn.addEventListener('click', () => {
       const open = pre.style.display !== 'none';
       pre.style.display = open ? 'none' : 'block';
-      viewSchemaBtn.textContent = open ? 'View Schema' : 'Hide Schema';
+      viewSchemaBtn.textContent = open ? 'View Blueprint' : 'Hide Blueprint';
     });
   }
 
@@ -425,7 +425,7 @@ async function showDetail(runId) {
       const blob = new Blob([yaml], { type: 'text/yaml' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url;
-      a.download = (run.schema_spec.name || 'schema') + '.yaml';
+      a.download = (run.schema_spec.name || 'blueprint') + '.bpt';
       a.click(); URL.revokeObjectURL(url);
     });
   }

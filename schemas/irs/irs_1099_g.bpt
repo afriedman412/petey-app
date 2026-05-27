@@ -1,0 +1,207 @@
+name: irs_1099_g
+record_type: object
+description: Reports unemployment compensation and other government payments.
+source:
+  owner: IRS
+  url: https://www.irs.gov/forms-pubs/about-form-1099-g
+fields:
+  Calendar year:
+    type: string
+  VOID:
+    type: bool
+  CORRECTED:
+    type: bool
+  Payer's name, address, and telephone number:
+    type: string
+  Payer's TIN:
+    type: string
+  Recipient's TIN:
+    type: string
+  Recipient's name:
+    type: string
+  Recipient's street address (including apt. no.):
+    type: string
+  Recipient's city, state, and ZIP:
+    type: string
+  Account number:
+    type: string
+  2nd TIN not.:
+    type: bool
+  Box 1 — Unemployment compensation:
+    type: string
+  Box 2 — State or local income tax refunds, credits, or offsets:
+    type: string
+  Box 3 — Box 2 amount is for tax year:
+    type: string
+  Box 4 — Federal income tax withheld:
+    type: string
+  Box 5 — RTAA payments:
+    type: string
+  Box 6 — Taxable grants:
+    type: string
+  Box 7 — Agriculture payments:
+    type: string
+  Box 8 — Box 2 is trade or business income:
+    type: bool
+  Box 9 — Market gain:
+    type: string
+  Box 10a — State (first entry):
+    type: string
+  Box 10a — State (second entry):
+    type: string
+  Box 10b — State identification no. (first entry):
+    type: string
+  Box 10b — State identification no. (second entry):
+    type: string
+  Box 11 — State income tax withheld (first entry):
+    type: string
+  Box 11 — State income tax withheld (second entry):
+    type: string
+  Calendar year (Copy 1):
+    type: string
+  VOID (Copy 1):
+    type: bool
+  CORRECTED (Copy 1):
+    type: bool
+  Payer's name, address, and telephone number (Copy 1):
+    type: string
+  Payer's TIN (Copy 1):
+    type: string
+  Recipient's TIN (Copy 1):
+    type: string
+  Recipient's name (Copy 1):
+    type: string
+  Recipient's street address (Copy 1):
+    type: string
+  Recipient's city, state, and ZIP (Copy 1):
+    type: string
+  Account number (Copy 1):
+    type: string
+  Box 1 — Unemployment compensation (Copy 1):
+    type: string
+  Box 2 — State or local income tax refunds, credits, or offsets (Copy 1):
+    type: string
+  Box 3 — Box 2 amount is for tax year (Copy 1):
+    type: string
+  Box 4 — Federal income tax withheld (Copy 1):
+    type: string
+  Box 5 — RTAA payments (Copy 1):
+    type: string
+  Box 6 — Taxable grants (Copy 1):
+    type: string
+  Box 7 — Agriculture payments (Copy 1):
+    type: string
+  Box 8 — Box 2 is trade or business income (Copy 1):
+    type: bool
+  Box 9 — Market gain (Copy 1):
+    type: string
+  Box 10a — State, first entry (Copy 1):
+    type: string
+  Box 10a — State, second entry (Copy 1):
+    type: string
+  Box 10b — State identification no., first entry (Copy 1):
+    type: string
+  Box 10b — State identification no., second entry (Copy 1):
+    type: string
+  Box 11 — State income tax withheld, first entry (Copy 1):
+    type: string
+  Box 11 — State income tax withheld, second entry (Copy 1):
+    type: string
+  Calendar year (Copy B):
+    type: string
+  CORRECTED (Copy B):
+    type: bool
+  Payer's name, address, and telephone number (Copy B):
+    type: string
+  Payer's TIN (Copy B):
+    type: string
+  Recipient's TIN (Copy B):
+    type: string
+  Recipient's name (Copy B):
+    type: string
+  Recipient's street address (Copy B):
+    type: string
+  Recipient's city, state, and ZIP (Copy B):
+    type: string
+  Account number (Copy B):
+    type: string
+  Box 1 — Unemployment compensation (Copy B):
+    type: string
+  Box 2 — State or local income tax refunds, credits, or offsets (Copy B):
+    type: string
+  Box 3 — Box 2 amount is for tax year (Copy B):
+    type: string
+  Box 4 — Federal income tax withheld (Copy B):
+    type: string
+  Box 5 — RTAA payments (Copy B):
+    type: string
+  Box 6 — Taxable grants (Copy B):
+    type: string
+  Box 7 — Agriculture payments (Copy B):
+    type: string
+  Box 8 — Box 2 is trade or business income (Copy B):
+    type: bool
+  Box 9 — Market gain (Copy B):
+    type: string
+  Box 10a — State, first entry (Copy B):
+    type: string
+  Box 10a — State, second entry (Copy B):
+    type: string
+  Box 10b — State identification no., first entry (Copy B):
+    type: string
+  Box 10b — State identification no., second entry (Copy B):
+    type: string
+  Box 11 — State income tax withheld, first entry (Copy B):
+    type: string
+  Box 11 — State income tax withheld, second entry (Copy B):
+    type: string
+  Calendar year (Copy 2):
+    type: string
+  VOID (Copy 2):
+    type: bool
+  CORRECTED (Copy 2):
+    type: bool
+  Payer's name, address, and telephone number (Copy 2):
+    type: string
+  Payer's TIN (Copy 2):
+    type: string
+  Recipient's TIN (Copy 2):
+    type: string
+  Recipient's name (Copy 2):
+    type: string
+  Recipient's street address (Copy 2):
+    type: string
+  Recipient's city, state, and ZIP (Copy 2):
+    type: string
+  Account number (Copy 2):
+    type: string
+  Box 1 — Unemployment compensation (Copy 2):
+    type: string
+  Box 2 — State or local income tax refunds, credits, or offsets (Copy 2):
+    type: string
+  Box 3 — Box 2 amount is for tax year (Copy 2):
+    type: string
+  Box 4 — Federal income tax withheld (Copy 2):
+    type: string
+  Box 5 — RTAA payments (Copy 2):
+    type: string
+  Box 6 — Taxable grants (Copy 2):
+    type: string
+  Box 7 — Agriculture payments (Copy 2):
+    type: string
+  Box 8 — Box 2 is trade or business income (Copy 2):
+    type: bool
+  Box 9 — Market gain (Copy 2):
+    type: string
+  Box 10a — State, first entry (Copy 2):
+    type: string
+  Box 10a — State, second entry (Copy 2):
+    type: string
+  Box 10b — State identification no., first entry (Copy 2):
+    type: string
+  Box 10b — State identification no., second entry (Copy 2):
+    type: string
+  Box 11 — State income tax withheld, first entry (Copy 2):
+    type: string
+  Box 11 — State income tax withheld, second entry (Copy 2):
+    type: string

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Schema Designer — Petey</title>
+<title>Blueprint Designer — Petey</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
@@ -288,7 +288,7 @@ pre {
 
   <div class="hero">
     <div class="hero-top" style="position:relative;">
-      <h1>Schema Designer<span class="dot">.</span></h1>
+      <h1>Blueprint Designer<span class="dot">.</span></h1>
       <button class="tb-hamburger" aria-label="Menu" onclick="document.querySelector('.tb-nav').classList.toggle('open')">&#9776;</button>
       <div class="tb-nav" style="display:flex; gap:1.25rem; align-items:flex-end; padding-bottom:0.2rem;">
         <a href="/" class="page-top-link">Extractor</a>
@@ -297,12 +297,12 @@ pre {
         <a href="https://github.com/afriedman412/petey" target="_blank" rel="noopener" class="page-top-link" title="GitHub" style="padding-bottom:0;"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
       </div>
     </div>
-    <p class="hero-sub">Build YAML schemas for Petey</p>
+    <p class="hero-sub">Build blueprints for Petey</p>
   </div>
 
   <div class="card">
     <div class="card-header">
-      <span class="card-label">Schema Info</span>
+      <span class="card-label">Blueprint Info</span>
     </div>
     <div class="meta-field">
       <label for="schemaName">Name</label>
@@ -335,8 +335,8 @@ pre {
     <div id="fieldRows"></div>
     <div class="btn-row">
       <button class="btn-add" id="addField">+ Add field</button>
-      <button class="btn-ghost" id="loadToggle">Import YAML</button>
-      <input type="file" id="loadYaml" accept=".yaml,.yml" style="display:none;">
+      <button class="btn-ghost" id="loadToggle">Import Blueprint</button>
+      <input type="file" id="loadYaml" accept=".bpt,.yaml,.yml" style="display:none;">
     </div>
   </div>
 
@@ -350,7 +350,7 @@ pre {
   </div>
 
   <div class="action-row">
-    <button class="download-btn-primary" id="downloadBtn">Download YAML</button>
+    <button class="download-btn-primary" id="downloadBtn">Download Blueprint</button>
     <button class="copy-btn" id="copyBtn">Copy to clipboard</button>
   </div>
 
@@ -366,8 +366,8 @@ pre {
   <div class="cli-hint">
     <strong>Using with the Petey CLI:</strong><br>
     <code>pip install petey</code><br><br>
-    <code>petey extract --schema your_schema.yaml document.pdf</code><br>
-    <code>petey extract --schema your_schema.yaml folder/ -o results.csv</code><br><br>
+    <code>petey extract --blueprint your_blueprint.bpt document.pdf</code><br>
+    <code>petey extract --blueprint your_blueprint.bpt folder/ -o results.csv</code><br><br>
     See <code>petey extract --help</code> for all options.
   </div>
 
@@ -418,7 +418,7 @@ document.getElementById('loadYaml').addEventListener('change', e => {
           recordType === 'array' ? 'inline-flex' : 'none';
         fields = parseFieldsFromSpec(spec.fields || {});
         renderFields();
-      }).catch(() => alert('Invalid YAML file'));
+      }).catch(() => alert('Invalid blueprint file'));
     } catch (e) { alert('Error reading file'); }
   };
   reader.readAsText(file);
@@ -642,7 +642,7 @@ document.getElementById('pageRange').addEventListener('input', updatePreview);
 document.getElementById('downloadBtn').addEventListener('click', () => {
   const yaml = buildYaml();
   const name = document.getElementById('schemaName').value.trim();
-  const filename = (name ? name.toLowerCase().replace(/\s+/g, '_') : 'schema') + '.yaml';
+  const filename = (name ? name.toLowerCase().replace(/\s+/g, '_') : 'blueprint') + '.bpt';
   const blob = new Blob([yaml], { type: 'text/yaml' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

@@ -1,0 +1,309 @@
+name: irs_1099_k
+record_type: object
+description: Reports payment card and third-party network transaction totals.
+source:
+  owner: IRS
+  url: https://www.irs.gov/forms-pubs/about-form-1099-k
+fields:
+  Calendar year (Copy A):
+    type: string
+  VOID (Copy A):
+    type: bool
+  CORRECTED (Copy A):
+    type: bool
+  FILER's name, address, and telephone number (Copy A):
+    type: string
+  FILER is a Payment Settlement Entity (PSE) (Copy A):
+    type: bool
+  FILER is an Electronic Payment Facilitator (EPF)/Other third party (Copy A):
+    type: bool
+  Transactions reported are Payment card (Copy A):
+    type: bool
+  Transactions reported are Third party network (Copy A):
+    type: bool
+  PAYEE's name (Copy A):
+    type: string
+  PAYEE's street address (including apt. no.) (Copy A):
+    type: string
+  PAYEE's city or town, state/province, country, and ZIP or foreign postal code (Copy A):
+    type: string
+  PSE's name and telephone number (Copy A):
+    type: string
+  Account number (Copy A):
+    type: string
+  2nd TIN not. (Copy A):
+    type: bool
+  FILER's TIN (Copy A):
+    type: string
+  PAYEE's TIN (Copy A):
+    type: string
+  Box 1a — Gross amount of payment card/third party network transactions (Copy A):
+    type: string
+  Box 1b — Card Not Present transactions (Copy A):
+    type: string
+  Box 2 — Merchant category code (Copy A):
+    type: string
+  Box 3 — Number of payment transactions (Copy A):
+    type: string
+  Box 4 — Federal income tax withheld (Copy A):
+    type: string
+  Box 5a — January (Copy A):
+    type: string
+  Box 5b — February (Copy A):
+    type: string
+  Box 5c — March (Copy A):
+    type: string
+  Box 5d — April (Copy A):
+    type: string
+  Box 5e — May (Copy A):
+    type: string
+  Box 5f — June (Copy A):
+    type: string
+  Box 5g — July (Copy A):
+    type: string
+  Box 5h — August (Copy A):
+    type: string
+  Box 5i — September (Copy A):
+    type: string
+  Box 5j — October (Copy A):
+    type: string
+  Box 5k — November (Copy A):
+    type: string
+  Box 5l — December (Copy A):
+    type: string
+  Box 6 — State (first) (Copy A):
+    type: string
+  Box 6 — State (second) (Copy A):
+    type: string
+  Box 7 — State identification no. (first) (Copy A):
+    type: string
+  Box 7 — State identification no. (second) (Copy A):
+    type: string
+  Box 8 — State income tax withheld (first) (Copy A):
+    type: string
+  Box 8 — State income tax withheld (second) (Copy A):
+    type: string
+  Calendar year (Copy 1):
+    type: string
+  VOID (Copy 1):
+    type: bool
+  CORRECTED (Copy 1):
+    type: bool
+  FILER's name, address, and telephone number (Copy 1):
+    type: string
+  FILER is a Payment Settlement Entity (PSE) (Copy 1):
+    type: bool
+  FILER is an Electronic Payment Facilitator (EPF)/Other third party (Copy 1):
+    type: bool
+  Transactions reported are Payment card (Copy 1):
+    type: bool
+  Transactions reported are Third party network (Copy 1):
+    type: bool
+  PAYEE's name (Copy 1):
+    type: string
+  PAYEE's street address (including apt. no.) (Copy 1):
+    type: string
+  PAYEE's city or town, state/province, country, and ZIP or foreign postal code (Copy 1):
+    type: string
+  PSE's name and telephone number (Copy 1):
+    type: string
+  Account number (Copy 1):
+    type: string
+  FILER's TIN (Copy 1):
+    type: string
+  PAYEE's TIN (Copy 1):
+    type: string
+  Box 1a — Gross amount of payment card/third party network transactions (Copy 1):
+    type: string
+  Box 1b — Card Not Present transactions (Copy 1):
+    type: string
+  Box 2 — Merchant category code (Copy 1):
+    type: string
+  Box 3 — Number of payment transactions (Copy 1):
+    type: string
+  Box 4 — Federal income tax withheld (Copy 1):
+    type: string
+  Box 5a — January (Copy 1):
+    type: string
+  Box 5b — February (Copy 1):
+    type: string
+  Box 5c — March (Copy 1):
+    type: string
+  Box 5d — April (Copy 1):
+    type: string
+  Box 5e — May (Copy 1):
+    type: string
+  Box 5f — June (Copy 1):
+    type: string
+  Box 5g — July (Copy 1):
+    type: string
+  Box 5h — August (Copy 1):
+    type: string
+  Box 5i — September (Copy 1):
+    type: string
+  Box 5j — October (Copy 1):
+    type: string
+  Box 5k — November (Copy 1):
+    type: string
+  Box 5l — December (Copy 1):
+    type: string
+  Box 6 — State (first) (Copy 1):
+    type: string
+  Box 6 — State (second) (Copy 1):
+    type: string
+  Box 7 — State identification no. (first) (Copy 1):
+    type: string
+  Box 7 — State identification no. (second) (Copy 1):
+    type: string
+  Box 8 — State income tax withheld (first) (Copy 1):
+    type: string
+  Box 8 — State income tax withheld (second) (Copy 1):
+    type: string
+  Calendar year (Copy B):
+    type: string
+  CORRECTED (if checked) (Copy B):
+    type: bool
+  FILER's name, address, and telephone number (Copy B):
+    type: string
+  FILER is a Payment Settlement Entity (PSE) (Copy B):
+    type: bool
+  FILER is an Electronic Payment Facilitator (EPF)/Other third party (Copy B):
+    type: bool
+  Transactions reported are Payment card (Copy B):
+    type: bool
+  Transactions reported are Third party network (Copy B):
+    type: bool
+  PAYEE's name (Copy B):
+    type: string
+  PAYEE's street address (including apt. no.) (Copy B):
+    type: string
+  PAYEE's city or town, state/province, country, and ZIP or foreign postal code (Copy B):
+    type: string
+  PSE's name and telephone number (Copy B):
+    type: string
+  Account number (Copy B):
+    type: string
+  FILER's TIN (Copy B):
+    type: string
+  PAYEE's TIN (Copy B):
+    type: string
+  Box 1a — Gross amount of payment card/third party network transactions (Copy B):
+    type: string
+  Box 1b — Card Not Present transactions (Copy B):
+    type: string
+  Box 2 — Merchant category code (Copy B):
+    type: string
+  Box 3 — Number of payment transactions (Copy B):
+    type: string
+  Box 4 — Federal income tax withheld (Copy B):
+    type: string
+  Box 5a — January (Copy B):
+    type: string
+  Box 5b — February (Copy B):
+    type: string
+  Box 5c — March (Copy B):
+    type: string
+  Box 5d — April (Copy B):
+    type: string
+  Box 5e — May (Copy B):
+    type: string
+  Box 5f — June (Copy B):
+    type: string
+  Box 5g — July (Copy B):
+    type: string
+  Box 5h — August (Copy B):
+    type: string
+  Box 5i — September (Copy B):
+    type: string
+  Box 5j — October (Copy B):
+    type: string
+  Box 5k — November (Copy B):
+    type: string
+  Box 5l — December (Copy B):
+    type: string
+  Box 6 — State (first) (Copy B):
+    type: string
+  Box 6 — State (second) (Copy B):
+    type: string
+  Box 7 — State identification no. (first) (Copy B):
+    type: string
+  Box 7 — State identification no. (second) (Copy B):
+    type: string
+  Box 8 — State income tax withheld (first) (Copy B):
+    type: string
+  Box 8 — State income tax withheld (second) (Copy B):
+    type: string
+  Calendar year (Copy 2):
+    type: string
+  CORRECTED (if checked) (Copy 2):
+    type: bool
+  FILER's name, address, and telephone number (Copy 2):
+    type: string
+  FILER is a Payment Settlement Entity (PSE) (Copy 2):
+    type: bool
+  FILER is an Electronic Payment Facilitator (EPF)/Other third party (Copy 2):
+    type: bool
+  Transactions reported are Payment card (Copy 2):
+    type: bool
+  Transactions reported are Third party network (Copy 2):
+    type: bool
+  PAYEE's name (Copy 2):
+    type: string
+  PAYEE's street address (including apt. no.) (Copy 2):
+    type: string
+  PAYEE's city or town, state/province, country, and ZIP or foreign postal code (Copy 2):
+    type: string
+  PSE's name and telephone number (Copy 2):
+    type: string
+  Account number (Copy 2):
+    type: string
+  FILER's TIN (Copy 2):
+    type: string
+  PAYEE's TIN (Copy 2):
+    type: string
+  Box 1a — Gross amount of payment card/third party network transactions (Copy 2):
+    type: string
+  Box 1b — Card Not Present transactions (Copy 2):
+    type: string
+  Box 2 — Merchant category code (Copy 2):
+    type: string
+  Box 3 — Number of payment transactions (Copy 2):
+    type: string
+  Box 4 — Federal income tax withheld (Copy 2):
+    type: string
+  Box 5a — January (Copy 2):
+    type: string
+  Box 5b — February (Copy 2):
+    type: string
+  Box 5c — March (Copy 2):
+    type: string
+  Box 5d — April (Copy 2):
+    type: string
+  Box 5e — May (Copy 2):
+    type: string
+  Box 5f — June (Copy 2):
+    type: string
+  Box 5g — July (Copy 2):
+    type: string
+  Box 5h — August (Copy 2):
+    type: string
+  Box 5i — September (Copy 2):
+    type: string
+  Box 5j — October (Copy 2):
+    type: string
+  Box 5k — November (Copy 2):
+    type: string
+  Box 5l — December (Copy 2):
+    type: string
+  Box 6 — State (first) (Copy 2):
+    type: string
+  Box 6 — State (second) (Copy 2):
+    type: string
+  Box 7 — State identification no. (first) (Copy 2):
+    type: string
+  Box 7 — State identification no. (second) (Copy 2):
+    type: string
+  Box 8 — State income tax withheld (first) (Copy 2):
+    type: string
+  Box 8 — State income tax withheld (second) (Copy 2):
+    type: string

@@ -1,0 +1,167 @@
+name: irs_1099_nec
+record_type: object
+description: Reports payments of $600 or more for services to nonemployees.
+source:
+  owner: IRS
+  url: https://www.irs.gov/forms-pubs/about-form-1099-nec
+fields:
+  Calendar year (Copy A):
+    type: string
+  VOID (Copy A):
+    type: bool
+  CORRECTED (Copy A):
+    type: bool
+  Payer's name, address, and telephone number (Copy A):
+    type: string
+  Payer's TIN (Copy A):
+    type: string
+  Recipient's TIN (Copy A):
+    type: string
+  Recipient's name (Copy A):
+    type: string
+  Recipient's street address (Copy A):
+    type: string
+  Recipient's city, state, and ZIP code (Copy A):
+    type: string
+  Account number (Copy A):
+    type: string
+  2nd TIN not. (Copy A):
+    type: bool
+  Box 1 — Nonemployee compensation (Copy A):
+    type: string
+  Box 2 — Payer made direct sales of $5,000 or more for resale (Copy A):
+    type: bool
+  Box 3 — Excess golden parachute payments (Copy A):
+    type: string
+  Box 4 — Federal income tax withheld (Copy A):
+    type: string
+  Box 5 — State tax withheld (state 1) (Copy A):
+    type: string
+  Box 5 — State tax withheld (state 2) (Copy A):
+    type: string
+  Box 6 — State/Payer's state no. (state 1) (Copy A):
+    type: string
+  Box 6 — State/Payer's state no. (state 2) (Copy A):
+    type: string
+  Box 7 — State income (state 1) (Copy A):
+    type: string
+  Box 7 — State income (state 2) (Copy A):
+    type: string
+  Calendar year (Copy 1):
+    type: string
+  VOID (Copy 1):
+    type: bool
+  CORRECTED (Copy 1):
+    type: bool
+  Payer's name, address, and telephone number (Copy 1):
+    type: string
+  Payer's TIN (Copy 1):
+    type: string
+  Recipient's TIN (Copy 1):
+    type: string
+  Recipient's name (Copy 1):
+    type: string
+  Recipient's street address (Copy 1):
+    type: string
+  Recipient's city, state, and ZIP code (Copy 1):
+    type: string
+  Account number (Copy 1):
+    type: string
+  Box 1 — Nonemployee compensation (Copy 1):
+    type: string
+  Box 2 — Payer made direct sales of $5,000 or more for resale (Copy 1):
+    type: bool
+  Box 3 — Excess golden parachute payments (Copy 1):
+    type: string
+  Box 4 — Federal income tax withheld (Copy 1):
+    type: string
+  Box 5 — State tax withheld (state 1) (Copy 1):
+    type: string
+  Box 5 — State tax withheld (state 2) (Copy 1):
+    type: string
+  Box 6 — State/Payer's state no. (state 1) (Copy 1):
+    type: string
+  Box 6 — State/Payer's state no. (state 2) (Copy 1):
+    type: string
+  Box 7 — State income (state 1) (Copy 1):
+    type: string
+  Box 7 — State income (state 2) (Copy 1):
+    type: string
+  Calendar year (Copy B):
+    type: string
+  CORRECTED (Copy B):
+    type: bool
+  Payer's name, address, and telephone number (Copy B):
+    type: string
+  Payer's TIN (Copy B):
+    type: string
+  Recipient's TIN (Copy B):
+    type: string
+  Recipient's name (Copy B):
+    type: string
+  Recipient's street address (Copy B):
+    type: string
+  Recipient's city, state, and ZIP code (Copy B):
+    type: string
+  Account number (Copy B):
+    type: string
+  Box 1 — Nonemployee compensation (Copy B):
+    type: string
+  Box 2 — Payer made direct sales of $5,000 or more for resale (Copy B):
+    type: bool
+  Box 3 — Excess golden parachute payments (Copy B):
+    type: string
+  Box 4 — Federal income tax withheld (Copy B):
+    type: string
+  Box 5 — State tax withheld (state 1) (Copy B):
+    type: string
+  Box 5 — State tax withheld (state 2) (Copy B):
+    type: string
+  Box 6 — State/Payer's state no. (state 1) (Copy B):
+    type: string
+  Box 6 — State/Payer's state no. (state 2) (Copy B):
+    type: string
+  Box 7 — State income (state 1) (Copy B):
+    type: string
+  Box 7 — State income (state 2) (Copy B):
+    type: string
+  Calendar year (Copy 2):
+    type: string
+  VOID (Copy 2):
+    type: bool
+  CORRECTED (Copy 2):
+    type: bool
+  Payer's name, address, and telephone number (Copy 2):
+    type: string
+  Payer's TIN (Copy 2):
+    type: string
+  Recipient's TIN (Copy 2):
+    type: string
+  Recipient's name (Copy 2):
+    type: string
+  Recipient's street address (Copy 2):
+    type: string
+  Recipient's city, state, and ZIP code (Copy 2):
+    type: string
+  Account number (Copy 2):
+    type: string
+  Box 1 — Nonemployee compensation (Copy 2):
+    type: string
+  Box 2 — Payer made direct sales of $5,000 or more for resale (Copy 2):
+    type: bool
+  Box 3 — Excess golden parachute payments (Copy 2):
+    type: string
+  Box 4 — Federal income tax withheld (Copy 2):
+    type: string
+  Box 5 — State tax withheld (state 1) (Copy 2):
+    type: string
+  Box 5 — State tax withheld (state 2) (Copy 2):
+    type: string
+  Box 6 — State/Payer's state no. (state 1) (Copy 2):
+    type: string
+  Box 6 — State/Payer's state no. (state 2) (Copy 2):
+    type: string
+  Box 7 — State income (state 1) (Copy 2):
+    type: string
+  Box 7 — State income (state 2) (Copy 2):
+    type: string
